@@ -1,0 +1,7 @@
+clsUSGSWQ = 314, -1, 1198, 790, C
+clsCSV = 176, 176, 881, 704, C
+clsDBF = 110, 110, 887, 640, C
+UTILITY = 0, 0, 0, 0, C
+UtilDate = 0, 0, 0, 0, C
+modBasObsWQ = 0, 0, 0, 0, C
+utilXml = 0, 0, 0, 0, C

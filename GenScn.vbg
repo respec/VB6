@@ -1,0 +1,21 @@
+VBGROUP 5.0
+StartupProject=GenScn\GenScn.vbp
+Project=ATCoDisp\ATCoDisp.vbp
+Project=ATCoTSdisp\ATCoTSDisp.vbp
+Project=ATCoCtl\ATCoCtl.vbp
+Project=ATCoCtl\Status\StatusMonitor.vbp
+Project=ATML2k\ATML2k.vbp
+Project=ATCTSfile\ATCTSfile.vbp
+Project=ATCData\ATCData.vbp
+Project=ATCReports\ATCReports.vbp
+Project=ATCoFeedback\ATCoFeedback.vbp
+Project=ATCoHSPFOutput\ATCoHSPFOutput.vbp
+Project=Script\Base\ATCscriptBase.vbp
+Project=Script\Hspf\ATCScriptHspf.vbp
+Project=ATCoHspf\ATCoHspf.vbp
+Project=Script\Data\ATCScriptData.vbp
+Project=Script\File\ATCScriptFile.vbp
+Project=Script\Grid\ATCScriptGrid.vbp
+Project=Script\Graph\ATCScriptGraph.vbp
+Project=Script\IPC\ATCScriptIPC.vbp
+Project=Script\Misc\ATCScriptMisc.vbp

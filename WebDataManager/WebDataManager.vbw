@@ -1,0 +1,16 @@
+clsWebDataManager = 11, 36, 868, 811, C
+clsWebData = -92, -2, 838, 874, C
+frmDownload = -10, 88, 829, 644, C, 7, 29, 1061, 351, C
+UTILITY = -8, -1, 866, 892, C
+frmMultiple = -244, 49, 700, 957, C, 73, 58, 1032, 397, C
+UtilBrowseFolder = 46, 158, 1169, 829, C
+frmAbout = 136, 322, 945, 861, C, 44, 44, 733, 528, C
+modShell = 0, 17, 926, 824, C
+modWin32Api = -14, -1, 936, 516, C
+UtilWindow = 66, 66, 738, 665, C
+frmWizard = 19, -5, 869, 792, C, 17, 26, 712, 270, C
+modHUCFIPS = 39, 89, 746, 706, C
+modStateFips = 1, 20, 858, 697, C
+utilXml = 39, 9, 760, 725, C
+modDownloadGlobal = 22, 22, 681, 416, C
+UtilFolder = 132, 0, 874, 669, C

@@ -1,0 +1,10 @@
+UTILITY = 0, 0, 0, 0, C
+modWin32Api = 44, 44, 635, 472, C
+clsDBF = -27, 0, 897, 876, C
+clsCSV = 47, 84, 839, 841, C
+clsBasins = 10, 2, 853, 361, Z
+modLSTORET = -127, 258, 829, 694, C
+UtilDate = 0, 0, 0, 0, C
+modBasObsWQ = 0, 0, 599, 528, C
+modFileType = 0, 0, 0, 0, C
+utilXml = 154, 154, 888, 761, C
