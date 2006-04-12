@@ -1,0 +1,14 @@
+clsATCoHSPFOutput = 58, 24, 995, 579, C
+UTILITY = 220, 220, 906, 732, C
+clsTSerHSPFOutput = 76, 60, 1056, 647, C
+UtilHSPF = 135, 135, 901, 630, C
+clsNetworkHSPFOutput = 0, 0, 574, 495, C
+UtilDate = 0, 0, 0, 0, C
+ATComponentCatalog = 28, 162, 1102, 693, C
+UtilDateExt = 171, 59, 648, 590, C
+frmFilterEdit = 24, 117, 979, 745, C, 312, 251, 849, 670, C
+utilTSerData = 0, 0, 0, 0, C
+clsTSerFilter = 34, 118, 950, 696, C
+clsTSerHSPFBinary = 88, 13, 994, 889, C
+clsFtnUnfFile = 93, 209, 826, 723, C
+clsHspfBinary = 575, 29, 1274, 717, C

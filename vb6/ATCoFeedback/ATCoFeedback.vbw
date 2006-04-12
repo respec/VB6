@@ -1,0 +1,12 @@
+frmFeedback = -38, 186, 1002, 914, C, 106, 55, 974, 672, C
+modWin32Api = 110, 110, 519, 657, C
+UTILITY = 0, 0, 0, 0, C
+clsATCoFeedback = 81, 38, 940, 892, C
+clsDiskSpace = 0, 0, 0, 0, C
+modMemory = 0, 0, 0, 0, C
+mGeneral = 0, 0, 0, 0, C
+RegistryHandler = 46, 220, 970, 753, C
+clsATCoLogger = 178, 143, 924, 656, C
+clsATCoMessage = 143, 27, 889, 540, C
+frmMsg = 0, 0, 615, 501, C, 0, 0, 0, 0, C
+clsUninstallFile = 0, 0, 0, 0, C
