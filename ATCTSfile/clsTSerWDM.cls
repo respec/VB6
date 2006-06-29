@@ -42,9 +42,10 @@ Dim BasInf() As BasinsInfo
 Dim BasInfAvail As Boolean
 
 Private Property Get ATCclsTserFile_AvailableAttributes() As Collection
-  Dim retval As Collection, vWDMAttr As Variant
-  Dim CurWDMAttr As clsAttributeWDM, CurTSerAttr As ATCclsAttributeDefinition
-  Set retval = New Collection
+  Dim lRetval As Collection, vWDMAttr As Variant
+  Dim CurWDMAttr As clsAttributeWDM
+  Dim CurTSerAttr As ATCclsAttributeDefinition
+  Set lRetval = New Collection
   For Each vWDMAttr In gMsg.Attributes
     Set CurTSerAttr = New ATCclsAttributeDefinition
     Set CurWDMAttr = vWDMAttr
@@ -57,27 +58,30 @@ Private Property Get ATCclsTserFile_AvailableAttributes() As Collection
       .Name = CurWDMAttr.Name
       .ValidValues = CurWDMAttr.ValidValues
     End With
-    retval.Add CurTSerAttr
+    lRetval.Add CurTSerAttr
     Set CurTSerAttr = Nothing
   Next
-  Set ATCclsTserFile_AvailableAttributes = retval
+  Set ATCclsTserFile_AvailableAttributes = lRetval
 End Property
 
 Private Sub ATCclsTserFile_clear()
-  Dim i&
+  Dim lRet As Long
   Dim lWdmOpen As Long, lWDMUnit As Long
   
   If pFileUnit > 0 Then
     lWDMUnit = F90_INQNAM(pFileWholeName, Len(pFileWholeName))
     If lWDMUnit > 0 Then
-      i = F90_WDMCLO(lWDMUnit)
+      lRet = F90_WDMCLO(lWDMUnit)
     End If
+    
+    'force close
     lWdmOpen = F90_WDMOPN(pFileUnit, pFileWholeName, Len(pFileWholeName))
-    If lWdmOpen > -1 Then
-      'the file is open, close it
-      i = F90_WDFLCL(pFileUnit)
+    If lWdmOpen > -1 Then 'the file is open, close it
+      lRet = F90_WDFLCL(pFileUnit)
     End If
-    If i <> 0 And i <> -87 Then MsgBox "Close WDM file on " & pFileUnit & " caused retcod " & i
+    If lRet <> 0 And lRet <> -87 Then
+      MsgBox "Close WDM file on " & pFileUnit & " caused retcod " & lRet
+    End If
   End If
 
   Set pData = Nothing
@@ -85,9 +89,7 @@ Private Sub ATCclsTserFile_clear()
 End Sub
 
 Private Property Get ATCclsTserFile_Data(index As Long) As ATCclsTserData
-  
   Set ATCclsTserFile_Data = pData(index)
-  
 End Property
 
 Private Property Get ATCclsTserFile_DataCount() As Long
@@ -155,7 +157,9 @@ Private Sub ATCclsTserFile_readData(t As ATCclsTserData)
     ReDim f(0)
   End If
   
-  If lWdmOpen <> 1 Then i = F90_WDMCLO(pFileUnit)
+  If lWdmOpen <> 1 Then
+    i = F90_WDMCLO(pFileUnit)
+  End If
   
 End Sub
 
@@ -164,6 +168,10 @@ Private Function ATCclsTserFile_writeDataHeader(dataObject As ATCclsTserData, Op
   Dim dsn&, saind&, salen&, retcod&, wdmfg&, s$, l$, c$, d$, i&
   Dim lHeader As ATTimSerDataHeader
   Dim lWdmOpen As Long
+  Dim lMsg As String
+  
+  lMsg = "clsTSerWDM:WriteDataHeader:" & pMsgUnit & ":" & pFileUnit & ":" & pFileWholeName
+  Call F90_MSG(lMsg, Len(lMsg))
   
   lWdmOpen = F90_WDMOPN(pFileUnit, pFileWholeName, Len(pFileWholeName))
   
@@ -172,12 +180,12 @@ Private Function ATCclsTserFile_writeDataHeader(dataObject As ATCclsTserData, Op
   retcod = 0
   dsn = lHeader.id
   On Error GoTo Cntinu
-'  this IsMissing function didn't work on oldHeader for some reason
-'  If Not IsMissing(oldHeader) Then 'may need to update id
+    '  this IsMissing function didn't work on oldHeader for some reason
+    '  If Not IsMissing(oldHeader) Then 'may need to update id
     If oldHeader.id <> dsn Then 'try to change dsn
       Call F90_WDDSRN(pFileUnit, oldHeader.id, dsn, retcod)
     End If
-'  End If
+    '  End If
 Cntinu:
   If retcod = 0 Then
     saind = 288
@@ -219,7 +227,9 @@ Cntinu:
     End If
     ATCclsTserFile_writeDataHeader = False
   End If
-  If lWdmOpen <> 1 Then i = F90_WDMCLO(pFileUnit)
+  If lWdmOpen <> 1 Then
+    i = F90_WDMCLO(pFileUnit)
+  End If
   
 End Function
 
@@ -236,6 +246,11 @@ Private Sub Class_Initialize()
   
   Set pDates = Nothing
   Set pDates = New Collection
+  
+  Dim lMsg As String
+  Call F90_MSG("WRITE", 5)
+  lMsg = "clsTSerWDM:Initialize:VB6"
+  Call F90_MSG(lMsg, Len(lMsg))
 End Sub
 
 Private Property Set ATCclsTserFile_Monitor(ByVal o As Object)
@@ -262,19 +277,22 @@ End Property
 Private Property Get ATCclsTserFile_FileName() As String
   ATCclsTserFile_FileName = pFilename
 End Property
-Private Property Let ATCclsTserFile_FileName(ByVal newValue$)
-  Dim i&, attr&, lFileUnit As Long, retcod&
+Private Property Let ATCclsTserFile_FileName(ByVal aFileName As String)
+  Dim lRwFlg As Long, lAttr As Long, lFileUnit As Long, lRetcod As Long, lMsg As String
+  lRwFlg = 0
+    
+  lMsg = "clsTSerWDM:FileName:Let" & aFileName
+  Call F90_MSG(lMsg, Len(lMsg))
   
-  If Len(Dir(newValue)) = 0 Then
+  If Len(Dir(aFileName)) = 0 Then
     pErrorDescription = "FileName '" & newValue & "' not found"
   Else
     pFilename = AbsolutePath(newValue, CurDir)
-    i = 0
     
-    attr = GetAttr(pFilename) 'if read only, change to not read only
-    If (attr And vbReadOnly) <> 0 Then
-      attr = attr - vbReadOnly
-      SetAttr pFilename, attr
+    lAttr = GetAttr(pFilename) 'if read only, change to not read only
+    If (lAttr And vbReadOnly) <> 0 Then
+      lAttr = lAttr - vbReadOnly
+      SetAttr pFilename, lAttr
     End If
     
     lFileUnit = F90_INQNAM(pFilename, Len(pFilename))
@@ -284,9 +302,9 @@ Private Property Let ATCclsTserFile_FileName(ByVal newValue$)
     End If
 
     If pFileUnit = 0 Then
-      F90_WDBOPNR i, pFilename, pFileUnit, retcod, Len(pFilename)
+      F90_WDBOPNR lRwFlg, pFilename, pFileUnit, lRetcod, Len(pFilename)
     End If
-    If retcod = 159 Then
+    If lRetcod = 159 Then
       'file is already open by another application
       'pFileUnit = 0
     End If
@@ -298,9 +316,17 @@ Private Property Let ATCclsTserFile_FileName(ByVal newValue$)
       pQuick = True
       ATCclsTserFile_refresh
       pQuick = False
-      If F90_WDMCLO(pFileUnit) <> 0 Then MsgBox "Could Not Close WDM on Unit " & pFileUnit, vbExclamation, "clsTSerWDM:FileName"
+      If F90_WDMCLO(pFileUnit) <> 0 Then
+        MsgBox "Could Not Close WDM on Unit " & pFileUnit, vbExclamation, "clsTSerWDM:FileName"
+      End If
     End If
   End If
+  If Len(pErrorDescription) = 0 Then
+    lMsg = "clsTSerWDM:FileName:Let:Exit:" & pFileUnit & ":" & lRetcod
+  Else
+    lMsg = "clsTSerWDM:FileName:Let:Error" & pErrorDescription
+  End If
+  Call F90_MSG(lMsg, Len(lMsg))
 End Property
 
 Private Property Get ATCclsTserFile_Description() As String
@@ -553,6 +579,10 @@ Private Function ATCclsTserFile_AddTimSer(t As ATCclsTserData, Optional ExistAct
   Dim lWdmOpen As Long
   Dim checklastval As Single
   
+  Dim lMsg As String
+  lMsg = "clsTSerWDM:AddTimSer:" & pFileUnit & ":" & pFileWholeName
+  Call F90_MSG(lMsg, Len(lMsg))
+  
   On Error Resume Next
   checklastval = t.Value(t.Dates.Summary.NVALS) 'make sure data has been read
   On Error GoTo ErrHandler
@@ -760,26 +790,45 @@ Private Function ATCclsTserFile_RewriteTimSer(t As ATCclsTserData) As Boolean
   ATCclsTserFile_RewriteTimSer = DsnWriteData(t)
 End Function
 
-Private Function ATCclsTserFile_SaveAs(Filename As String) As Boolean
-  Dim i&, lFileUnit&
+Private Function ATCclsTserFile_SaveAs(aFileName As String) As Boolean
+  Dim lRwFlg As Long, lRet As Long, lFileUnit As Long
   Dim lWdmOpen As Long
+  Dim lMsg As String
   
-  If Len(pFileWholeName) > 0 Then lWdmOpen = F90_WDMOPN(pFileUnit, pFileWholeName, Len(pFileWholeName)) Else lWdmOpen = -1
+  If Len(pFileWholeName) > 0 Then
+    lWdmOpen = F90_WDMOPN(pFileUnit, pFileWholeName, Len(pFileWholeName))
+  Else
+    lWdmOpen = -1
+  End If
   
-  i = 2
-  lFileUnit = F90_WDBOPN(i, Filename, Len(Filename))
+  lMsg = "clsTSerWdm:SaveAs:" & lWdmOpen & ":" & aFileName
+  Call F90_MSG(lMsg, Len(lMsg))
+      
+  lRwFlg = 2 'create new
+  lFileUnit = F90_WDBOPN(lRwFlg, aFileName, Len(aFileName))
+  
+  lMsg = "clsTSerWdm:SaveAs:AfterCreate:" & lFileUnit & ":" & pFileUnit
+  Call F90_MSG(lMsg, Len(lMsg))
+  
   If lFileUnit > 0 Then 'create worked
     If pFileUnit > 0 Then 'copy existing data here
-       
        'close current
-       i = F90_WDFLCL(pFileUnit)
+       lRet = F90_WDFLCL(pFileUnit)
     End If
     'update
-    pFilename = Filename
-    pFileWholeName = CurDir & "\" & FilenameNoPath(Filename)
+    pFilename = aFileName
+    pFileWholeName = CurDir & "\" & FilenameNoPath(aFileName)
     pFileUnit = lFileUnit
+    lMsg = "clsTSerWdm:SaveAs:RefreshStart"
+    Call F90_MSG(lMsg, Len(lMsg))
     ATCclsTserFile_refresh
-    If lWdmOpen <> 1 Then i = F90_WDMCLO(pFileUnit)
+    lMsg = "clsTSerWdm:SaveAs:RefreshDone"
+    Call F90_MSG(lMsg, Len(lMsg))
+    If lWdmOpen <> 1 Then
+      lRet = F90_WDMCLO(pFileUnit)
+    End If
+    lMsg = "clsTSerWdm:SaveAs:CloseDone:" & lRet
+    Call F90_MSG(lMsg, Len(lMsg))
   End If
 End Function
 
@@ -790,6 +839,10 @@ Private Function DsnBld(t As ATCclsTserData) As Boolean
     Dim iVal&, psa&, ostr$, saind&, salen&, retcod&
     Dim CSDat&(6)
 
+    Dim lMsg As String
+    lMsg = "clsTSerWDM:DsnBld:" & pFileUnit
+    Call F90_MSG(lMsg, Len(lMsg))
+  
     dsn = t.Header.id
     'create label
     ndn = t.AttribNumeric("NDN", 10)

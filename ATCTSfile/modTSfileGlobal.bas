@@ -48,7 +48,7 @@ Private Sub FindHSPFMsgWdm()
   If Not FileExists(hspfMsgFileName) Then
     MsgBox "Could not find hspfmsg.wdm - " & hspfMsgFileName, vbCritical, "ATCTSfile"
   Else
-    pMsgUnit = F90_WDBOPN(CLng(0), hspfMsgFileName, Len(hspfMsgFileName))
+    pMsgUnit = F90_WDBOPN(CLng(1), hspfMsgFileName, Len(hspfMsgFileName))
     Set pMsg = New ATCoMsgWDM
     pMsg.MsgUnit = pMsgUnit
   End If
@@ -61,7 +61,7 @@ Public Function UnitsAttributeDefinition(Optional Editable As Boolean = False) A
   Dim retval As ATCclsAttributeDefinition
   Dim o As Object
     
-  On Error GoTo errHand
+  On Error GoTo ErrHand
   
   If pUnitsDef Is Nothing Then
   
@@ -75,7 +75,7 @@ Public Function UnitsAttributeDefinition(Optional Editable As Boolean = False) A
     On Error Resume Next
     Set o = pUnitsDef:         o.Editable = False
     Set o = pUnitsDefEditable: o.Editable = True
-    On Error GoTo errHand
+    On Error GoTo ErrHand
     
     Set collUnits = GetAllUnitsInCategory("all")
     For UnitIndex = 1 To collUnits.Count
@@ -93,7 +93,7 @@ Public Function UnitsAttributeDefinition(Optional Editable As Boolean = False) A
     Set UnitsAttributeDefinition = pUnitsDef
   End If
   Exit Function
-errHand:
+ErrHand:
   MsgBox err.Description, vbOKOnly, "ATCTSFile UnitsAttributeDefinition"
 End Function
 
