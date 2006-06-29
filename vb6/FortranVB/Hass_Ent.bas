@@ -4,6 +4,8 @@ Option Explicit
 'general routines
 Declare Sub F90_W99OPN Lib "hass_ent.dll" ()
 Declare Sub F90_W99CLO Lib "hass_ent.dll" ()
+Declare Sub F90_MSG Lib "hass_ent.dll" (ByVal aMsg As String, ByVal aMsgLen As Integer)
+
 Declare Function F90_WDMOPN Lib "hass_ent.dll" (l&, ByVal s$, ByVal i%) As Long
 Declare Function F90_WDMCLO Lib "hass_ent.dll" (l&) As Long
 Declare Function F90_INQNAM Lib "hass_ent.dll" (ByVal s$, ByVal i%) As Long
@@ -224,7 +226,7 @@ Private Sub ChrNum(ilen&, istr$, onam&())
     Dim i%
     For i = 1 To ilen
       If i <= Len(istr) Then
-        onam(i - 1) = Asc(Mid(istr, i, 1))
+        onam(i - 1) = asc(Mid(istr, i, 1))
       Else
         onam(i - 1) = 32
       End If

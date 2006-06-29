@@ -23,6 +23,10 @@ Public Property Let MsgUnit(newMsgUnit As Long)
   Dim aName$, desc$, valid$
   Dim myAttr As clsAttributeWDM
   
+  Dim lMsg As String
+  lMsg = "ATCoMsgWDM:MsgUnit:Let:" & newMsgUnit
+  Call F90_MSG(lMsg, Len(lMsg))
+  
   pMsgUnit = newMsgUnit
   For i = 1 To 500
     Call F90_WDSAGY(pMsgUnit, i, ilen, itype, rmin, rmax, rdef, hlen, hrec, hpos, vlen, aName, desc, valid)
