@@ -302,7 +302,9 @@ Private Property Let ATCclsTserFile_FileName(ByVal aFileName As String)
     End If
 
     If pFileUnit = 0 Then
-      F90_WDBOPNR lRwFlg, pFilename, pFileUnit, lRetcod, Len(pFilename)
+      lFileUnit = -1 'force no reuse of unit numbers
+      F90_WDBOPNR lRwFlg, pFilename, lFileUnit, retcod, Len(pFilename)
+      pFileUnit = lFileUnit
     End If
     If lRetcod = 159 Then
       'file is already open by another application
