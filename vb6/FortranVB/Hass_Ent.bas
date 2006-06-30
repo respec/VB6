@@ -2,8 +2,8 @@ Attribute VB_Name = "HassLibs"
 Option Explicit
 '##MODULE_REMARKS Copyright 2001-3 AQUA TERRA Consultants - Royalty-free use permitted under open source license
 'general routines
-Declare Sub F90_W99OPN Lib "hass_ent.dll" ()
-Declare Sub F90_W99CLO Lib "hass_ent.dll" ()
+'Declare Sub F90_W99OPN Lib "hass_ent.dll" () 'use f90_msg("WRITE")
+'Declare Sub F90_W99CLO Lib "hass_ent.dll" () 'use f90_msg("CLOSE")
 Declare Sub F90_MSG Lib "hass_ent.dll" (ByVal aMsg As String, ByVal aMsgLen As Integer)
 
 Declare Function F90_WDMOPN Lib "hass_ent.dll" (l&, ByVal s$, ByVal i%) As Long
