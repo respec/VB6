@@ -38,19 +38,19 @@ Private Declare Function ShellExecute Lib "shell32.dll" Alias _
     server application. If the function fails, the return value is an error value _
     that is less than or equal to 32.
 
-Public Function OpenFile(ByVal FileName As String, Optional cdlg As CommonDialog, Optional operation As String = "open") As String
+Public Function OpenFile(ByVal filename As String, Optional cdlg As CommonDialog, Optional operation As String = "open") As String
 ' ##SUMMARY Opens an external file using its files association. Displays message box on failure.
 ' ##PARAM FileName I Full path and filename.
 ' ##PARAM CDlg I Allows user to browse for file to be opened.
 ' ##RETURNS Blank string if file opened successfully, error message if not.
   Dim msg As String 'message returned to caller
-  msg = OpenFileQuiet(FileName, cdlg, operation)
+  msg = OpenFileQuiet(filename, cdlg, operation)
   If Len(msg) > 0 Then
-    If msg <> FileName Then MsgBox msg & vbCr & FileName, vbOKOnly, "Error opening file"
+    If msg <> filename Then MsgBox msg & vbCr & filename, vbOKOnly, "Error opening file"
   End If
 End Function
 
-Public Function OpenFileQuiet(ByVal FileName As String, Optional cdlg As CommonDialog, Optional operation As String = "open") As String
+Public Function OpenFileQuiet(ByVal filename As String, Optional cdlg As CommonDialog, Optional operation As String = "open") As String
 ' ##SUMMARY Opens an external file using its files association. Does not display message box on failure.
 ' ##PARAM FileName I Full path and filename.
 ' ##PARAM CDlg I Allows user to browse for file to be opened.
@@ -65,29 +65,29 @@ Public Function OpenFileQuiet(ByVal FileName As String, Optional cdlg As CommonD
 '
 ' Get file and pathname.
 '
-  FileName = Trim(FileName)
-  If LCase(Left(FileName, 7)) = "http://" Then
-    FileNm = FileName
+  filename = Trim(filename)
+  If LCase(Left(filename, 7)) = "http://" Then
+    FileNm = filename
     GoTo ShExec 'Skip checks to see if it is a local file
   End If
-  If Not FileExists(FileName, True, True) Then
+  If Not FileExists(filename, True, True) Then
     If Not IsMissing(cdlg) Then
       If Not cdlg Is Nothing Then
         cdlg.DialogTitle = "Open File"
-        cdlg.FileName = FileName
+        cdlg.filename = filename
         cdlg.CancelError = False
         cdlg.ShowOpen
-        FileName = Trim(cdlg.FileName)
+        filename = Trim(cdlg.filename)
       End If
     End If
   End If
 
-  If FileExists(FileName, True, True) Then
-    DirectoryNm = PathNameOnly(FileName)
+  If FileExists(filename, True, True) Then
+    DirectoryNm = PathNameOnly(filename)
     If Len(DirectoryNm) = 0 Then
-      FileNm = FileName
+      FileNm = filename
     Else
-      FileNm = Mid(FileName, Len(DirectoryNm) + 2)
+      FileNm = Mid(filename, Len(DirectoryNm) + 2)
     End If
   '
   ' Open the file.
@@ -117,7 +117,7 @@ ShExec:
       Case 31: msg = "No application found for this file"
     End Select
   End If
-  If msg = "" Then OpenFileQuiet = FileName Else OpenFileQuiet = msg
+  If msg = "" Then OpenFileQuiet = filename Else OpenFileQuiet = msg
   Exit Function
 errOpenFile:
   OpenFileQuiet = "Could not open '" & FileName & "'" & vbCr & Err.Description

@@ -1,11 +1,11 @@
 Type=OleDll
-Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#C:\WINDOWS\System32\stdole2.tlb#OLE Automation
-Reference=*\G{18F0904D-D01A-4967-90D6-FB9B55A332EC}#1.0#0#..\Utility\FColl.dll#Edanmo's FastCollection Class v1
+Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#C:\WINNT\System32\stdole2.tlb#OLE Automation
+Reference=*\G{18F0904D-D01A-4967-90D6-FB9B55A332EC}#1.0#0#..\..\..\GENSCN~1.1FI\Support\SYSTEM~1\FColl.dll#Edanmo's FastCollection Class v1
+Object={48E59290-9880-11CF-9754-00AA00C00908}#1.0#0; MSINET.OCX
 Form=frmFeedback.frm
 Module=modWin32Api; ..\Utility\Win32Api.bas
 Module=UTILITY; ..\Utility\Utility.bas
 Class=clsATCoFeedback; clsATCoFeedback.cls
-Object={48E59290-9880-11CF-9754-00AA00C00908}#1.0#0; MSINET.OCX
 Class=clsDiskSpace; ..\Utility\clsDiskSpace.cls
 Module=modMemory; ..\Utility\modMemory.bas
 Module=mGeneral; mGeneral.bas

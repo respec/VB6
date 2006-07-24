@@ -1,10 +1,10 @@
 Type=OleDll
-Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#C:\WINDOWS\System32\stdole2.tlb#OLE Automation
+Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#C:\WINNT\System32\stdole2.tlb#OLE Automation
 Reference=*\G{101F9C56-A0F3-455C-ABBB-191168ABCF94}#1.0#0#C:\Program Files\Chilkat Software Inc\Chilkat XML\ChilkatXml.dll#Chilkat Xml 4.1.0
-Reference=*\G{18F0904D-D01A-4967-90D6-FB9B55A332EC}#1.0#0#..\..\Utility\FColl.dll#Edanmo's FastCollection Class v1
-Reference=*\A..\WebDataManager.vbp
+Reference=*\G{18F0904D-D01A-4967-90D6-FB9B55A332EC}#1.0#0#C:\WINNT\system32\FColl.dll#Edanmo's FastCollection Class v1
+Reference=*\G{73B1B0A5-5003-483A-8A84-764C50C7BD84}#1.0#0#..\..\..\..\releasePatch3\Support\bin\WebDataManager.dll#
 Reference=*\G{00025E01-0000-0000-C000-000000000046}#5.0#0#C:\Program Files\Common Files\Microsoft Shared\DAO\dao360.dll#Microsoft DAO 3.6 Object Library
-Object=*\A..\..\ATCoCtl\ATCoCtl.vbp
+Object={872F11D5-3322-11D4-9D23-00A0C9768F70}#1.10#0; ATCoCtl.ocx
 Class=clsNHDinGEO; clsNHDinGEO.cls
 Module=UTILITY; ..\..\Utility\Utility.bas
 Module=utilXml; ..\..\Utility\utilXml.bas

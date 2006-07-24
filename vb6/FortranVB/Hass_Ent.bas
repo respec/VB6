@@ -169,7 +169,7 @@ Declare Sub F90_CMSTRM Lib "hass_ent.dll" (l&, l&, l&, l&, r!, l&, r!, l&, l&, l
 Declare Sub F90_TSFLAT Lib "hass_ent.dll" (l&, l&, ByVal s$, l&, ByVal s$, l&, l&, l&, l&, l&, r!, l&, l&, l&, ByVal i%, ByVal i%)
 'iowdm:inwbat
 Declare Sub F90_INFREE Lib "hass_ent.dll" (l&, l&, l&, l&, l&, l&)
-'tree
+'tree (no longer used, taken out of hass_ent.dll)
 Declare Sub F90_TREE_BLD Lib "hass_ent.dll" (l&, l&, l&, l&)
 Declare Sub F90_TREE_SUM Lib "hass_ent.dll" (l&, l&, l&, l&, l&)
 Declare Sub F90_TREE_SET_NAME Lib "hass_ent.dll" (ByVal s$, ByVal i%)

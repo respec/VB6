@@ -1,8 +1,7 @@
-clsStoretStatn = -55, 47, 759, 783, C
-UTILITY = 0, 0, 804, 272, C
-utilXml = 0, 0, 960, 397, C
-clsDBF = 44, 44, 711, 544, C
-ShapeDefines = 242, 242, 1014, 805, C
-CShape_IO = 66, 66, 733, 566, C
-clsCSV = 66, 66, 722, 590, C
-modWin32Api = 110, 110, 709, 638, C
+clsStoretStatn = 53, 16, 674, 796, 
+UTILITY = 0, 0, 0, 0, C
+utilXml = 0, 0, 0, 0, C
+clsDBF = 0, 0, 0, 0, C
+ShapeDefines = 0, 0, 0, 0, C
+CShape_IO = 0, 0, 0, 0, C
+clsCSV = 0, 0, 0, 0, C
