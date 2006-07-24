@@ -170,7 +170,7 @@ Private Function ATCclsTserFile_writeDataHeader(dataObject As ATCclsTserData, Op
   Dim lWdmOpen As Long
   Dim lMsg As String
   
-  lMsg = "clsTSerWDM:WriteDataHeader:" & pMsgUnit & ":" & pFileUnit & ":" & pFileWholeName
+  lMsg = "clsTSerWDM:WriteDataHeader:" & gMsgUnit & ":" & pFileUnit & ":" & pFileWholeName
   Call F90_MSG(lMsg, Len(lMsg))
   
   lWdmOpen = F90_WDMOPN(pFileUnit, pFileWholeName, Len(pFileWholeName))
@@ -285,9 +285,9 @@ Private Property Let ATCclsTserFile_FileName(ByVal aFileName As String)
   Call F90_MSG(lMsg, Len(lMsg))
   
   If Len(Dir(aFileName)) = 0 Then
-    pErrorDescription = "FileName '" & newValue & "' not found"
+    pErrorDescription = "FileName '" & aFileName & "' not found"
   Else
-    pFilename = AbsolutePath(newValue, CurDir)
+    pFilename = AbsolutePath(aFileName, CurDir)
     
     lAttr = GetAttr(pFilename) 'if read only, change to not read only
     If (lAttr And vbReadOnly) <> 0 Then
@@ -303,7 +303,7 @@ Private Property Let ATCclsTserFile_FileName(ByVal aFileName As String)
 
     If pFileUnit = 0 Then
       lFileUnit = -1 'force no reuse of unit numbers
-      F90_WDBOPNR lRwFlg, pFilename, lFileUnit, retcod, Len(pFilename)
+      F90_WDBOPNR lRwFlg, pFilename, lFileUnit, lRetcod, Len(pFilename)
       pFileUnit = lFileUnit
     End If
     If lRetcod = 159 Then
@@ -311,7 +311,7 @@ Private Property Let ATCclsTserFile_FileName(ByVal aFileName As String)
       'pFileUnit = 0
     End If
     If pFileUnit = 0 Then 'invalid WDM file
-      pErrorDescription = "FileName '" & newValue & "' is not a valid WDM file.  Retcod = " & str(retcod)
+      pErrorDescription = "FileName '" & aFileName & "' is not a valid WDM file.  Retcod = " & str(lRetcod)
     Else
       pFileWholeName = AbsolutePath(pFilename, CurDir)
       BasInfAvail = ReadBasInf
@@ -630,7 +630,7 @@ Private Function ATCclsTserFile_AddTimSer(t As ATCclsTserData, Optional ExistAct
         ReDim Preserve BtnName(nBtns)
         BtnName(nBtns) = "+-&Cancel"
         Set myMsgBox = New ATCoCtl.ATCoMessage
-        UsrExAct = myMsgBox.Showarray("WDM data-set number " & t.Header.id & " already exists." & vbCrLf & "Next available data-set number is " & dsn & vbCrLf & "What should be done to it?", "WDM Data-set Number Problem", BtnName)
+        UsrExAct = myMsgBox.ShowArray("WDM data-set number " & t.Header.id & " already exists." & vbCrLf & "Next available data-set number is " & dsn & vbCrLf & "What should be done to it?", "WDM Data-set Number Problem", BtnName)
         If InStr(BtnName(UsrExAct - 1), "Overwrite") > 0 Then
           lExAct = TsIdRepl 'set to overwrite
         ElseIf InStr(BtnName(UsrExAct - 1), "Append") > 0 Then

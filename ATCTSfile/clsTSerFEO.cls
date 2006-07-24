@@ -185,11 +185,13 @@ Private Sub FeoRead()
   Dim datsum As ATTimSerDateSummary
   Dim path As String
   Dim progress As String
+  Dim fileformat As Long
   
   LabelWidth = 8
   NodeIdWidth = 6
   UserIDWidth = 12 '8
   XTIOFF = 7
+  fileformat = 0
   
   On Error GoTo error:
   
@@ -221,12 +223,17 @@ Private Sub FeoRead()
     
     Case "-FILE_FORMAT":  Line Input #i, s
                           If IsNumeric(s) Then
-                            If CLng(s) = 1 Then
+                            fileformat = CLng(s)
+                            If fileformat = 1 Or fileformat = 2 Then
                               LabelWidth = 16
                               NodeIdWidth = 7
                               UserIDWidth = 16
-                              XTIOFF = 21
-                            ElseIf CLng(s) > 1 Then
+                              If fileformat = 1 Then
+                                XTIOFF = 21
+                              ElseIf fileformat = 2 Then
+                                XTIOFF = 0
+                              End If
+                            ElseIf fileformat > 2 Then
                               MsgBox "This format (version " & s & ") is not recognized." & vbCr & "This program only knows about version 0 and 1.", vbCritical, "FEO Read Error"
                               Exit Sub
                             End If
@@ -237,6 +244,8 @@ Private Sub FeoRead()
                           Line Input #i, s: f.NameTsd = Trim(s)
                           Line Input #i, s: f.NameFtf = Trim(s)
     Case "-UNITS":        'nothing yet
+    
+    Case "-GATE_PUMP_STATUS":        'nothing yet
     
     Case "-FTF":          Line Input #i, s 'NUMBER_OF_FULL_RECORDS=
                           f.NumbFullRec = Right(s, 8)
@@ -320,7 +329,7 @@ Private Sub FeoRead()
             Set .Constit = New Collection
             .Constit.Add "FLOW"
             .Constit.Add "WSELEV"
-            If .LocClass = "LPR" Then
+            If .LocClass = "LPR" And fileformat <> 2 Then 'dont know how to handle for format2
               .Constit.Add "SUR_AREA"
               .Constit.Add "VOLUME"
             Else
@@ -403,7 +412,7 @@ Private Sub FeoRead()
       Set lData = Nothing
       Set lData = New ATCData.ATCclsTserData
       With lData.Header
-        .ID = j * f.LocDir(j).Constit.Count + i
+        .id = j * f.LocDir(j).Constit.Count + i
         .loc = f.LocDir(j).Location
         .con = f.LocDir(j).Constit(i)
         .Sen = f.Scenario
@@ -476,7 +485,7 @@ End Function
 
 Private Sub FillFeqTimser(dataObject As ATCclsTserData)
   'Dim index#
-  Dim i%, pos&, lind&, tcol&, r!, lp&, x!, e!, Apos&
+  Dim i%, pos&, lind&, tcol&, r!, lp&, X!, e!, Apos&
   Dim addr&, ya!, c&
   'Dim a!, t!, dt!, j!, k!, dk!, b!, db!, alp!, dalp!, qc!, ma!, dma!, mq!, dmq!
   Dim a!(), t!(), dt!(), j!(), k!(), dk!(), b!(), db!(), alp!(), dalp!(), qc!(), ma!(), dma!(), mq!(), dmq!()
@@ -518,10 +527,10 @@ Private Sub FillFeqTimser(dataObject As ATCclsTserData)
   Wend
   If c < 2 Then
     tcol = f.LocDir(lind).SeriesOffset + c
-    x = 0
+    X = 0
   Else
     tcol = f.LocDir(lind).SeriesOffset + 1
-    x = c - 1
+    X = c - 1
   End If
   e = f.LocDir(lind).Invert
   addr = f.LocDir(lind).FtabIndex
@@ -536,7 +545,7 @@ Private Sub FillFeqTimser(dataObject As ATCclsTserData)
   End If
   'ReDim flg(Apos)
   ReDim a(Apos)
-  If x > 0 Then
+  If X > 0 Then
     ReDim t(Apos)
     ReDim dt(Apos)
     ReDim k(Apos)
@@ -572,7 +581,7 @@ Private Sub FillFeqTimser(dataObject As ATCclsTserData)
     Apos = Apos + 1
     lp = (pos * f.RecLen) + (tcol * 4) + 5
     Get #i, lp, r
-    If x > 0 Then ' need to use ftable
+    If X > 0 Then ' need to use ftable
       ya = r - e
       Select Case f.LocDir(lind).FtabTyp
         Case 20: F90_XLKT20 addr, ya, a(Apos), t(Apos), dt(Apos), k(Apos), dk(Apos), b(Apos), db(Apos)
@@ -589,7 +598,7 @@ Private Sub FillFeqTimser(dataObject As ATCclsTserData)
   Next pos
   Close #i
   
-  If x > 0 Then
+  If X > 0 Then
     FindSetTS LocName, "A", a
     FindSetTS LocName, "T", t
     FindSetTS LocName, "DT", dt
@@ -721,7 +730,7 @@ Private Function ATCclsTserFile_RewriteTimSer(t As ATCclsTserData) As Boolean
   pErrorDescription = "RewriteTimSer not supported for " & ATCclsTserFile_Description
 End Function
 
-Private Function ATCclsTserFile_SaveAs(FileName As String) As Boolean
+Private Function ATCclsTserFile_SaveAs(Filename As String) As Boolean
   ATCclsTserFile_SaveAs = False
   pErrorDescription = "SaveAs not supported for " & ATCclsTserFile_Description
 End Function
