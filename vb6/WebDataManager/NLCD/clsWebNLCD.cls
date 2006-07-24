@@ -68,6 +68,7 @@ Private Function clsWebData_GetData(ByVal aQuery As ChilkatXml, aResult As Chilk
   Dim i As Long
   Dim GzipPath As String
   Dim basins_dir As String
+  Dim project_dir As String
   Dim national_nlcd As String
   
   Dim nodStatus As ChilkatXml
@@ -79,7 +80,8 @@ Private Function clsWebData_GetData(ByVal aQuery As ChilkatXml, aResult As Chilk
   Dim launched_by As String
   Dim inputname As String
   Dim statename As String
-  Dim outputname As String
+  Dim clipname As String
+  Dim projectedname As String
   ReDim site_no(0)
       
   On Error GoTo ErrHand
@@ -180,8 +182,10 @@ Private Function clsWebData_GetData(ByVal aQuery As ChilkatXml, aResult As Chilk
       End If
     Next i
   Next
-  If tif_nlcd And launched_by = "ArcView" Then
-    pManager.CurrentStatusUpdateString "endinstructions", pLabel & " Instructions: " & vbCrLf _
+  If launched_by = "ArcView" Then
+    If tif_nlcd Then
+      pManager.LogDbg pClassName & " Launched by ArcView, write end instructions"
+      pManager.CurrentStatusUpdateString "endinstructions", pLabel & " Instructions: " & vbCrLf _
             & "TIFF data has been downloaded to '" & national_nlcd & "'." & vbCrLf _
             & vbCrLf _
             & "Use the 'Landuse (Image)' option of the Add Theme (Grid) extension " & vbCrLf _
@@ -192,9 +196,17 @@ Private Function clsWebData_GetData(ByVal aQuery As ChilkatXml, aResult As Chilk
             & "extension to project the resulting grid." & vbCrLf _
             & vbCrLf _
             & pManager.CurrentStatusGetString("endinstructions")
-  End If
-  If launched_by <> "ArcView" Then
+    End If
+  Else
     pManager.LogDbg pClassName & " Not launched by ArcView, write projector xml"
+    
+    'clear out rogue endinstruction messages
+    i = InStr(1, pManager.CurrentStatusGetString("endinstructions"), "Use the 'Landuse (Image)' option of the Add Theme (Grid)")
+    If i > 0 Then
+      pManager.CurrentStatusUpdateString "endinstructions", ""
+      pManager.LogDbg pClassName & " Cleared rogue endinstruction message"
+    End If
+    
     For Each vFilename In Filenames
       For i = 1 To 2
         tFilename = ""
@@ -209,10 +221,16 @@ Private Function clsWebData_GetData(ByVal aQuery As ChilkatXml, aResult As Chilk
           pManager.LogDbg pClassName & " statename = " & statename
           MkDirPath national_nlcd & statename & "\"
           pManager.LogDbg pClassName & " made dir " & national_nlcd & statename & "\"
-          outputname = national_nlcd & statename & "\" & Left(tFilename, Len(tFilename) - 3)
+          'outputname = national_nlcd & statename & "\" & Left(tFilename, Len(tFilename) - 3)
           inputname = national_nlcd & Left(tFilename, Len(tFilename) - 3)
-          pManager.AppendProjectXML "<convert_grid output=""" & outputname & """>" & inputname & "</convert_grid>" & vbCrLf & _
-                                    "  <add_grid>" & outputname & "</add_grid>"
+          project_dir = pManager.CurrentStatusGetString("project_dir")
+          clipname = project_dir & "nlcd\" & statename & "_clip.tif"
+          projectedname = project_dir & "nlcd\" & statename & "_clip_projected.tif"
+          'pManager.AppendProjectXML "<convert_grid output=""" & outputname & """>" & inputname & "</convert_grid>" & vbCrLf & _
+          '                          "  <add_grid>" & outputname & "</add_grid>"
+          pManager.AppendProjectXML "<clip_grid output=""" & clipname & """>" & inputname & "</clip_grid>" & vbCrLf & _
+                                    "  <convert_grid output=""" & projectedname & """>" & clipname & "</convert_grid>" & vbCrLf & _
+                                    "  <add_grid>" & projectedname & "</add_grid>"
         End If
       Next i
     Next
@@ -278,7 +296,7 @@ Private Property Get clsWebData_Version() As String
 End Property
 
 Private Sub AddAllStates()
-  Dim filename As String
+  Dim FileName As String
   Dim state_nlcd As String
   Dim ResultString As String
   Dim HREFpos As Integer
@@ -299,10 +317,10 @@ Private Sub AddAllStates()
         If endHref > 0 Then
           NLCDpos = InStr(HREFpos + 1, ResultString, ".nlcd.tif")
           If NLCDpos > 0 And NLCDpos < endHref Then
-            filename = Mid(ResultString, HREFpos + 8, endHref - HREFpos - 8)
+            FileName = Mid(ResultString, HREFpos + 8, endHref - HREFpos - 8)
             state_nlcd = Mid(ResultString, HREFpos + 8, NLCDpos - HREFpos - 8)
-            pManager.LogDbg pClassName & " " & state_nlcd & " " & filename
-            pAllURL.Add filename, state_nlcd
+            pManager.LogDbg pClassName & " " & state_nlcd & " " & FileName
+            pAllURL.Add FileName, state_nlcd
             strAllNLCD = strAllNLCD & "<state_nlcd>" & state_nlcd & "</state_nlcd>"
           End If
         End If
