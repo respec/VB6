@@ -1,5 +1,6 @@
 VERSION 5.00
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
+Object = "{872F11D5-3322-11D4-9D23-00A0C9768F70}#1.10#0"; "ATCoCtl.ocx"
 Begin VB.Form frmWDMOut 
    Caption         =   "WDM Output"
    ClientHeight    =   4830
@@ -354,13 +355,13 @@ Option Explicit
 'Dim WDMId$(4)
 Dim MetDetails$()
 
-Private Sub cmdFile_Click(Index As Integer)
+Private Sub cmdFile_Click(index As Integer)
   Dim iwdm&, i&, s$, f$, fun&, numMetSeg&, arrayMetSegs$(), wid$
   Dim tmetseg, lMetDetails$()
   
   On Error GoTo NeverMind
   
-  Select Case Index
+  Select Case index
     Case 0 'met wdm file
 
 '      If lblWDM(0).Caption <> "<none>" Then
@@ -524,12 +525,12 @@ Private Sub cmdOk_Click()
         Set dbf(dbfindex) = New clsDBF
         With dbf(dbfindex)
           .NumRecords = lstMet.SelCount
-          .NumFields = 5
-          .FieldLength(1) = 4: .FieldType(1) = "N": .FieldName(1) = "ID"
-          .FieldLength(2) = 8: .FieldType(2) = "C": .FieldName(2) = "NAME"
-          .FieldLength(3) = 8: .FieldType(3) = "N": .FieldName(3) = "LAT":  .FieldDecimalCount(3) = 4
-          .FieldLength(4) = 8: .FieldType(4) = "N": .FieldName(4) = "LONG": .FieldDecimalCount(4) = 4
-          .FieldLength(5) = 8: .FieldType(5) = "N": .FieldName(5) = "ELEVATION"
+          .numFields = 5
+          .FieldLength(1) = 4: .FieldType(1) = "N": .fieldName(1) = "ID"
+          .FieldLength(2) = 8: .FieldType(2) = "C": .fieldName(2) = "NAME"
+          .FieldLength(3) = 8: .FieldType(3) = "N": .fieldName(3) = "LAT":  .FieldDecimalCount(3) = 4
+          .FieldLength(4) = 8: .FieldType(4) = "N": .fieldName(4) = "LONG": .FieldDecimalCount(4) = 4
+          .FieldLength(5) = 8: .FieldType(5) = "N": .fieldName(5) = "ELEVATION"
           .InitData
           .CurrentRecord = 1
         End With
@@ -635,7 +636,7 @@ Private Sub cmdOk_Click()
               SetStatus "Filling Relative Humidity in DBF for " & MetName
               dbf(4).Value(2) = MetName & "_H"
               Set dataDBF = FillDBF(HumidTs)
-              dataDBF.FieldName(2) = "HMD"
+              dataDBF.fieldName(2) = "HMD"
               SetStatus "Writing Relative Humidity DBF to disk for " & MetName
               dataDBF.WriteDBF OutputDir & dbf(4).Value(2)
               Set dataDBF = Nothing
@@ -649,6 +650,10 @@ Private Sub cmdOk_Click()
       End If
     Next
     If WritingDBF Then
+      'always have one too many records, remove one
+      For dbfindex = 0 To lastDBF
+        dbf(dbfindex).NumRecords = dbf(dbfindex).NumRecords - 1
+      Next
       SetStatus "Writing location tables"
       MetName = OutputDir & FilenameOnly(lblWDM(0))
       dbf(0).WriteDBF MetName & "_PREC.dbf"
@@ -664,6 +669,12 @@ Private Sub cmdOk_Click()
 End Sub
 
 Private Sub Form_Load()
+  Dim ff As ATCoFindFile
+  
+  Set ff = New ATCoFindFile
+  ff.SetDialogProperties "Please locate WDMOutput.chm", "..\..\..\docs\WDMOutput.chm"
+  ff.SetRegistryInfo "WDMOutput", "files", "WDMOutput.chm"
+  App.HelpFile = ff.GetName
   lblWDM(0).Caption = "<none>"
 End Sub
 
@@ -710,7 +721,7 @@ Public Sub GetMetSegNames(fun&, numMetSeg&, arrayMetSegs$(), lMetDetails$())
   Call FindTimSer("OBSERVED", "", "PREC", lTs)
   'return the names of the data sets from this wdm file
   For i = 1 To lTs.Count
-    loc = lTs(i).header.loc
+    loc = lTs(i).Header.loc
     If Len(loc) > 0 And lTs(i).File.Label = "WDM" And lTs(i).File.FileUnit = fun Then
       'first get the common dates from all timsers at this location
       Call FindTimSer("OBSERVED", loc, "", llocts)
@@ -729,7 +740,7 @@ Public Sub GetMetSegNames(fun&, numMetSeg&, arrayMetSegs$(), lMetDetails$())
       ReDim Preserve arrayMetSegs(numMetSeg)
       arrayMetSegs(numMetSeg - 1) = loc
       ReDim Preserve lMetDetails(numMetSeg)
-      dsn = lTs(i).header.ID
+      dsn = lTs(i).Header.id
       Call J2Date(sj, sdat)
       Call J2Date(ej, edat)
       Call timcnv(edat)
@@ -780,7 +791,7 @@ Private Function FindAndTransformTimSer(sen$, loc$, Con$, csdat&(), cedat&(), cd
     Else
       Set FindAndTransformTimSer = MathArgs(1)
     End If
-    If Len(NewDescription) > 0 Then FindAndTransformTimSer.Attribset "DESC", NewDescription
+    If Len(NewDescription) > 0 Then FindAndTransformTimSer.AttribSet "DESC", NewDescription
   Else
     Set FindAndTransformTimSer = Nothing
   End If
@@ -796,9 +807,9 @@ Private Sub FindTimSer(sen$, loc$, Con$, lTs As Collection)
   For Each vTserFile In TserFiles.Active
     Set curClsTserFile = vTserFile.obj
     For j = 1 To curClsTserFile.DataCount
-      If (sen = curClsTserFile.Data(j).header.sen Or Len(Trim(sen)) = 0) And _
-         (loc = curClsTserFile.Data(j).header.loc Or Len(Trim(loc)) = 0) And _
-         (Con = curClsTserFile.Data(j).header.Con Or Len(Trim(Con)) = 0) Then 'need this timser
+      If (sen = curClsTserFile.Data(j).Header.sen Or Len(Trim(sen)) = 0) And _
+         (loc = curClsTserFile.Data(j).Header.loc Or Len(Trim(loc)) = 0) And _
+         (Con = curClsTserFile.Data(j).Header.Con Or Len(Trim(Con)) = 0) Then 'need this timser
         lTs.Add curClsTserFile.Data(j)
       End If
     Next j
@@ -1037,13 +1048,13 @@ Private Function FillDBF(ParamArray datasets()) As clsDBF
       Exit Function
     End If
   Next
-  dbf.NumFields = DataSetIndex
+  dbf.numFields = DataSetIndex
   dbf.NumRecords = NVALS
-  dbf.FieldName(1) = "DATE"
+  dbf.fieldName(1) = "DATE"
   dbf.FieldLength(1) = 8
   dbf.FieldType(1) = "D"
-  For DataSetIndex = 2 To dbf.NumFields
-    dbf.FieldName(DataSetIndex) = lTs(DataSetIndex).attrib("DESC")
+  For DataSetIndex = 2 To dbf.numFields
+    dbf.fieldName(DataSetIndex) = lTs(DataSetIndex).Attrib("DESC")
     dbf.FieldLength(DataSetIndex) = 8
     dbf.FieldType(DataSetIndex) = "N"
     dbf.FieldDecimalCount(DataSetIndex) = 3
@@ -1053,7 +1064,7 @@ Private Function FillDBF(ParamArray datasets()) As clsDBF
     dbf.CurrentRecord = ValueIndex
     J2Date lTs(2).dates.Value(ValueIndex) - 1, dates
     dbf.Value(1) = dates(0) & Format(dates(1), "00") & Format(dates(2), "00")
-    For DataSetIndex = 2 To dbf.NumFields
+    For DataSetIndex = 2 To dbf.numFields
       dbf.Value(DataSetIndex) = NumFmted(lTs(DataSetIndex).Value(ValueIndex), 8, 3)
     Next
   Next

@@ -187,6 +187,11 @@ Private Sub ReceiveMessage(FirstWord As String, Rest As String)
       M = M & edatim(i) & " "
     Next
     WriteParent M & outlev & " " & spout & " " & runfg & " " & emfg & " " & rninfo
+  Case "GLOPRMI"
+    Dim iVal&, parmname$
+    parmname = StrRetRem(s)
+    F90_GLOPRMI iVal, parmname, Len(parmname)
+    WriteParent CStr(iVal)
   Case "GETOCR"
     Dim itype&, noccur&
     itype = Rest

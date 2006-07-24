@@ -42,12 +42,16 @@ HelpFile=""
 NoControlUpgrade=1
 Title="ATCoCtl"
 ExeName32="ATCoCtl.ocx"
+Path32="..\..\Support\systemATC"
 Command32=""
 Name="ATCoCtl"
 HelpContextID="0"
 Description="Aqua Terra Consultants Common Controls"
+CompatibleMode="2"
+CompatibleEXE32="..\..\..\2.3b5\Support\systemATC\ATCoCtl.ocx"
+VersionCompatible32="1"
 MajorVer=2
-MinorVer=23
+MinorVer=26
 RevisionVer=0
 AutoIncrementVer=0
 ServerSupportFiles=0
@@ -71,6 +75,8 @@ Retained=0
 ThreadPerObject=0
 MaxNumberOfThreads=1
 ThreadingModel=1
+DebugStartupOption=1
+DebugStartupComponent=ATCoBrowse
 
 [MS Transaction Server]
 AutoRefresh=1

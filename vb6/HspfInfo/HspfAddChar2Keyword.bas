@@ -16,6 +16,7 @@ Function AddChar2Keyword(k As String) As String
     Case "PEST-AD-FLAG": kwd = kwd & "S"
     Case "PHOS-AD-FLAG": kwd = kwd & "S"
     Case "TRAC-AD-FLAG": kwd = kwd & "S"
+    Case "PLNK-AD-FLAG": kwd = kwd & "S"
     Case "HYDR-CATEGOR": kwd = kwd & "Y"
     Case Else
   End Select

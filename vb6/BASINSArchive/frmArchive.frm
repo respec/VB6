@@ -4,15 +4,15 @@ Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmArchive 
    Caption         =   "BASINS Archive"
-   ClientHeight    =   5790
-   ClientLeft      =   165
-   ClientTop       =   735
-   ClientWidth     =   8025
+   ClientHeight    =   5796
+   ClientLeft      =   132
+   ClientTop       =   708
+   ClientWidth     =   8028
    HelpContextID   =   26
    Icon            =   "frmArchive.frx":0000
    LinkTopic       =   "Form1"
-   ScaleHeight     =   5790
-   ScaleWidth      =   8025
+   ScaleHeight     =   5796
+   ScaleWidth      =   8028
    StartUpPosition =   3  'Windows Default
    Begin VB.ComboBox cmbDrives 
       Height          =   315
@@ -35,8 +35,8 @@ Begin VB.Form frmArchive
       TabIndex        =   1
       Top             =   960
       Width           =   7815
-      _ExtentX        =   13785
-      _ExtentY        =   8281
+      _ExtentX        =   13780
+      _ExtentY        =   8276
       _Version        =   393216
       Tabs            =   4
       TabsPerRow      =   4
@@ -57,12 +57,19 @@ Begin VB.Form frmArchive
       TabPicture(1)   =   "frmArchive.frx":08E6
       Tab(1).ControlEnabled=   0   'False
       Tab(1).Control(0)=   "txtRestoreFile"
+      Tab(1).Control(0).Enabled=   0   'False
       Tab(1).Control(1)=   "cboBasinsProject"
+      Tab(1).Control(1).Enabled=   0   'False
       Tab(1).Control(2)=   "fraManifest"
+      Tab(1).Control(2).Enabled=   0   'False
       Tab(1).Control(3)=   "fraButtons(1)"
+      Tab(1).Control(3).Enabled=   0   'False
       Tab(1).Control(4)=   "Label2"
+      Tab(1).Control(4).Enabled=   0   'False
       Tab(1).Control(5)=   "lblRestoreFile"
+      Tab(1).Control(5).Enabled=   0   'False
       Tab(1).Control(6)=   "lblBasinsProjectR"
+      Tab(1).Control(6).Enabled=   0   'False
       Tab(1).ControlCount=   7
       TabCaption(2)   =   "&View/Compare"
       TabPicture(2)   =   "frmArchive.frx":0902
@@ -78,10 +85,15 @@ Begin VB.Form frmArchive
       TabPicture(3)   =   "frmArchive.frx":091E
       Tab(3).ControlEnabled=   0   'False
       Tab(3).Control(0)=   "atxProjectName"
+      Tab(3).Control(0).Enabled=   0   'False
       Tab(3).Control(1)=   "lstFolders"
+      Tab(3).Control(1).Enabled=   0   'False
       Tab(3).Control(2)=   "fraButtons(2)"
+      Tab(3).Control(2).Enabled=   0   'False
       Tab(3).Control(3)=   "lblNewBASINSprojectName"
+      Tab(3).Control(3).Enabled=   0   'False
       Tab(3).Control(4)=   "Label3"
+      Tab(3).Control(4).Enabled=   0   'False
       Tab(3).ControlCount=   5
       Begin VB.Frame fraButtons 
          BorderStyle     =   0  'None
@@ -106,7 +118,7 @@ Begin VB.Form frmArchive
             Caption         =   "Archive"
             BeginProperty Font 
                Name            =   "MS Sans Serif"
-               Size            =   8.25
+               Size            =   7.8
                Charset         =   0
                Weight          =   700
                Underline       =   0   'False
@@ -126,8 +138,8 @@ Begin VB.Form frmArchive
          TabIndex        =   19
          Top             =   3360
          Width           =   4095
-         _ExtentX        =   7223
-         _ExtentY        =   450
+         _ExtentX        =   7218
+         _ExtentY        =   445
          InsideLimitsBackground=   16777215
          OutsideHardLimitBackground=   8421631
          OutsideSoftLimitBackground=   8454143
@@ -157,7 +169,7 @@ Begin VB.Form frmArchive
          Enabled         =   0   'False
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   8.25
+            Size            =   7.8
             Charset         =   0
             Weight          =   700
             Underline       =   0   'False
@@ -193,7 +205,7 @@ Begin VB.Form frmArchive
          Caption         =   "Remove"
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   8.25
+            Size            =   7.8
             Charset         =   0
             Weight          =   700
             Underline       =   0   'False
@@ -210,7 +222,7 @@ Begin VB.Form frmArchive
          Caption         =   "Add..."
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   8.25
+            Size            =   7.8
             Charset         =   0
             Weight          =   700
             Underline       =   0   'False
@@ -229,8 +241,8 @@ Begin VB.Form frmArchive
          TabIndex        =   10
          Top             =   960
          Width           =   7575
-         _ExtentX        =   13361
-         _ExtentY        =   6376
+         _ExtentX        =   13356
+         _ExtentY        =   6371
          SelectionToggle =   0   'False
          AllowBigSelection=   -1  'True
          AllowEditHeader =   0   'False
@@ -293,7 +305,7 @@ Begin VB.Form frmArchive
          Caption         =   "Archive File Details"
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   8.25
+            Size            =   7.8
             Charset         =   0
             Weight          =   700
             Underline       =   0   'False
@@ -326,7 +338,7 @@ Begin VB.Form frmArchive
             Caption         =   "Restore"
             BeginProperty Font 
                Name            =   "MS Sans Serif"
-               Size            =   8.25
+               Size            =   7.8
                Charset         =   0
                Weight          =   700
                Underline       =   0   'False
@@ -343,7 +355,7 @@ Begin VB.Form frmArchive
             Caption         =   "View Archive"
             BeginProperty Font 
                Name            =   "MS Sans Serif"
-               Size            =   8.25
+               Size            =   7.8
                Charset         =   0
                Weight          =   700
                Underline       =   0   'False
@@ -370,7 +382,7 @@ Begin VB.Form frmArchive
             Caption         =   "Build"
             BeginProperty Font 
                Name            =   "MS Sans Serif"
-               Size            =   8.25
+               Size            =   7.8
                Charset         =   0
                Weight          =   700
                Underline       =   0   'False
@@ -440,7 +452,7 @@ Begin VB.Form frmArchive
             Caption         =   "Include all files from:"
             BeginProperty Font 
                Name            =   "MS Sans Serif"
-               Size            =   8.25
+               Size            =   7.8
                Charset         =   0
                Weight          =   700
                Underline       =   0   'False
@@ -458,7 +470,7 @@ Begin VB.Form frmArchive
             Caption         =   "Include referenced &extensions from:"
             BeginProperty Font 
                Name            =   "MS Sans Serif"
-               Size            =   8.25
+               Size            =   7.8
                Charset         =   0
                Weight          =   700
                Underline       =   0   'False
@@ -477,7 +489,7 @@ Begin VB.Form frmArchive
          Caption         =   "New BASINS Project Name:"
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   8.25
+            Size            =   7.8
             Charset         =   0
             Weight          =   700
             Underline       =   0   'False
@@ -495,7 +507,7 @@ Begin VB.Form frmArchive
          Caption         =   "Select BASINS Project Folder from which to Build the New Project:"
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   8.25
+            Size            =   7.8
             Charset         =   0
             Weight          =   700
             Underline       =   0   'False
@@ -513,7 +525,7 @@ Begin VB.Form frmArchive
          Caption         =   "Or write to existing BASINS Project:"
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   8.25
+            Size            =   7.8
             Charset         =   0
             Weight          =   700
             Underline       =   0   'False
@@ -531,7 +543,7 @@ Begin VB.Form frmArchive
          Caption         =   "Select BASINS &Project to Archive:"
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   8.25
+            Size            =   7.8
             Charset         =   0
             Weight          =   700
             Underline       =   0   'False
@@ -549,7 +561,7 @@ Begin VB.Form frmArchive
          Caption         =   "Archive File to Restore &From:"
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   8.25
+            Size            =   7.8
             Charset         =   0
             Weight          =   700
             Underline       =   0   'False
@@ -567,7 +579,7 @@ Begin VB.Form frmArchive
          Caption         =   "Restore as new BASINS &Project:"
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   8.25
+            Size            =   7.8
             Charset         =   0
             Weight          =   700
             Underline       =   0   'False
@@ -592,7 +604,7 @@ Begin VB.Form frmArchive
       Caption         =   "This tool creates, restores, and compares archives of BASINS projects"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   0
          Weight          =   700
          Underline       =   0   'False
@@ -609,7 +621,7 @@ Begin VB.Form frmArchive
       Caption         =   "BASINS &Drive:"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   8.25
+         Size            =   7.8
          Charset         =   0
          Weight          =   700
          Underline       =   0   'False
@@ -705,19 +717,19 @@ Private Sub chkSubdirs_Click(Index As Integer)
   End If
 End Sub
 
-Private Function OpenArchive(FileName As String) As clsTar
+Private Function OpenArchive(filename As String) As clsTar
   Dim i As Long
-  Status "Opening Archive: " & FileName
-  i = pOpenArchives.IndexFromKey(LCase(FileName))
+  Status "Opening Archive: " & filename
+  i = pOpenArchives.IndexFromKey(LCase(filename))
   If i > 0 Then
     Set OpenArchive = pOpenArchives.ItemByIndex(i)
   Else
     Set OpenArchive = New clsTar
-    OpenArchive.TarFilename = FileName
-    pOpenArchives.Add OpenArchive, LCase(FileName)
+    OpenArchive.TarFilename = filename
+    pOpenArchives.Add OpenArchive, LCase(filename)
   End If
-  Status "Opened Archive: " & FileName
-  pLogger.Log "Opened Archive: " & FileName & " (now have " & pOpenArchives.Count & " open)"
+  Status "Opened Archive: " & filename
+  pLogger.Log "Opened Archive: " & filename & " (now have " & pOpenArchives.Count & " open)"
 End Function
 
 Private Sub cmbDrives_Click()
@@ -729,7 +741,7 @@ End Sub
 Private Sub cmdArchive_Click()
   Dim mytar As clsTar
   Dim txtArchiveFile As String
-  Dim fname As String
+  Dim fName As String
   Dim i As Long
   Dim manifest As String
   Dim AllFiles As FastCollection
@@ -748,7 +760,7 @@ Private Sub cmdArchive_Click()
     .CancelError = True
     .FilterIndex = 1
 '    If chkCompress.Value = vbChecked Then
-      .FileName = BasinsProjectName & ".tar.gz"
+      .filename = BasinsProjectName & ".tar.gz"
       .DefaultExt = ".tar.gz"
 '    Else
 '      .filename = BasinsProjectName & ".tar"
@@ -760,13 +772,13 @@ Private Sub cmdArchive_Click()
 '    If chkCompress.Value = vbChecked Then
 '      If LCase(Right(.filename, 3)) <> ".gz" Then .filename = .filename & ".gz"
 '    End If
-    If FileExists(.FileName) Then
-      If MsgBox("BASINS Archive " & .FileName & " already exists, overwrite it?", _
+    If FileExists(.filename) Then
+      If MsgBox("BASINS Archive " & .filename & " already exists, overwrite it?", _
         vbYesNo, "Archive") = vbNo Then GoTo NoAction
     End If
     
-    If LCase(Right(.FileName, 3)) = ".gz" Then
-      txtArchiveFile = Left(.FileName, Len(.FileName) - 3)
+    If LCase(Right(.filename, 3)) = ".gz" Then
+      txtArchiveFile = Left(.filename, Len(.filename) - 3)
       If FileExists(txtArchiveFile) Then
         If MsgBox("BASINS Archive " & txtArchiveFile & " already exists, overwrite it?", _
           vbYesNo, "Archive") = vbNo Then GoTo NoAction
@@ -777,7 +789,7 @@ Private Sub cmdArchive_Click()
           vbYesNo, "Archive") = vbNo Then GoTo NoAction
       End If
     End If
-    txtArchiveFile = .FileName
+    txtArchiveFile = .filename
   End With
   
   If Len(txtArchiveFile) = 0 Then
@@ -806,16 +818,16 @@ Private Sub cmdArchive_Click()
     manifest = manifest & "CreatedOn: " & APIComputerName & vbCrLf
     
     'Write to a temporary file to get a current time stamp
-    fname = GetTmpFileName
-    SaveFileString fname, manifest
-    mytar.AppendFileFromDisk fname, "manifest.txt"
-    Kill fname
+    fName = GetTmpFileName
+    SaveFileString fName, manifest
+    mytar.AppendFileFromDisk fName, "manifest.txt"
+    Kill fName
     
-    fname = BasinsDrive & "\basins\apr\" & BasinsProjectName & ".apr"
-    Status "Reading " & FilenameNoPath(fname)
+    fName = BasinsDrive & "\basins\apr\" & BasinsProjectName & ".apr"
+    Status "Reading " & FilenameNoPath(fName)
     'myTar.AppendFileFromDisk fname, "apr\" & fname
     
-    Set AllFiles = AllFilesInAPR(fname)
+    Set AllFiles = AllFilesInAPR(fName)
     
     If chkDataProject.Value = vbChecked Then
       If chkSubdirs(0).Value = vbChecked Then
@@ -835,16 +847,16 @@ Private Sub cmdArchive_Click()
       Next vOutDir
     End If
     For Each vFilename In AllFiles
-      fname = vFilename
-      If FileExists(fname) Then
+      fName = vFilename
+      If FileExists(fName) Then
         Status "Appending " & vFilename
-        If mytar.AppendFileFromDisk(fname, Mid(vFilename, 11)) Then 'Save with "X:\Basins\" trimmed
+        If mytar.AppendFileFromDisk(fName, Mid(vFilename, 11)) Then 'Save with "X:\Basins\" trimmed
           'pLogger.Log "Appended " & fname 'status produces message too
         Else
-          pLogger.Log "Did not append " & fname & " - " & mytar.ErrorDescription
+          pLogger.Log "Did not append " & fName & " - " & mytar.ErrorDescription
         End If
       Else
-        pLogger.Log "File not found: " & fname
+        pLogger.Log "File not found: " & fName
       End If
     Next
     Status "Compressing archive"
@@ -868,7 +880,7 @@ Private Function AllFilesInAPR(APRfilename As String) As FastCollection
   Dim lapr As String 'Lcase(apr)
   Dim auxShape As String
   Dim nextStart As Long, nextStartO As Long, nextStop As Long, nextStopQ As Long
-  Dim fname As String
+  Dim fName As String
   Dim path As String
   Dim BasinsFolderName As String
   Dim i As Long
@@ -888,10 +900,10 @@ Private Function AllFilesInAPR(APRfilename As String) As FastCollection
   End If
   Status "In AllFilesInAPR: BasinsFolderName " & BasinsFolderName
 
-  fname = BasinsDrive & "basins\data\" & BasinsFolderName & "\prj.odb"
-  If FileExists(fname) Then
-    retval.Add fname, LCase(fname)
-    Status "In AllFilesInAPR: Adding " & fname
+  fName = BasinsDrive & "basins\data\" & BasinsFolderName & "\prj.odb"
+  If FileExists(fName) Then
+    retval.Add fName, LCase(fName)
+    Status "In AllFilesInAPR: Adding " & fName
   End If
   
   nextStop = 1
@@ -903,28 +915,44 @@ Private Function AllFilesInAPR(APRfilename As String) As FastCollection
       nextStop = nextStopQ
     End If
       
-    fname = Mid(apr, nextStart, nextStop - nextStart)
-    fname = ReplaceString(fname, "/", "\")
-    If Mid(fname, 2, 1) <> ":" Then
-      fname = BasinsDrive & fname
+    fName = Mid(apr, nextStart, nextStop - nextStart)
+    fName = ReplaceString(fName, "/", "\")
+    If Mid(fName, 2, 1) <> ":" Then
+      fName = BasinsDrive & fName
     End If
-    path = PathNameOnly(fname)
-    If FileExists(fname) Then
-      If FileExt(fname) = "shp" Then
-        auxShape = Dir(FilenameNoExt(fname) & ".sh*")
+    path = PathNameOnly(fName)
+    If FileExists(fName) Then
+      If FileExt(fName) = "shp" Then
+        auxShape = Dir(FilenameNoExt(fName) & ".sh*")
       Else
-        auxShape = Dir(fname)
+        auxShape = Dir(fName)
       End If
       
       While Len(auxShape) > 0
-        fname = path & "\" & auxShape
-        If chkExtensions = 0 And InStr(LCase(fname), "extensions") > 0 Then
+        fName = path & "\" & auxShape
+        If chkExtensions = 0 And InStr(LCase(fName), "extensions") > 0 Then
           'skip
-        ElseIf retval.KeyExists(LCase(fname)) Then
+        ElseIf retval.KeyExists(LCase(fName)) Then
           'skip, already added
         Else
-          retval.Add fname, LCase(fname)
-          Status "In AllFilesInAPR: Adding " & fname
+          retval.Add fName, LCase(fName)
+          Status "In AllFilesInAPR: Adding " & fName
+        End If
+        auxShape = Dir 'more???
+      Wend
+    ElseIf (FileExt(fName) = "vat") Or ((FileExists(fName, True)) And FileExists(fName & "\hdr.adf")) Then
+      'special case for arcinfo grids, get all files in 'path'
+      If (FileExt(fName) <> "vat") Then
+        path = fName
+      End If
+      auxShape = Dir(path & "/*.*")
+      While Len(auxShape) > 0
+        fName = path & "\" & auxShape
+        If retval.KeyExists(LCase(fName)) Then
+          'skip, already added
+        Else
+          retval.Add fName, LCase(fName)
+          Status "In AllFilesInAPR: Adding " & fName
         End If
         auxShape = Dir 'more???
       Wend
@@ -969,7 +997,7 @@ Public Function BuildNewBasinsApr(PathName$, ProjectName$) As Boolean
   Dim istr As Long
   Dim iend As Long
   Dim ProjectFolder As String
-  Dim fname As String
+  Dim fName As String
   Dim ipos As Long
   Dim shapetype As String
   Dim iresp As Long
@@ -1008,8 +1036,8 @@ Public Function BuildNewBasinsApr(PathName$, ProjectName$) As Boolean
               FileCopy basins_dir & "\data\dummy.dbf", ts
             ElseIf LCase(Right(ts, 3)) = "shp" Then
               'need to figure out if point, line, or polygon
-              fname = FilenameNoPath(ReplaceString(ts, "/", "\"))
-              ipos = InStr(1, s, fname)
+              fName = FilenameNoPath(ReplaceString(ts, "/", "\"))
+              ipos = InStr(1, s, fName)
               ipos = InStr(ipos, s, "SubName:")
               istr = InStr(ipos, s, """")
               iend = InStr(istr + 1, s, """")
@@ -1043,7 +1071,7 @@ Private Sub cmdDetails_Click()
   Dim col As Long
   Dim ProjectName As String
   Dim projectType() As String
-  Dim FileName As String
+  Dim filename As String
   Dim realFilenames As FastCollection
   Dim label As String
   Dim newMap As New frmMap
@@ -1070,10 +1098,10 @@ Private Sub cmdDetails_Click()
         Set realFilenames = New FastCollection
         For col = 1 To .cols - 1
           ProjectName = .ColTitle(col)
-          FileName = ""
+          filename = ""
           Select Case projectType(col)
             Case "apr"
-              FileName = Left(ProjectName, 10) & ReplaceStringNoCase(label, PROJECT_PLACEHOLDER, FilenameOnly(ProjectName))
+              filename = Left(ProjectName, 10) & ReplaceStringNoCase(label, PROJECT_PLACEHOLDER, FilenameOnly(ProjectName))
             Case "tar", "gz"
               Set mytar = OpenArchive(ProjectName)
               tarProjectName = mytar.ArchiveFilenames.ItemByIndex(1)
@@ -1088,18 +1116,18 @@ Private Sub cmdDetails_Click()
               ProjectName = ReplaceString(ProjectName, "/", "\")
               tarIndex = mytar.FileIndexByName(ReplaceString(ReplaceStringNoCase(label, PROJECT_PLACEHOLDER, FilenameOnly(ProjectName)), "\", "/"))
               If tarIndex > 0 Then
-                FileName = GetTmpPath & "\" & TEMP_PREFIX & "0_" & FilenameNoPath(label)
+                filename = GetTmpPath & "\" & TEMP_PREFIX & "0_" & FilenameNoPath(label)
                 For tmpIndex = 1 To 9
-                  If FileExists(FileName) Then Exit For
-                  FileName = GetTmpPath & "\" & TEMP_PREFIX & tmpIndex & "_" & FilenameNoPath(label)
+                  If FileExists(filename) Then Exit For
+                  filename = GetTmpPath & "\" & TEMP_PREFIX & tmpIndex & "_" & FilenameNoPath(label)
                 Next
-                pLogger.Log "Restoring " & label & " to " & FileName
-                TempFiles.Add FileName
-                mytar.ExtractFile tarIndex, PathNameOnly(FileName), FilenameNoPath(FileName)
+                pLogger.Log "Restoring " & label & " to " & filename
+                TempFiles.Add filename
+                mytar.ExtractFile tarIndex, PathNameOnly(filename), FilenameNoPath(filename)
               End If
           End Select
-          If Not FileExists(FileName) Then FileName = ""
-          realFilenames.Add FileName
+          If Not FileExists(filename) Then filename = ""
+          realFilenames.Add filename
         Next
         If .row = row And row < .Rows Then
           newMap.Add label, realFilenames, True
@@ -1125,6 +1153,7 @@ Private Sub cmdRestore_Click()
   Dim manifest As String
   Dim BasinsProjectName As String
   Dim AllNone As String
+  Dim addslash As String
   
   Me.MousePointer = vbHourglass
   DoEvents
@@ -1175,7 +1204,12 @@ Private Sub cmdRestore_Click()
     Status "Checking for conflicting files in archive"
     For i = 1 To ArchiveFilenames.Count
       If ArchiveFilenames(i) <> "manifest.txt" Then
-        f = BasinsDrive & "\basins" & ReplaceString(ArchiveFilenames(i), "/", "\")
+        If Left(ArchiveFilenames(i), 1) <> "\" Then
+          addslash = "\"
+        Else
+          addslash = ""
+        End If
+        f = BasinsDrive & "\basins" & addslash & ReplaceString(ArchiveFilenames(i), "/", "\")
         f = ReplaceStringNoCase(f, "\" & oldProject & ".apr", "\" & BasinsProjectName & ".apr")
         f = ReplaceStringNoCase(f, "\" & oldProject & "\", "\" & BasinsProjectName & "\")
         If FileExists(f) Then
@@ -1269,9 +1303,9 @@ Private Sub cmdCompare_Click()
     On Error GoTo SkipIt
     .ShowOpen
     On Error GoTo ErrHand
-    If Len(.FileName) > 0 Then
-      If FileExists(.FileName) Then
-        AddCompare .FileName
+    If Len(.filename) > 0 Then
+      If FileExists(.filename) Then
+        AddCompare .filename
         SetCompareColors
       End If
     End If
@@ -1283,7 +1317,7 @@ ErrHand:
   pLogger.Log Err.Description, "cmdCompare Error"
 End Sub
   
-Private Sub AddCompare(FileName As String)
+Private Sub AddCompare(filename As String)
   Dim fIndex As Long
   Dim row As Long 'row in agdCompare
   Dim col As Long 'column in agdCompare
@@ -1296,36 +1330,36 @@ Private Sub AddCompare(FileName As String)
   On Error GoTo ErrHand
   
   For col = 1 To agdCompare.cols - 1
-    If LCase(agdCompare.ColTitle(col)) = LCase(FileName) Or _
+    If LCase(agdCompare.ColTitle(col)) = LCase(filename) Or _
          Len(agdCompare.ColTitle(col)) = 0 Then Exit For
   Next
   
   agdCompare.ColTitle(0) = "File"
-  agdCompare.ColTitle(col) = FileName
+  agdCompare.ColTitle(col) = filename
   agdCompare.ColAlignment(col) = 7
 
-  Select Case LCase(FileExt(FileName))
+  Select Case LCase(FileExt(filename))
     Case "apr"
-      ProjectName = FilenameOnly(FileName)
-      Set tmpFilenames = AllFilesInAPR(FileName)
+      ProjectName = FilenameOnly(filename)
+      Set tmpFilenames = AllFilesInAPR(filename)
       For fIndex = 1 To tmpFilenames.Count
-        FileName = tmpFilenames.ItemByIndex(fIndex)
+        filename = tmpFilenames.ItemByIndex(fIndex)
         thisFileDetails = ""
-        If FileExists(FileName) Then
-          If chkDetails(0).Value = vbChecked Then thisFileDetails = Format(FileLen(FileName), "###,###,###,###")
-          If chkDetails(1).Value = vbChecked Then thisFileDetails = thisFileDetails & "  " & FileDateTime(FileName)
+        If FileExists(filename) Then
+          If chkDetails(0).Value = vbChecked Then thisFileDetails = Format(FileLen(filename), "###,###,###,###")
+          If chkDetails(1).Value = vbChecked Then thisFileDetails = thisFileDetails & "  " & FileDateTime(filename)
           details.Add thisFileDetails
           'details.Add Format(FileLen(filename), "###,###,###,###")
         Else
           details.Add "File not found"
         End If
-        FileName = Mid(FileName, 11)
-        If Len(ProjectName) > 0 Then FileName = ReplaceStringNoCase(FileName, ProjectName, PROJECT_PLACEHOLDER)
-        curFilenames.Add FileName, LCase(FileName)
+        filename = Mid(filename, 11)
+        If Len(ProjectName) > 0 Then filename = ReplaceStringNoCase(filename, ProjectName, PROJECT_PLACEHOLDER)
+        curFilenames.Add filename, LCase(filename)
       Next
     Case "tar", "gz"
       Dim mytar As clsTar
-      Set mytar = OpenArchive(FileName)
+      Set mytar = OpenArchive(filename)
       Set tmpFilenames = mytar.ArchiveFilenames
       For fIndex = 1 To tmpFilenames.Count
         thisFileDetails = ""
@@ -1333,18 +1367,18 @@ Private Sub AddCompare(FileName As String)
         If chkDetails(1).Value = vbChecked Then thisFileDetails = thisFileDetails & "  " & mytar.FileDate(fIndex)
         details.Add thisFileDetails
         
-        FileName = ReplaceString(tmpFilenames.ItemByIndex(fIndex), "/", "\")
-        If LCase(FileExt(FileName)) = "apr" Then ProjectName = FilenameOnly(FileName)
-        If Len(ProjectName) > 0 Then FileName = ReplaceStringNoCase(FileName, ProjectName, PROJECT_PLACEHOLDER)
-        curFilenames.Add FileName, LCase(FileName)
+        filename = ReplaceString(tmpFilenames.ItemByIndex(fIndex), "/", "\")
+        If LCase(FileExt(filename)) = "apr" Then ProjectName = FilenameOnly(filename)
+        If Len(ProjectName) > 0 Then filename = ReplaceStringNoCase(filename, ProjectName, PROJECT_PLACEHOLDER)
+        curFilenames.Add filename, LCase(filename)
       Next
   End Select
   
   With agdCompare
     For fIndex = 1 To curFilenames.Count
-      FileName = curFilenames.key(fIndex)
+      filename = curFilenames.key(fIndex)
       For row = 1 To agdCompare.Rows
-        If LCase(.TextMatrix(row, 0)) = FileName Then GoTo SetDetails
+        If LCase(.TextMatrix(row, 0)) = filename Then GoTo SetDetails
       Next
       'Add a new row if file was not found in grid
       If row = 2 And agdCompare.TextMatrix(1, 0) = "" Then row = 1
@@ -1727,7 +1761,7 @@ Private Sub txtRestoreFile_MouseDown(Button As Integer, Shift As Integer, x As S
     On Error GoTo SkipIt
     .ShowOpen
     On Error GoTo ErrHandler
-    txtRestoreFile = .FileName
+    txtRestoreFile = .filename
     cboBasinsProject = FilenameOnly(FilenameOnly(txtRestoreFile))
   End With
   Set mytar = OpenArchive(txtRestoreFile)

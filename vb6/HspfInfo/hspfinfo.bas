@@ -82,13 +82,13 @@ Attribute VB_Name = "HSPFmsg"
         Call F90_WMSGTT(fmsg, SCLU, SGRP, initfg, olen, cont, obuff)
         With myRec
           'add each block name to the block definition table
-          If Trim(Mid(obuff, 1, 6)) <> "ACIDPH" Then
+          'If Trim(Mid(obuff, 1, 6)) <> "ACIDPH" Then
             .AddNew
             !Name = Trim(Mid(obuff, 1, 8))
             !BlockID = SCLU
             !id = (100 * i) + CLng(Mid(obuff, 10, 3))
             .Update
-          End If
+          'End If
         End With
         initfg = 0
       Loop
@@ -207,7 +207,7 @@ Attribute VB_Name = "HSPFmsg"
                 adjLen = 0
               End If
               
-              If Mid(kwd, 1, 5) <> "ACID-" Then
+              'If Mid(kwd, 1, 5) <> "ACID-" Then
                 'need to update some table names that were truncated
                 kwd = AddChar2Keyword(kwd)
                 
@@ -270,12 +270,21 @@ Attribute VB_Name = "HSPFmsg"
                         !metricminimum = lrmetmin(lapos(j - 1) - 1)
                         !metricmaximum = lrmetmax(lapos(j - 1) - 1)
                         !metricDefault = lrmetdef(lapos(j - 1) - 1)
+                      ElseIf !Type = "C" Then
+                        'special case for some 4character category parms
+                        If lflen(j - 1) = 4 Then
+                          If (Left(Trim(lfdnam(j - 1)), 4) = "CTAG" Or Left(Trim(lfdnam(j - 1)), 5) = "CFVOL" Or Trim(lfdnam(j - 1)) = "CEVAP" _
+                            Or Trim(lfdnam(j - 1)) = "CPREC" Or Trim(lfdnam(j - 1)) = "ICAT") Then
+                            !length = 2
+                            !StartCol = lscol(j - 1) + adjLen + 2
+                          End If
+                        End If
                       End If
                       .Update
                     End If
                   Next j
                 End With
-              End If
+              'End If
             End If
             tabno = tabno + 1
           Loop
@@ -310,6 +319,7 @@ Attribute VB_Name = "HSPFmsg"
         Call F90_WMSGTH(gptr, fptr(0))
         Do While cont = 1
           If gptr > 0 Then
+            olen = 80
             Call F90_WMSGTT(fmsg, SCLU, gptr, initfg, olen, cont, obuff)
             If Len(tempbuff) = 0 Then
               tempbuff = Trim(obuff)
@@ -342,6 +352,7 @@ Attribute VB_Name = "HSPFmsg"
               tempbuff = ""
               SCLU = -1
               Do While cont = 1
+                olen = 80
                 Call F90_WMSGTT(fmsg, SCLU, fptr(k - 1), initfg, olen, cont, obuff)
                 If Len(tempbuff) = 0 Then
                   tempbuff = Trim(obuff)
@@ -451,6 +462,7 @@ Attribute VB_Name = "HSPFmsg"
         !ltval4 = CSng(Mid(obuff, 73, 8))
         'now get second line of details
         initfg = 0
+        olen = 80
         Call F90_WMSGTT(fmsg, !SCLU, !SGRP, initfg, olen, cont, obuff)
         !defn = Trim(Mid(obuff, 1, 43))
         If Len(Trim(Mid(obuff, 49, 8))) > 0 Then

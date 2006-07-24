@@ -6,7 +6,7 @@ Public Function CompareComponents(localNode As ChilkatXml, availNode As ChilkatX
   Dim i As Long
   
   If localNode Is Nothing Then
-    s = "(Not currently installed)"
+    s = "" '(Not currently installed)
   ElseIf availNode Is Nothing Then
     s = "" 'No update available, don't bother reporting
   Else
