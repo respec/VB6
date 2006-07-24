@@ -2,7 +2,7 @@ Attribute VB_Name = "modUpdateCheck"
 Option Explicit
 
 Public Const cAppLabel As String = "Check for Updates"
-Public Const cDefaultServerURL = "http://hspf.com/pub/basins3/update3.xml"
+Public Const cDefaultServerURL = "http://hspf.com/cgi-bin/update?app=BASINS&version=3.1&release=7"
 Private Const cTmpFileTag As String = "{tmpfile}"
 
 Public gCancelled As Boolean
@@ -44,15 +44,16 @@ Sub Main()
     If GetSetting(gAppName, "Update", "LastCheck", "Never") = Date Then Exit Sub
   End If
   SaveSetting gAppName, "Update", "LastCheck", Date
-    
-  findPos = InStr(LCase(Command), "/url=""")
-  If findPos > 0 Then
-    gUpdateURL = Mid(Command, findPos + 6)
-    findPos = InStr(gUpdateURL, """")
-    If findPos > 0 Then gUpdateURL = Left(gUpdateURL, findPos - 1)
-  Else
-    gUpdateURL = GetSetting(gAppName, "Update", "URL3", cDefaultServerURL)
-  End If
+
+  gUpdateURL = cDefaultServerURL
+  'findPos = InStr(LCase(Command), "/url=""")
+  'If findPos > 0 Then
+  '  gUpdateURL = Mid(Command, findPos + 6)
+  '  findPos = InStr(gUpdateURL, """")
+  '  If findPos > 0 Then gUpdateURL = Left(gUpdateURL, findPos - 1)
+  'Else
+  '  gUpdateURL = GetSetting(gAppName, "Update", "URL3", cDefaultServerURL)
+  'End If
     
   findPos = InStr(LCase(Command), "/apppath=""")
   If findPos > 0 Then

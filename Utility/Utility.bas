@@ -402,19 +402,31 @@ Attribute NumFmtRE.VB_Description = "Converts single-precision number to string 
 
   If rtmp <> 0 And maxWidth > 0 Then
     If Len(retval) > maxWidth Then
-      'Determine appropriate log syntax
-      LogVal = Abs(Log10(Abs(rtmp)))
-      If LogVal >= 100 Then
-        expFormat = "e-###"
-      ElseIf LogVal >= 10 Then
-        expFormat = "e-##"
+      If Len(retval) - maxWidth = 1 And Left(retval, 2) = "0." Then
+        'special case, can just eliminate leading zero
+        retval = Mid(retval, 2)
+      ElseIf Len(retval) - maxWidth = 1 And Left(retval, 3) = "-0." Then
+        'special case, can just eliminate leading zero
+        retval = "-" & Mid(retval, 3)
       Else
-        expFormat = "e-#"
+        'Determine appropriate log syntax
+        LogVal = Abs(Log10(Abs(rtmp)))
+        If LogVal >= 100 Then
+          expFormat = "e-###"
+        ElseIf LogVal >= 10 Then
+          expFormat = "e-##"
+        Else
+          expFormat = "e-#"
+        End If
+        'Set appropriate decimal position
+        DecimalPlaces = maxWidth - Len(expFormat) - 2
+        'If DecimalPlaces < 1 Then DecimalPlaces = 1  'pbd changed to accomodate 1.e-5
+        If (DecimalPlaces < 0) Or (DecimalPlaces = 0 And rtmp > 1#) Then
+          DecimalPlaces = 1
+        End If
+        
+        retval = Format(rtmp, "#." & String(DecimalPlaces, "#") & expFormat)
       End If
-      'Set appropriate decimal position
-      DecimalPlaces = maxWidth - Len(expFormat) - 2
-      If DecimalPlaces < 1 Then DecimalPlaces = 1
-      retval = Format(rtmp, "#." & String(DecimalPlaces, "#") & expFormat)
     End If
   End If
   NumFmtRE = retval
