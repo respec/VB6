@@ -6,7 +6,7 @@ BEGIN
   DataSourceBehavior  = 0  'vbNone
   MTSTransactionMode  = 0  'NotAnMTSObject
 END
-Attribute VB_Name = "clsUSGSdaily"
+Attribute VB_Name = "clsUSGSmeasure"
 Attribute VB_GlobalNameSpace = True
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
@@ -14,8 +14,8 @@ Attribute VB_Exposed = True
 Option Explicit
 Implements clsWebData
 
-Private Const pLabel = "USGS Daily Streamflow"
-Private Const pClassName = "clsUSGSdaily"
+Private Const pLabel = "USGS Streamflow Measurements"
+Private Const pClassName = "clsUSGSMeasure"
 Private Const pHelpID = 32
 Private pProvides As ChilkatXml
 Private pErrorDescription As String
@@ -33,9 +33,9 @@ Private Sub Class_Initialize()
       nod2.AddAttribute "format", "RDB"
   
   Set nod1 = pProvides.newChild("criteria", "")
-  Set nod2 = nod1.newChild("discharge_site_no", "")
+  Set nod2 = nod1.newChild("measurement_site_no", "")
       nod2.AddAttribute "multiple", "true"
-      nod2.AddAttribute "label", "Discharge Site Number"
+      nod2.AddAttribute "label", "Measurement Site Number"
         
 '    Set nod2 = pProvides.createElement("begin_date")
 '                                                 nod2.AddAttribute "type", "Date"
@@ -80,7 +80,7 @@ Private Property Get clsWebData_Label() As String
 End Property
 
 Private Property Get clsWebData_Name() As String
-  clsWebData_Name = "clsUSGSdaily"
+  clsWebData_Name = "clsUSGSMeasure"
 End Property
 
 Private Property Get clsWebData_Provides() As ChilkatXml
@@ -113,23 +113,24 @@ Private Function clsWebData_GetData(ByVal aQuery As ChilkatXml, ByRef aResult As
   
   Dim nodStatus As ChilkatXml
   Dim findPos As Long
-  Dim msg As String
+  Dim Msg As String
   Dim basins_dir As String
   Dim suffix As String
   Dim base_url As String
   Dim project_dir As String
+  Dim date_format As String
   
   On Error GoTo ErrHand
   
-  pManager.LogDbg "  clsUsgsDaily GetData entry"
+  pManager.LogDbg "  clsUsgsMeasure GetData entry"
   
-  'http://waterdata.usgs.gov/nwis/dv?cb_00060=on&format=rdb&begin_date=2005-07-13&end_date=2006-07-13&site_no=01591000&referred_module=sw
   basins_dir = pManager.CurrentStatusGetString("basins_dir", CurDir)
   cache_dir = pManager.CurrentStatusGetString("cache_dir") & pClassName & "\"
   project_dir = pManager.CurrentStatusGetString("project_dir")
-'  SHPfilename = project_dir & pManager.CurrentStatusGetString("USGSdailySHPfile", "gage.shp")
-  suffix = pManager.CurrentStatusGetString("USGSdailySaveSuffix", "_dv.txt")
-  base_url = pManager.CurrentStatusGetString("USGSDailyBaseURL", "http://waterdata.usgs.gov/nwis/dv?cb_00060=on")
+'  SHPfilename = project_dir & pManager.CurrentStatusGetString("USGSmeasureSHPfile", "gage.shp")
+  suffix = pManager.CurrentStatusGetString("USGSmeasureSaveSuffix", "_sm.txt")
+  base_url = pManager.CurrentStatusGetString("USGSMeasureBaseURL", "http://nwis.waterdata.usgs.gov/usa/")
+  date_format = pManager.CurrentStatusGetString("USGSMeasureDateFormat", "MM/DD/YYYY")
     
   clsWebData_GetData = True
   
@@ -161,7 +162,7 @@ Private Function clsWebData_GetData(ByVal aQuery As ChilkatXml, ByRef aResult As
     If Len(WDMfilename) > 0 Then
       Set myDownloadFiles = New Collection
     Else 'Save downloaded RDB files in folder inside project_dir if we are not adding to WDM
-      project_dir = project_dir & "USGSflow\"
+      project_dir = project_dir & "USGSmeasure\"
       pManager.LogDbg "Saving RDB files in " & project_dir
     End If
     MkDirPath cache_dir
@@ -173,7 +174,7 @@ Private Function clsWebData_GetData(ByVal aQuery As ChilkatXml, ByRef aResult As
     
     FirstFile = True
     iSite = 0
-    Set lstSites = GetChildrenWithTag(aQuery.GetChildWithTag("criteria"), "discharge_site_no")
+    Set lstSites = GetChildrenWithTag(aQuery.GetChildWithTag("criteria"), "measurement_site_no")
     If lstSites.Count = 0 Then
       Set lstSites = GetChildrenWithTag(aQuery.GetChildWithTag("criteria"), "site_no")
     End If
@@ -181,10 +182,10 @@ Private Function clsWebData_GetData(ByVal aQuery As ChilkatXml, ByRef aResult As
       iSite = iSite + 1
       Set lSite = vSite
       url = base_url
-      url = url & "&format=rdb" & _
-                  "&begin_date=" & begin_date & _
-                  "&end_date=" & end_date & _
-                  "&site_no=" & lSite.Content
+     'If Len(state_abbrev) > 0 Then url = url & LCase(state_abbrev) & "/"
+      url = url & "nwis/measurements?site_no=" & lSite.Content & _
+               "&agency_cd=USGS" & _
+               "&format=rdb"
 
       siteAttributes = "# " & url & vbCrLf
       For iAttr = 0 To lSite.NumAttributes - 1
@@ -192,6 +193,7 @@ Private Function clsWebData_GetData(ByVal aQuery As ChilkatXml, ByRef aResult As
                                 & Space(48 - Len(lSite.GetAttributeName(iAttr))) _
                                                & lSite.GetAttributeValue(iAttr) & vbCrLf
       Next
+     'save_filename = cache_dir & state_abbrev & lSite.Content & suffix
       save_filename = cache_dir & lSite.Content & suffix
       
       If Not pManager.Download(url, save_filename, FirstFile, "Downloading " & pLabel & " (" & iSite & " of " & lstSites.Count & ")", siteAttributes) Then
@@ -200,34 +202,29 @@ Private Function clsWebData_GetData(ByVal aQuery As ChilkatXml, ByRef aResult As
         Exit Function '!!!!!!!!!!!!!!!!!!!
       
       End If
-      msg = WholeFileString(save_filename)
-      
-      findPos = InStr(msg, "<html")
+      Msg = WholeFileString(save_filename)
+      findPos = InStr(Msg, "<HTML>")
       If findPos > 0 Then 'Got an error message or web page, not the data we expected
-        msg = Mid(pManager.ResultString, findPos)
+        Msg = Mid(pManager.ResultString, findPos)
         Kill save_filename
         nFilesNotCreated = nFilesNotCreated + 1
         FilesNotCreated = FilesNotCreated & "   " & FilenameNoPath(save_filename)
-        If InStr(msg, "No data") > 0 Then
+        If InStr(Msg, "No data were found") > 0 Then
           FilesNotCreated = FilesNotCreated & " (no data)"
-        ElseIf InStr(msg, "No site") > 0 Then
-          FilesNotCreated = FilesNotCreated & " (no site)"
         Else
-          FilesNotCreated = FilesNotCreated & " (error)"
-
-'          findPos = InStr(msg, "3>")
-'          If findPos > 0 Then
-'            msg = Mid(msg, findPos + 2)
-'            findPos = InStr(msg, "</")
-'            If findPos > 0 Then msg = Left(msg, findPos - 1)
-'          End If
-'          If Len(msg) < 80 Then
-'            FilesNotCreated = FilesNotCreated & " (" & msg & ")"
-'          Else
-'            msg = Mid(pManager.ResultString, InStr(pManager.ResultString, "<HTML>"))
-'            msg = ReplaceString(msg, "<HEAD>", "<HEAD><base href=""" & base_url & "nwis")
-'            pManager.ShowHTML msg
-'          End If
+          findPos = InStr(Msg, "3>")
+          If findPos > 0 Then
+            Msg = Mid(Msg, findPos + 2)
+            findPos = InStr(Msg, "</")
+            If findPos > 0 Then Msg = Left(Msg, findPos - 1)
+          End If
+          If Len(Msg) < 80 Then
+            FilesNotCreated = FilesNotCreated & " (" & Msg & ")"
+          Else
+            Msg = Mid(pManager.ResultString, InStr(pManager.ResultString, "<HTML>"))
+            Msg = ReplaceString(Msg, "<HEAD>", "<HEAD><base href=""" & base_url & "nwis")
+            pManager.ShowHTML Msg
+          End If
         End If
         FilesNotCreated = FilesNotCreated & vbCrLf
       ElseIf Len(WDMfilename) > 0 Then
@@ -241,7 +238,7 @@ Private Function clsWebData_GetData(ByVal aQuery As ChilkatXml, ByRef aResult As
     If Len(WDMfilename) > 0 Then
       pManager.LogDbg "Saving downloaded data to " & WDMfilename
       On Error GoTo ErrSaveWDM
-      ConvertUsgsDv2Wdm WDMfilename, myDownloadFiles
+      ConvertUsgsSm2Wdm WDMfilename, myDownloadFiles
       'SaveWDMandSHP WDMfilename, SHPfilename, basins_dir, myDownloadFiles
       On Error GoTo ErrHand
     End If
@@ -249,22 +246,22 @@ Private Function clsWebData_GetData(ByVal aQuery As ChilkatXml, ByRef aResult As
 '      pManager.LogDbg "Saving any new stations found to '" & SHPfilename & "'"
 '    End If
     If nFilesNotCreated > 0 Then
-      save_filename = project_dir & "USGSflowNoData.txt"
+      save_filename = project_dir & "USGSmeasureNoData.txt"
       While Len(Dir(save_filename)) > 0
         FileNumber = FileNumber + 1
-        save_filename = project_dir & "USGSflowNoData(" & FileNumber & ").txt"
+        save_filename = project_dir & "USGSmeasureNoData(" & FileNumber & ").txt"
       Wend
       If nFilesNotCreated > 10 Then
         findPos = 1
         For FileNumber = 1 To 10
           findPos = InStr(findPos + 1, FilesNotCreated, vbCr)
         Next
-        msg = Left(FilesNotCreated, findPos) & " (and " & (nFilesNotCreated - 10) & " more)"
+        Msg = Left(FilesNotCreated, findPos) & " (and " & (nFilesNotCreated - 10) & " more)"
       Else
-        msg = FilesNotCreated
+        Msg = FilesNotCreated
       End If
       If pManager.LogMsg("Did not find data for " & nFilesNotCreated & " of " & lstSites.Count & " stations: " & vbCr & vbCr _
-               & msg & vbCr _
+               & Msg & vbCr _
                & "Save this list to " & save_filename & "?", _
                pLabel & " - Some data not found", "+&Yes", "-&No") = 1 Then
         SaveFileString save_filename, FilesNotCreated
@@ -273,7 +270,7 @@ Private Function clsWebData_GetData(ByVal aQuery As ChilkatXml, ByRef aResult As
     
     nodStatus.AddAttribute "complete", "true"
   End If
-  pManager.LogDbg "  clsUsgsDaily GetData exit"
+  pManager.LogDbg "  clsUsgsMeasure GetData exit"
   Exit Function
 
 ErrHand:
@@ -287,7 +284,7 @@ End Function
 'Private Sub SaveWDMandSHP(WDMfilename As String, SHPfilename As String, basins_dir As String, myDownloadFiles As Collection)
 '  Dim Msg As String
 '  Dim tsfile As ATCclsTserFile
-'  Set tsfile = ConvertUsgsDv2Wdm(WDMfilename, myDownloadFiles) ', Attribs)
+'  Set tsfile = ConvertUsgsSm2Wdm(WDMfilename, myDownloadFiles) ', Attribs)
 '  If Len(SHPfilename) > 0 Then
 '    pManager.LogDbg pLabel & " WriteShapeFile " & SHPfilename
 '    WriteShapeFile tsfile, SHPfilename, "LNGDEG", "LATDEG", PopulatedAttributes(tsfile)
@@ -331,7 +328,7 @@ End Property
 
 Private Sub clsWebData_Specify(Optional parent As Object = Nothing, Optional ByVal Index As Long = 0)
 '  Dim cache_dir As String
-  pManager.CurrentStatusUpdateString "USGSSitedischarge", "discharge", "set by " & pLabel
+  pManager.CurrentStatusUpdateString "USGSSitemeasurement", "measurement", "set by " & pLabel
 '  cache_dir = pManager.CurrentStatusGetString("cache_dir")
 '  If Len(cache_dir) > 0 Then
 '    If Len(pManager.CurrentStatusGetString("SHPfilename")) = 0 Then
@@ -344,8 +341,62 @@ End Sub
 Private Property Get clsWebData_Version() As String
   clsWebData_Version = App.Major & "." & App.Minor & "." & App.Revision
 End Property
+'&sort_key=site_no
+'&format=sitefile_output
+'&sitefile_output_format=rdb
+'&column_name=agency_cd
+'&column_name=site_no
+'&column_name=station_nm
+'&column_name=lat_va
+'&column_name=long_va
+'&column_name=dec_lat_va
+'&column_name=dec_long_va
+'&column_name=coord_meth_cd
+'&column_name=coord_acy_cd
+'&column_name=coord_datum_cd
+'&column_name=district_cd
+'&column_name=state_cd
+'&column_name=county_cd
+'&column_name=country_cd
+'&column_name=land_net_ds
+'&column_name=map_nm
+'&column_name=map_scale_fc
+'&column_name=alt_va
+'&column_name=alt_meth_cd
+'&column_name=alt_acy_va
+'&column_name=alt_datum_cd
+'&column_name=huc_cd
+'&column_name=basin_cd
+'&column_name=topo_cd
+'&column_name=station_type_cd
+'&column_name=agency_use_cd
+'&column_name=data_types_cd
+'&column_name=instruments_cd
+'&column_name=construction_dt
+'&column_name=inventory_dt
+'&column_name=drain_area_va
+'&column_name=contrib_drain_area_va
+'&column_name=tz_cd
+'&column_name=local_time_fg
+'&column_name=reliability_cd
+'&column_name=gw_file_cd
+'&column_name=gw_type_cd
+'&column_name=site_use_1_cd
+'&column_name=site_use_2_cd
+'&column_name=site_use_3_cd
+'&column_name=water_use_1_cd
+'&column_name=water_use_2_cd
+'&column_name=water_use_3_cd
+'&column_name=nat_water_use_cd
+'&column_name=aqfr_cd
+'&column_name=aqfr_type_cd
+'&column_name=well_depth_va
+'&column_name=hole_depth_va
+'&column_name=depth_src_cd
+'&column_name=project_no
+'&list_of_search_criteria=state_cd
 
-Private Function ConvertUsgsDv2Wdm(myWDMFileName As String, _
+Private Function ConvertUsgsSm2Wdm(myWDMFileName As String, _
                                 myDownloadFiles As Collection) As ATCclsTserFile
   Dim myWDM As ATCclsTserFile
   Dim myWDMExt As clsTSerWDM
@@ -357,10 +408,11 @@ Private Function ConvertUsgsDv2Wdm(myWDMFileName As String, _
   Dim p As String
   Dim s As String
   Dim iFile As Integer
+  Dim i As Long
     
   Set myWDM = New clsTSerWDM
   Set myWDMExt = myWDM
-  Set ConvertUsgsDv2Wdm = myWDM
+  Set ConvertUsgsSm2Wdm = myWDM
   
   Set myRegistry = New ATCoRegistry
 
@@ -372,10 +424,10 @@ Private Function ConvertUsgsDv2Wdm(myWDMFileName As String, _
 '  myWDMExt.MsgUnit = F90_WDBOPN(CLng(0), p, Len(p))
 
   If FileExists(myWDMFileName) Then
-    myWDM.FileName = myWDMFileName
+    myWDM.Filename = myWDMFileName
   Else
     myWDM.SaveAs myWDMFileName
-    If LCase(myWDM.FileName) <> LCase(myWDMFileName) Then
+    If LCase(myWDM.Filename) <> LCase(myWDMFileName) Then
       pManager.LogDbg pLabel & " could not create WDM file " & myWDMFileName
       
       Exit Function '!!!!!!!!!!!!!!!!!!!!
@@ -383,12 +435,12 @@ Private Function ConvertUsgsDv2Wdm(myWDMFileName As String, _
     End If
   End If
   
-  pManager.LogDbg pLabel & " ConvertUsgsDv2Wdm " & myWDMFileName
+  pManager.LogDbg pLabel & " ConvertUsgsSm2Wdm " & myWDMFileName
 
   'use a registry key for the WDMUtil bin folder (scripts just below)
   p = myRegistry.RegGetString(HKEY_LOCAL_MACHINE, "SOFTWARE\AQUA TERRA Consultants\WDMUtil\ExePath", "")
   If Len(p) = 0 Then p = "c:\vbexperimental\wdmutil"
-  myScriptLocation = p & "\scripts\USGSdvBASINSdownload.ws"
+  myScriptLocation = p & "\scripts\USGSsmBASINSdownload.ws"
   
   Set AllAttributes = myWDM.AvailableAttributes
   
@@ -402,15 +454,15 @@ Private Function ConvertUsgsDv2Wdm(myWDMFileName As String, _
     If pManager.State >= 999 Then Exit Function
     Set myMem = Nothing
     Set myMem = New clsTSerMemory
-    myMem.FileName = myDownloadFileName & "|" & myScriptLocation
+    myMem.Filename = myDownloadFileName & "|" & myScriptLocation
     If myMem.DataCount > 0 Then
-      If UBound(myMem.Data(1).Values) > 1 Then
-        myWDM.AddTimSer myMem.Data(1), TsIdRenum
-        With myWDM.Data(myWDM.DataCount)
+      For i = 1 To myMem.DataCount
+        myWDM.AddTimSer myMem.Data(i), TsIdRenum
+        With myWDM.Data(i)
           'Accessing .Max forces reading all data in dataset
-          pManager.LogDbg myDownloadFileName & " added to WDM. DataCount=" & myWDM.DataCount & ", ID=" & .Header.id & ", Max=" & .Max
+          pManager.LogDbg myDownloadFileName & " added to WDM. DataCount=" & myWDM.DataCount & ", ID=" & .Header.Id & ", Max=" & .Max
         End With
-      End If
+      Next i
     End If
   Next
   Set myMem = Nothing

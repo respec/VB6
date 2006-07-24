@@ -23,7 +23,7 @@ Name="ATCWebDataNLCD"
 HelpContextID="0"
 CompatibleMode="0"
 MajorVer=3
-MinorVer=26
+MinorVer=28
 RevisionVer=0
 AutoIncrementVer=0
 ServerSupportFiles=0
@@ -44,6 +44,7 @@ Retained=0
 ThreadPerObject=0
 MaxNumberOfThreads=1
 ThreadingModel=1
+DebugStartupOption=0
 
 [MS Transaction Server]
 AutoRefresh=1

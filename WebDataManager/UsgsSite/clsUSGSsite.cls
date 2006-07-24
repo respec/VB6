@@ -16,7 +16,6 @@ Implements clsWebData
 
 Private Const pLabel = "USGS Site"
 Private Const pClassName = "clsUSGSsite"
-Private Const pHelpID = 132
 Private Const pDefaultColumns = "&column_name=site_no" _
               & "&column_name=station_nm" _
               & "&column_name=state_cd" _
@@ -97,6 +96,10 @@ Private Sub Class_Initialize()
           nod3.AddAttribute "name", "discharge site number"
           nod3.AddAttribute "type", "string"
           nod3.AddAttribute "selected", "true"
+      Set nod3 = nod2.newChild("measurement_site_no", "")
+          nod3.AddAttribute "name", "measurement site number"
+          nod3.AddAttribute "type", "string"
+          nod3.AddAttribute "selected", "true"
 '      Set nod3 = pProvides.createElement("station_nm")
 '                                                 nod2.appendChild nod3
 '                                                 nod3.AddAttribute "name", "station name"
@@ -162,7 +165,7 @@ Private Sub Class_Initialize()
 End Sub
 
 Private Property Get clsWebData_HelpId() As Long
-  clsWebData_HelpId = pHelpID
+  clsWebData_HelpId = 29
 End Property
 
 Private Property Get clsWebData_Provides() As ChilkatXml
@@ -234,6 +237,14 @@ Private Function clsWebData_GetData(ByVal aQuery As ChilkatXml, ByRef aResult As
     GoSub GetSitesOfDataType
     pManager.CurrentStatusUpdateString "USGSSite" & data_type_requested, "", "completed by " & pLabel
   End If
+  data_type_requested = pManager.CurrentStatusGetString("USGSSitemeasurement")
+  If Len(data_type_requested) > 0 Then
+    base_huc_url = "http://nwis.waterdata.usgs.gov/nwis/measurements"
+    base_existingShapeName = project_dir & pManager.CurrentStatusGetString("USGSSiteLayer" & data_type_requested, "gage")
+    data_type = "&data_type=" & data_type_requested
+    GoSub GetSitesOfDataType
+    pManager.CurrentStatusUpdateString "USGSSite" & data_type_requested, "", "completed by " & pLabel
+  End If
   
   'Type of data at sites not specified
   If Len(data_type) = 0 Then GoSub GetSitesOfDataType
@@ -272,8 +283,8 @@ CreateNewGageDBFfromScratch:
         Set QueryGrandchild = QueryChild.FirstChild
         While Not QueryGrandchild Is Nothing
           Select Case LCase(QueryGrandchild.tag)
-'              Case "huc_2":         urlStarts.Add base_huc_url & "?huc2_cd=" & QueryGrandchild.Content & data_type
-'              Case "state_fips":    urlStarts.Add base_huc_url & "?state_cd=" & QueryGrandchild.Content & data_type
+'              Case "huc_2":         urlStarts.Add "http://waterdata.usgs.gov/nwis/inventory?huc2_cd=" & QueryGrandchild.Content & data_type
+'              Case "state_fips":    urlStarts.Add "http://waterdata.usgs.gov/nwis/inventory?state_cd=" & QueryGrandchild.Content & data_type
 '              Case "state_abbrev":  urlStarts.Add "http://waterdata.usgs.gov/" & LCase(QueryGrandchild.Content) & "/nwis/inventory?" & Mid(data_type, 2)
             Case "huc_cd":        urlStarts.Add base_huc_url & "?" & Mid(data_type, 2) & "&huc_cd=" & LCase(QueryGrandchild.Content)
             Case "obs_count_nu":  obs_count_nu = "&obs_count_nu=" & QueryGrandchild.Content
