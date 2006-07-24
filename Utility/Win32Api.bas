@@ -1138,8 +1138,8 @@ Public Function GetTmpFileName() As String
   Dim path As String
 
   path = GetTmpPath
-  FileName = SPACE(Len(path) + 256)
-  Call GetTempFileNameA(path, App.EXEName, &H0, FileName)
+  FileName = Space(Len(path) + 256)
+  Call GetTempFileNameA(path, App.exeName, &H0, FileName)
   GetTmpFileName = Left(FileName, InStr(FileName, Chr$(0)) - 1)
 End Function
 
@@ -1183,7 +1183,7 @@ Public Function GetSpecialFolder(lFolder As SpecialFolderType) As String
   Dim lp As ITEMIDLIST
   Dim tmpstr As String, hwnd As Long
   SHGetSpecialFolderLocation hwnd, lFolder, lp
-  tmpstr = SPACE$(255)
+  tmpstr = Space$(255)
   SHGetPathFromIDList lp.mkid, tmpstr
   If InStr(tmpstr, Chr$(0)) > 0 Then
       tmpstr = Left$(tmpstr, InStr(tmpstr, Chr$(0)) - 1)
@@ -1195,7 +1195,7 @@ End Function
 Public Function FindAssociatedApplication(dataFile As String) As String
   Dim created As Boolean
   Dim appName As String
-  appName = SPACE(255)
+  appName = Space(255)
   
   If Not FileExists(dataFile) Then
     SaveFileString dataFile, ""
@@ -1215,7 +1215,7 @@ Public Function GetLogicalDriveStringsAsCollection() As Collection
   Dim lCol As New Collection
   
   lBufferLen = 512
-  lBuffer = SPACE(lBufferLen)
+  lBuffer = Space(lBufferLen)
 
   GetLogicalDriveStrings lBufferLen, lBuffer
   
@@ -1256,7 +1256,7 @@ Public Function GetExeFullPath() As String
   Dim i As Long
   Dim s As String * 250
   
-  hModule = GetModuleHandle(App.EXEName & ".exe")
+  hModule = GetModuleHandle(App.exeName & ".exe")
   i = GetModuleFileName(hModule, s, 250)
   GetExeFullPath = Left(s, InStr(s, Chr(0)) - 1)
 End Function
@@ -1280,7 +1280,7 @@ Public Function APIComputerName() As String
   Dim UName As String
   Dim UNameLen As Long
   
-  UName = SPACE(255)
+  UName = Space(255)
   UNameLen = 255
   
   If GetComputerName(UName, UNameLen) <> 0 Then 'We got the name
@@ -1294,7 +1294,7 @@ Public Function APIUserName() As String
   Dim UName As String
   Dim UNameLen As Long
   
-  UName = SPACE(255)
+  UName = Space(255)
   UNameLen = 255
   
   If GetUserName(UName, UNameLen) <> 0 Then 'We got the user's name
@@ -1420,7 +1420,7 @@ End Function
 Public Function GetWindowsDir() As String
   Dim strBuf As String
 
-  strBuf = SPACE$(gintMAX_SIZE)
+  strBuf = Space$(gintMAX_SIZE)
   '
   'Get the windows directory and then trim the buffer to the exact length
   'returned and add a dir sep (backslash) if the API didn't return one
@@ -1434,7 +1434,7 @@ End Function
 Public Function GetWindowsSysDir() As String
     Dim strBuf As String
 
-    strBuf = SPACE$(gintMAX_SIZE)
+    strBuf = Space$(gintMAX_SIZE)
     '
     'Get the system directory and then trim the buffer to the exact length
     'returned and add a dir sep (backslash) if the API didn't return one

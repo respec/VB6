@@ -1,5 +1,4 @@
-clsUSGSdaily = 431, -1, 992, 790, C
-HassLibs = 0, 0, 0, 0, C
+clsUSGSdaily = 115, -5, 676, 775, C
 UTILITY = 0, 0, 0, 0, C
 modShell = 110, 110, 764, 540, C
 utilXml = 0, 0, 0, 0, C

@@ -1,9 +1,9 @@
 Type=OleDll
-Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#C:\WINDOWS\System32\stdole2.tlb#OLE Automation
-Reference=*\A..\..\ATCData\ATCData.vbp
-Reference=*\A..\WebDataManager.vbp
-Reference=*\G{18F0904D-D01A-4967-90D6-FB9B55A332EC}#1.0#0#..\..\Utility\FColl.dll#Edanmo's FastCollection Class v1
+Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#C:\WINNT\System32\stdole2.tlb#OLE Automation
+Reference=*\G{653D928A-80CE-11D3-913A-00A024C11E04}#2.b#0#..\..\..\..\..\GenScn\2.3b8\Support\SYSTEM~1\ATCData.dll#Aqua Terra  Defined Data Types
+Reference=*\G{18F0904D-D01A-4967-90D6-FB9B55A332EC}#1.0#0#C:\WINNT\system32\FColl.dll#Edanmo's FastCollection Class v1
 Reference=*\G{101F9C56-A0F3-455C-ABBB-191168ABCF94}#1.0#0#C:\Program Files\Chilkat Software Inc\Chilkat XML\ChilkatXml.dll#Chilkat Xml 4.1.0
+Reference=*\G{73B1B0A5-5003-483A-8A84-764C50C7BD84}#1.0#0#..\..\..\..\releasePatch3\Support\bin\WebDataManager.dll#
 Class=clsUSGSWQ; clsUSGSWQ.cls
 Class=clsCSV; ..\..\Utility\clsCSV.cls
 Class=clsDBF; ..\..\Utility\clsDBF.cls

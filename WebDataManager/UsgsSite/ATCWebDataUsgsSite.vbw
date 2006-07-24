@@ -1,7 +1,7 @@
-clsUSGSsite = 55, 9, 996, 853, C
+clsUSGSsite = -248, 35, 693, 815, C
 UTILITY = 0, 0, 0, 0, C
-ShapeDefines = 24, 23, 992, 920, C
-CShape_IO = 6, 3, 793, 506, C
-modUSGSshape = 18, 36, 950, 788, C
-clsDBF = 78, 99, 865, 602, C
+ShapeDefines = 0, 0, 0, 0, C
+CShape_IO = 0, 0, 0, 0, C
+modUSGSshape = 0, 0, 0, 0, C
+clsDBF = 0, 0, 0, 0, C
 utilXml = 0, 0, 0, 0, C

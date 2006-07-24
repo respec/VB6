@@ -28,7 +28,7 @@ Fill          (Fill H 1 0 -999 -998)
               This fills in any omitted, missing, or accumulated
               values to create a constant interval dataset
               First arg is first letter of time units:
-                    Century, Year, Month, Day, Hour, minute, second
+                    Century, Year, Month, Hour, minute, second
               Next arg is number of time units between values
                     (default 1)
               Next arg is value to fill in for omitted values

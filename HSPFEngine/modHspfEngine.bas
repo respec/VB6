@@ -93,7 +93,7 @@ ErrHand:
 End Sub
 
 Private Sub ReceiveMessage(FirstWord As String, Rest As String)
-  Dim s As String, M As String
+  Dim s As String, m As String
   Static WdmName As String, msgUnit As Long
   Static UciName As String
   Static WdmUnit(4) As Long
@@ -130,8 +130,8 @@ Private Sub ReceiveMessage(FirstWord As String, Rest As String)
     WriteStatus "(DBG wdmUnit " & CStr(r) & ")"
     WriteParent "WDBOPN complete, unit " & r
   Case "ACTIVATE"
-    M = "begin activate"
-    F90_FILSTA M, Len(M)
+    m = "begin activate"
+    F90_FILSTA m, Len(m)
     UciName = StrRetRem(s)
     'MsgBox "HSPFEngine ACTIVATE entry:" & UciName & ":" & s
     If Len(s) > 0 Then
@@ -142,10 +142,10 @@ Private Sub ReceiveMessage(FirstWord As String, Rest As String)
     WriteStatus "DBG F90_ACTSCN(" & i & ", " & WdmUnit(1) & ", " & msgUnit & ", " & Status & ", " & UciName & ", " & Len(UciName)
     Call F90_ACTSCN(i, WdmUnit(1), msgUnit, Status, UciName, Len(UciName))
     'MsgBox "HSPFEngine ACTIVATE exit:" & Status
-    M = "after activate, retcod:" & Status & " i:" & i & vbCrLf
-    F90_FILSTA M, Len(M)
-    M = "ACTIVATE complete " & Status & vbCrLf
-    WriteParent M
+    m = "after activate, retcod:" & Status & " i:" & i & vbCrLf
+    F90_FILSTA m, Len(m)
+    m = "ACTIVATE complete " & Status & vbCrLf
+    WriteParent m
     DoEvents
     'MsgBox M, vbOKOnly, "HSPF Engine"
   Case "SIMULATE"
@@ -171,22 +171,22 @@ Private Sub ReceiveMessage(FirstWord As String, Rest As String)
     F90_XBLOCKEX blk, Init, retkey, cbuff, rectyp, retcod
     WriteParent blk & " " & Init & " " & retkey & " " & " " & rectyp & " " & retcod & " " & cbuff
   Case "GTNXKW"
-    Dim ID&, ckwd$, kwdfg&, contfg&, retid&  ',init&
+    Dim id&, ckwd$, kwdfg&, contfg&, retid&  ',init&
     Init = StrRetRem(Rest)
-    ID = StrRetRem(Rest)
-    F90_GTNXKW Init, ID, ckwd, kwdfg, contfg, retid
-    WriteParent Init & " " & ID & " " & kwdfg & " " & contfg & " " & retid & " " & ckwd
+    id = StrRetRem(Rest)
+    F90_GTNXKW Init, id, ckwd, kwdfg, contfg, retid
+    WriteParent Init & " " & id & " " & kwdfg & " " & contfg & " " & retid & " " & ckwd
   Case "GLOBLK"
     Dim sdatim&(5), edatim&(5), outlev&, spout&, runfg&, emfg&, rninfo$
     F90_GLOBLK sdatim, edatim, outlev, spout, runfg, emfg, rninfo
-    M = ""
+    m = ""
     For i = 0 To 5
-      M = M & sdatim(i) & " "
+      m = m & sdatim(i) & " "
     Next
     For i = 0 To 5
-      M = M & edatim(i) & " "
+      m = m & edatim(i) & " "
     Next
-    WriteParent M & outlev & " " & spout & " " & runfg & " " & emfg & " " & rninfo
+    WriteParent m & outlev & " " & spout & " " & runfg & " " & emfg & " " & rninfo
   Case "GLOPRMI"
     Dim iVal&, parmname$
     parmname = StrRetRem(s)
@@ -198,9 +198,9 @@ Private Sub ReceiveMessage(FirstWord As String, Rest As String)
     F90_GETOCR itype, noccur
     WriteParent itype & " " & noccur
   Case "XTABLEEX"
-    Dim OmCode&, tabno&, uunits&, addfg&, Occur& ' , Init&, retkey&, cbuff$, rectyp&, retcod&
+    Dim omcode&, tabno&, uunits&, addfg&, Occur& ' , Init&, retkey&, cbuff$, rectyp&, retcod&
     'MsgBox "XTABLEEX " & Rest
-    OmCode = StrRetRem(Rest)
+    omcode = StrRetRem(Rest)
     tabno = StrRetRem(Rest)
     uunits = StrRetRem(Rest)
     Init = StrRetRem(Rest)
@@ -208,7 +208,7 @@ Private Sub ReceiveMessage(FirstWord As String, Rest As String)
     Occur = StrRetRem(Rest)
     retkey = StrRetRem(Rest)
     'MsgBox "XTABLEEX " & OmCode & " " & tabno & " " & uunits & " " & Init & " " & addfg & " " & Occur & " " & retkey, vbOKOnly, "HSPF Engine"
-    F90_XTABLEEX OmCode, tabno, uunits, Init, addfg, Occur, retkey, cbuff, rectyp, retcod
+    F90_XTABLEEX omcode, tabno, uunits, Init, addfg, Occur, retkey, cbuff, rectyp, retcod
     WriteParent retkey & " " & rectyp & " " & retcod & " " & cbuff
   Case "CURDIR"
     ChDrive Left(Rest, 2)
