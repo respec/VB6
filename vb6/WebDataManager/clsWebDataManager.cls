@@ -17,6 +17,7 @@ Private Const cTmpFileTag As String = "{tmpfile}"
 
 Private pBatch As Boolean
 Private pCurlExePath As String
+Private pCurlOptions As String
 Private pFormDownload As frmDownload
 Private pResultString As String
 Private pDataTypes As FastCollection
@@ -737,13 +738,13 @@ Public Function Download(ByVal URL As String, _
   End If
 
 TryAgain:
-  CmdLine = pCurlExePath
+  CmdLine = pCurlExePath & pCurlOptions
   If useActiveMode Then
     CmdLine = CmdLine & " -P -"
   ElseIf InStr(URL, "nhdftp") > 0 Then 'special case for NHD FTP
     CmdLine = CmdLine & " --disable-epsv"
   End If
-  CmdLine = CmdLine & " -o""" & Filename & """ --trace-ascii " & logFilename
+  CmdLine = CmdLine & " -o""" & Filename & """ --trace-ascii """ & logFilename & """"
   
   URLdatapart = URL
   stepname = "StrSplit URLdatapart"
@@ -1113,6 +1114,17 @@ Private Sub Initialize_All()
   ff.SetRegistryInfo "curl", "paths", "EXEpath"
   ff.SetDialogProperties "Please locate curl.exe", gAppPath & "\etc\DataDownload\curl.exe"
   pCurlExePath = ff.GetName   'path = "c:\program files\Aqua_Terra\curl.exe"
+  If FileExists(FilenameSetExt(pCurlExePath, "txt")) Then
+    pCurlOptions = " " & WholeFileString(FilenameSetExt(pCurlExePath, "txt"))
+    pCurlOptions = ReplaceString(pCurlOptions, vbCr, " ")
+    pCurlOptions = ReplaceString(pCurlOptions, vbLf, " ")
+    pCurlOptions = ReplaceString(pCurlOptions, vbTab, " ")
+    pCurlOptions = ReplaceString(pCurlOptions, "  ", " ")
+    LogDbg "Initialize_All:CurlOptions = '" & pCurlOptions & "'"
+  Else
+    pCurlOptions = ""
+    LogDbg "Initialize_All:No Curl Options in '" & FilenameSetExt(pCurlExePath, "txt") & "'"
+  End If
     
   If Not pDataTypes Is Nothing Then pDataTypes.Clear
   Set pDataTypes = Nothing
