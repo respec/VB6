@@ -660,6 +660,20 @@ Public Function Download(ByVal URL As String, _
   
   RecursionLevel = RecursionLevel + 1
   
+  'Check for replacement URL for this data
+  If InStr(URL, "hspf.com") = 0 Then
+    If Download("http://hspf.com/cgi-bin/requesturl?url=" & ReplaceString(URL, "&", "%26"), "", RestartTimer, newCaption) Then
+      If URL = pResultString Then
+        LogDbg "  URL was not changed by hspf.com/cgi-bin/requesturl"
+      Else
+        URL = pResultString
+        LogDbg "  URL changed to '" & URL & "' by hspf.com/cgi-bin/requesturl"
+      End If
+    Else
+      LogDbg "  failed while checking hspf.com/cgi-bin/requesturl, proceeding with known URL"
+    End If
+  End If
+  
   pState = state_download
   pResultString = ""
   stepname = "checking for existing file"
@@ -902,11 +916,11 @@ TryAgain:
     KillFile Filename
   Else
     If BadDownloadedFile(Filename) Then
-      If InStr(URL, "finddata") = 0 And Not TryingFindData Then
+      If InStr(URL, "hspf.com") = 0 And Not TryingFindData Then
         KillFile Filename
         TryingFindData = True
         LogDbg "Failed to download, trying finddata"
-        Download = Download("http://hspf.com/cgi-bin/finddata.pl?url=" & URL, Filename, RestartTimer, newCaption, prependToOutput, cacheFilename)
+        Download = Download("http://hspf.com/cgi-bin/finddata.pl?url=" & ReplaceString(URL, "&", "%26"), Filename, RestartTimer, newCaption, prependToOutput, cacheFilename)
       Else
         pResultString = pResultString & vbCrLf & "Could not download"
       End If
@@ -1018,10 +1032,13 @@ Private Function BadDownloadedFile(aFilename As String) As Boolean
     Dim content As String
     content = WholeFileString(aFilename)
     If InStr(content, "was not found") > 0 Then 'found in 404 message or EPA's custom msg
-      LogDbg "BadDownloadedFile, not found on server: " & aFilename
+      LogDbg "BadDownloadedFile, not found message in: " & aFilename
       BadDownloadedFile = True
     ElseIf InStr(content, "File Not Found") > 0 Then 'found in 404 message or EPA's custom msg
-      LogDbg "BadDownloadedFile, not found on server: " & aFilename
+      LogDbg "BadDownloadedFile, File Not Found message in " & aFilename
+      BadDownloadedFile = True
+    ElseIf InStr(content, "Internal Server Error") > 0 Then 'found a 500 server error - broken site script?
+      LogDbg "BadDownloadedFile, Internal Server Error found in: " & aFilename
       BadDownloadedFile = True
     End If
   End If
