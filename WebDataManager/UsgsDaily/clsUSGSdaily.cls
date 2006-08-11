@@ -123,13 +123,15 @@ Private Function clsWebData_GetData(ByVal aQuery As ChilkatXml, ByRef aResult As
   
   pManager.LogDbg "  clsUsgsDaily GetData entry"
   
-  'http://waterdata.usgs.gov/nwis/dv?cb_00060=on&format=rdb&begin_date=2005-07-13&end_date=2006-07-13&site_no=01591000&referred_module=sw
+  'http://waterdata.usgs.gov/nwis/dv?cb_00060=on&format=rdb&begin_date=1800-01-01&end_date=2100-01-01&site_no=01591000&referred_module=sw
   basins_dir = pManager.CurrentStatusGetString("basins_dir", CurDir)
   cache_dir = pManager.CurrentStatusGetString("cache_dir") & pClassName & "\"
   project_dir = pManager.CurrentStatusGetString("project_dir")
 '  SHPfilename = project_dir & pManager.CurrentStatusGetString("USGSdailySHPfile", "gage.shp")
   suffix = pManager.CurrentStatusGetString("USGSdailySaveSuffix", "_dv.txt")
   base_url = pManager.CurrentStatusGetString("USGSDailyBaseURL", "http://waterdata.usgs.gov/nwis/dv?cb_00060=on")
+  begin_date = pManager.CurrentStatusGetString("USGSdailyBeginDate", "1800-01-01")
+  end_date = pManager.CurrentStatusGetString("USGSdailyEndDate", "2100-01-01")
     
   clsWebData_GetData = True
   
