@@ -262,7 +262,7 @@ End Type
 Private myBmp() As BmpInfo
 
 Private Type BmpPtrInfo
-  ind As Long 'into type bmpinfo
+  Ind As Long 'into type bmpinfo
   Area As Single
 End Type
 
@@ -292,7 +292,7 @@ Private Sub GetUciInfo(cur&)
   Dim ctxt$, cmor$, pnam$, rcnt&, tcnt&
   Dim i&, j&, k&, h&, bcnt&, found As Boolean
   Dim rarea!, barea!
-  Dim loper As HspfOperation
+  Dim lOper As HspfOperation
   Dim lOpnBlk As HspfOpnBlk
   Dim vConn As Variant
   Dim lConn As HspfConnection
@@ -307,16 +307,16 @@ Private Sub GetUciInfo(cur&)
   tcnt = 0
   bcnt = UBound(myBmp)
   Set lOpnBlk = myUci.OpnBlks("RCHRES")  'reach
-  Set loper = lOpnBlk.operfromid(Id)
+  Set lOper = lOpnBlk.operfromid(Id)
   
-  If Not loper Is Nothing Then
+  If Not lOper Is Nothing Then
     'loop through all connections looking for this oper as target
     For Each vConn In myUci.Connections
       Set lConn = vConn
-      If lConn.typ = 3 Or lConn.typ = 2 Then 'network or schematic
+      If lConn.Typ = 3 Or lConn.Typ = 2 Then 'network or schematic
         If Not lConn.Target.Opn Is Nothing Then
-          If lConn.Target.Opn.Id = loper.Id And _
-             lConn.Target.Opn.Name = loper.Name Then  'found a source
+          If lConn.Target.Opn.Id = lOper.Id And _
+             lConn.Target.Opn.Name = lOper.Name Then  'found a source
             If lConn.Source.volname = "BMPRAC" Then
               For i = 1 To bcnt
                 If myBmp(i).Id = lConn.Source.volid Then
@@ -344,13 +344,13 @@ Private Sub GetUciInfo(cur&)
       If myBmp(i).InUseNow Then
         Id = myBmp(i).Id
         Set lOpnBlk = myUci.OpnBlks("BMPRAC")  'bmp
-        Set loper = lOpnBlk.operfromid(Id)
+        Set lOper = lOpnBlk.operfromid(Id)
     
         For Each vConn In myUci.Connections
           Set lConn = vConn
-          If lConn.typ = 3 Or lConn.typ = 2 Then 'network or schematic
-            If lConn.Target.Opn.Id = loper.Id And _
-               lConn.Target.Opn.Name = loper.Name Then 'found a source
+          If lConn.Typ = 3 Or lConn.Typ = 2 Then 'network or schematic
+            If lConn.Target.Opn.Id = lOper.Id And _
+               lConn.Target.Opn.Name = lOper.Name Then 'found a source
               If lConn.Source.volname = "BMPRAC" Then
                 MsgBox "PROBLEM - BMPs cant go to BMPs in the WinHSPF BMP Editor", vbOKOnly, msgTitle
                 cmdBMP_Click (2) 'close up bmp editing
@@ -377,7 +377,7 @@ Private Sub GetUciInfo(cur&)
               With myTrib(j)
                 .BMPCnt = .BMPCnt + 1
                 ReDim Preserve .BmpPtr(.BMPCnt)
-                .BmpPtr(.BMPCnt).ind = i
+                .BmpPtr(.BMPCnt).Ind = i
                 .BmpPtr(.BMPCnt).Area = lConn.MFact
                 .Area = .Area + lConn.MFact
               End With
@@ -392,17 +392,17 @@ Private Sub GetUciInfo(cur&)
         For j = 1 To UBound(myTrib)
           found = False
           For k = 1 To myTrib(j).BMPCnt
-            If myTrib(j).BmpPtr(k).ind = i Then
+            If myTrib(j).BmpPtr(k).Ind = i Then
               found = True
               Exit For
-            ElseIf myTrib(j).BmpPtr(k).ind > i Then
+            ElseIf myTrib(j).BmpPtr(k).Ind > i Then
               With myTrib(j)
                 .BMPCnt = .BMPCnt + 1
                 ReDim Preserve .BmpPtr(.BMPCnt)
                 For h = .BMPCnt To k + 1 Step -1
                   .BmpPtr(h) = .BmpPtr(h - 1)
                 Next h
-                .BmpPtr(k).ind = i
+                .BmpPtr(k).Ind = i
                 .BmpPtr(k).Area = 0
               End With
               found = True 'we added it
@@ -413,7 +413,7 @@ Private Sub GetUciInfo(cur&)
             With myTrib(j)
               .BMPCnt = .BMPCnt + 1
               ReDim Preserve .BmpPtr(.BMPCnt)
-              .BmpPtr(.BMPCnt).ind = i
+              .BmpPtr(.BMPCnt).Ind = i
               .BmpPtr(.BMPCnt).Area = 0
             End With
           End If
@@ -535,10 +535,10 @@ Private Sub PopulateGrid()
       grdSrc.ColEditable(2) = True
     End If
   
-    grdSrc.colWidth(0) = grdSrc.Width * 0.4
-    grdSrc.colWidth(1) = (grdSrc.Width - grdSrc.colWidth(0) - 40) / CSng(2 + buse)
+    grdSrc.ColWidth(0) = grdSrc.Width * 0.4
+    grdSrc.ColWidth(1) = (grdSrc.Width - grdSrc.ColWidth(0) - 40) / CSng(2 + buse)
     For i = 2 To 2 + buse
-      grdSrc.colWidth(i) = grdSrc.colWidth(1)
+      grdSrc.ColWidth(i) = grdSrc.ColWidth(1)
     Next i
     
     For j = 1 To tcnt 'trib source areas and %
@@ -653,7 +653,7 @@ Private Sub cmdBMP_Click(Index As Integer)
       k = myTrib(j).BMPCnt
       ReDim Preserve myTrib(j).BmpPtr(k)
       myTrib(j).BmpPtr(k).Area = 0
-      myTrib(j).BmpPtr(k).ind = i
+      myTrib(j).BmpPtr(k).Ind = i
     Next j
     MyRch(cur).BMPCnt = MyRch(cur).BMPCnt + 1
     Call PopulateGrid
@@ -796,9 +796,9 @@ Private Sub cmdUpU_Click()
     Call PutSchematicRecord(myTrib(j).OpNam, myTrib(j).Id, "RCHRES", rchid, a)
     'put area going to bmps
     For k = 1 To myTrib(j).BMPCnt
-      If myBmp(myTrib(j).BmpPtr(k).ind).InUseNow Then
-        bmpId = myBmp(myTrib(j).BmpPtr(k).ind).Id
-        c = myBmp(myTrib(j).BmpPtr(k).ind).col
+      If myBmp(myTrib(j).BmpPtr(k).Ind).InUseNow Then
+        bmpId = myBmp(myTrib(j).BmpPtr(k).Ind).Id
+        c = myBmp(myTrib(j).BmpPtr(k).Ind).col
         a = myTrib(j).Area * CSng((grdSrc.TextMatrix(j, c) / 100))
         Call PutSchematicRecord(myTrib(j).OpNam, myTrib(j).Id, "BMPRAC", bmpId, a)
       End If
@@ -815,7 +815,7 @@ Private Sub Form_Load()
   Dim iexist As Boolean, itmnam$, OpId&, cnt&, i&
   Dim lOpnBlk As HspfOpnBlk
   Dim lTable As HspfTable
-  Dim loper As HspfOperation
+  Dim lOper As HspfOperation
   
   Me.Icon = HSPFMain.Icon
   msgTitle = "Best Management Practices Editor"
@@ -829,10 +829,10 @@ Private Sub Form_Load()
     ReDim MyRch(lOpnBlk.Count)
     'get ids
     For i = 1 To lOpnBlk.Count
-      Set loper = lOpnBlk.Ids(i)
-      MyRch(i).Id = loper.Id
+      Set lOper = lOpnBlk.Ids(i)
+      MyRch(i).Id = lOper.Id
       'get reach names
-      Set lTable = loper.tables("GEN-INFO")
+      Set lTable = lOper.tables("GEN-INFO")
       MyRch(i).Desc = lTable.Parms("RCHID")
       If InStr(MyRch(i).Desc, ":") Then 'assume id already present by convention
         cmbReach.AddItem MyRch(i).Desc
@@ -847,9 +847,9 @@ Private Sub Form_Load()
     If lOpnBlk.Count > 0 Then
       ReDim myBmp(lOpnBlk.Count)
       For i = 1 To lOpnBlk.Count
-        Set loper = lOpnBlk.Ids(i)
-        myBmp(i).Id = loper.Id
-        Set lTable = loper.tables("GEN-INFO")
+        Set lOper = lOpnBlk.Ids(i)
+        myBmp(i).Id = lOper.Id
+        Set lTable = lOper.tables("GEN-INFO")
         myBmp(i).Desc = lTable.Parms("BMPID")
         myBmp(i).DeletePending = False
       Next i
@@ -952,7 +952,7 @@ Private Sub PutSchematicRecord(sname$, sid&, tname$, tid&, multfact#)
     deleteit = False
     For i = 1 To myUci.Connections.Count
       Set lConn = myUci.Connections(i)
-      If lConn.typ = 3 Then 'schematic
+      If lConn.Typ = 3 Then 'schematic
         If lConn.Target.Opn.Id = tid And _
            lConn.Target.Opn.Name = tname And _
            lConn.Source.Opn.Id = sid And _
@@ -973,7 +973,7 @@ Private Sub PutSchematicRecord(sname$, sid&, tname$, tid&, multfact#)
       Set lConn.Source.Opn = lOpn
       lConn.Source.volname = lOpn.Name
       lConn.Source.volid = lOpn.Id
-      lConn.typ = 3
+      lConn.Typ = 3
       lConn.MFact = multfact
       Set lOpnBlk = myUci.OpnBlks(tname)
       Set lOpn = lOpnBlk.operfromid(tid)
@@ -1036,7 +1036,7 @@ Private Sub GetMassLinkID(sname$, tname$, mlid&)
   'determine mass link number
   mlid = 0
   For Each lConn In myUci.Connections
-    If lConn.typ = 3 Then
+    If lConn.Typ = 3 Then
       If lConn.Source.volname = sname And lConn.Target.volname = tname Then
         mlid = lConn.MassLink
       End If
@@ -1106,6 +1106,8 @@ Private Sub AddMassLink(sname$, tname$, mlid&)
             lMassLink.Target.member = "IOX"
           ElseIf cMassLink.Target.member = "NUIF1" Then
             lMassLink.Target.member = "IDNUT"
+          ElseIf cMassLink.Target.member = "NUIF2" Then
+            lMassLink.Target.member = "ISNUT"
           ElseIf cMassLink.Target.member = "PKIF" Then
             lMassLink.Target.member = "IPLK"
           End If

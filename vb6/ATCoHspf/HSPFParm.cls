@@ -16,6 +16,7 @@ Option Explicit
 '##MODULE_REMARKS Copyright 2001-3AQUA TERRA Consultants - Royalty-free use permitted under open source license
 
 Dim pValue As String
+Dim pValueAsRead As String
 Dim pDef As HSPFParmDef
 Dim pParent As Object
 
@@ -30,6 +31,14 @@ Public Property Let Value(newValue As String)
   If Not (IsNull(pParent)) Then
     pParent.Edited = True
   End If
+End Property
+
+'##SUMMARY <P>Value of parameter as read from UCI
+Public Property Get ValueAsRead() As String
+  ValueAsRead = pValueAsRead
+End Property
+Public Property Let ValueAsRead(newValueAsRead As String)
+  pValueAsRead = newValueAsRead
 End Property
 
 '##SUMMARY Link to object containing definition of parameter.

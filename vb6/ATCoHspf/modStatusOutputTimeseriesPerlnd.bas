@@ -6,7 +6,7 @@ Public Sub UpdateOutputTimeseriesPerlnd(O As HspfOperation, TimserStatus As Hspf
   Dim ltable As HspfTable, nquals&
   Dim i&, j&, icefg&, csnofg&, iffcfg&, pqadfg&(20), ctemp$
   Dim wetadfg&, dryadfg&, nqof&, Nqif&, Nqgw&, nqsd&
-  Dim adopf1&, adopf2&, adopf3&, npst&
+  Dim adopf1&, adopf2&, adopf3&, npst&, snopfg&, hwtfg&, irrgfg&
   
   If O.TableExists("ACTIVITY") Then
     Set ltable = O.Tables("ACTIVITY")
@@ -17,24 +17,50 @@ Public Sub UpdateOutputTimeseriesPerlnd(O As HspfOperation, TimserStatus As Hspf
     End If
     
     'section snow
+    If O.TableExists("SNOW-FLAGS") Then
+      snopfg = O.Tables("SNOW-FLAGS").Parms("SNOPFG")
+    Else
+      snopfg = 0
+    End If
     If ltable.Parms("SNOWFG") = 1 Then
       TimserStatus.Change "SNOW:PACK", 1, HspfStatusOptional
       TimserStatus.Change "SNOW:PACKF", 1, HspfStatusOptional
       TimserStatus.Change "SNOW:PACKW", 1, HspfStatusOptional
       TimserStatus.Change "SNOW:PACKI", 1, HspfStatusOptional
       TimserStatus.Change "SNOW:PDEPTH", 1, HspfStatusOptional
+      TimserStatus.Change "SNOW:COVINX", 1, HspfStatusOptional
+      TimserStatus.Change "SNOW:NEGHTS", 1, HspfStatusOptional
+      TimserStatus.Change "SNOW:XLNMLT", 1, HspfStatusOptional
       TimserStatus.Change "SNOW:RDENPF", 1, HspfStatusOptional
+      TimserStatus.Change "SNOW:SKYCLR", 1, HspfStatusOptional
       TimserStatus.Change "SNOW:SNOCOV", 1, HspfStatusOptional
-      TimserStatus.Change "SNOW:ALBEDO", 1, HspfStatusOptional
+      If snopfg = 0 Then
+        TimserStatus.Change "SNOW:DULL", 1, HspfStatusOptional
+        TimserStatus.Change "SNOW:ALBEDO", 1, HspfStatusOptional
+      End If
       TimserStatus.Change "SNOW:PAKTMP", 1, HspfStatusOptional
+      TimserStatus.Change "SNOW:SNOTMP", 1, HspfStatusOptional
+      TimserStatus.Change "SNOW:DWMTMP", 1, HspfStatusOptional
       TimserStatus.Change "SNOW:SNOWF", 1, HspfStatusOptional
-      TimserStatus.Change "SNOW:SNOWE", 1, HspfStatusOptional
+      TimserStatus.Change "SNOW:PRAIN", 1, HspfStatusOptional
+      If snopfg = 0 Then
+        TimserStatus.Change "SNOW:SNOWE", 1, HspfStatusOptional
+      End If
       TimserStatus.Change "SNOW:WYIELD", 1, HspfStatusOptional
       TimserStatus.Change "SNOW:MELT", 1, HspfStatusOptional
       TimserStatus.Change "SNOW:RAINF", 1, HspfStatusOptional
     End If
     
     'section pwater
+    If O.TableExists("PWAT-PARM1") Then
+      hwtfg = O.Tables("PWAT-PARM1").Parms("HWTFG")
+      csnofg = O.Tables("PWAT-PARM1").Parms("CSNOFG")
+      irrgfg = O.Tables("PWAT-PARM1").Parms("IRRGFG")
+    Else
+      hwtfg = 0
+      csnofg = 0
+      irrgfg = 0
+    End If
     If ltable.Parms("PWATFG") = 1 Then
       TimserStatus.Change "PWATER:PERS", 1, HspfStatusOptional
       TimserStatus.Change "PWATER:CEPS", 1, HspfStatusOptional
@@ -43,7 +69,21 @@ Public Sub UpdateOutputTimeseriesPerlnd(O As HspfOperation, TimserStatus As Hspf
       TimserStatus.Change "PWATER:IFWS", 1, HspfStatusOptional
       TimserStatus.Change "PWATER:LZS", 1, HspfStatusOptional
       TimserStatus.Change "PWATER:AGWS", 1, HspfStatusOptional
+      If hwtfg = 1 Then
+        TimserStatus.Change "PWATER:TGWS", 1, HspfStatusOptional
+        TimserStatus.Change "PWATER:GWEL", 1, HspfStatusOptional
+        TimserStatus.Change "PWATER:GWVS", 1, HspfStatusOptional
+        TimserStatus.Change "PWATER:SURET", 1, HspfStatusOptional
+      End If
+      If csnofg = 1 Then
+        TimserStatus.Change "PWATER:INFFAC", 1, HspfStatusOptional
+      End If
+      TimserStatus.Change "PWATER:PETADJ", 1, HspfStatusOptional
+      If irrgfg = 2 Then
+        TimserStatus.Change "PWATER:RZWS", 1, HspfStatusOptional
+      End If
       TimserStatus.Change "PWATER:RPARM", 1, HspfStatusOptional
+      TimserStatus.Change "PWATER:SUPY", 1, HspfStatusOptional
       TimserStatus.Change "PWATER:SURO", 1, HspfStatusOptional
       TimserStatus.Change "PWATER:IFWO", 1, HspfStatusOptional
       TimserStatus.Change "PWATER:AGWO", 1, HspfStatusOptional
@@ -63,16 +103,28 @@ Public Sub UpdateOutputTimeseriesPerlnd(O As HspfOperation, TimserStatus As Hspf
       TimserStatus.Change "PWATER:LZI", 1, HspfStatusOptional
       TimserStatus.Change "PWATER:AGWI", 1, HspfStatusOptional
       TimserStatus.Change "PWATER:SURI", 1, HspfStatusOptional
+      If irrgfg > 0 Then
+        TimserStatus.Change "PWATER:IRRDEM", 1, HspfStatusOptional
+        TimserStatus.Change "PWATER:IRSHRT", 1, HspfStatusOptional
+        For i = 1 To 3
+          TimserStatus.Change "PWATER:IRDRAW", i, HspfStatusOptional
+        Next i
+        For i = 1 To 6
+          TimserStatus.Change "PWATER:IRRAPP", i, HspfStatusOptional
+        Next i
+      End If
     End If
     
     'section sedmnt
     If ltable.Parms("SEDFG") = 1 Then
       TimserStatus.Change "SEDMNT:DETS", 1, HspfStatusOptional
       TimserStatus.Change "SEDMNT:STCAP", 1, HspfStatusOptional
+      TimserStatus.Change "SEDMNT:COVER", 1, HspfStatusOptional
       TimserStatus.Change "SEDMNT:WSSD", 1, HspfStatusOptional
       TimserStatus.Change "SEDMNT:SCRSD", 1, HspfStatusOptional
       TimserStatus.Change "SEDMNT:SOSED", 1, HspfStatusOptional
       TimserStatus.Change "SEDMNT:DET", 1, HspfStatusOptional
+      TimserStatus.Change "SEDMNT:NVSI", 1, HspfStatusOptional
     End If
     
     'section pstemp
@@ -144,6 +196,8 @@ Public Sub UpdateOutputTimeseriesPerlnd(O As HspfOperation, TimserStatus As Hspf
         TimserStatus.Change "PQUAL:POQUAL", i, HspfStatusOptional
         TimserStatus.Change "PQUAL:SOQC", i, HspfStatusOptional
         TimserStatus.Change "PQUAL:POQC", i, HspfStatusOptional
+        TimserStatus.Change "PQUAL:PQADEP", i, HspfStatusOptional
+        TimserStatus.Change "PQUAL:ISQO", i, HspfStatusOptional
       Next i
       For i = 1 To nqof
         TimserStatus.Change "PQUAL:SQO", i, HspfStatusOptional
@@ -154,12 +208,15 @@ Public Sub UpdateOutputTimeseriesPerlnd(O As HspfOperation, TimserStatus As Hspf
         TimserStatus.Change "PQUAL:WASHQS", i, HspfStatusOptional
         TimserStatus.Change "PQUAL:SCRQS", i, HspfStatusOptional
         TimserStatus.Change "PQUAL:SOQS", i, HspfStatusOptional
+        TimserStatus.Change "PQUAL:SOQSP", i, HspfStatusOptional
       Next i
       For i = 1 To Nqif
         TimserStatus.Change "PQUAL:IOQUAL", i, HspfStatusOptional
+        TimserStatus.Change "PQUAL:IOQC", i, HspfStatusOptional
       Next i
       For i = 1 To Nqgw
         TimserStatus.Change "PQUAL:AOQUAL", i, HspfStatusOptional
+        TimserStatus.Change "PQUAL:AOQC", i, HspfStatusOptional
       Next i
     End If
     
@@ -204,6 +261,7 @@ Public Sub UpdateOutputTimeseriesPerlnd(O As HspfOperation, TimserStatus As Hspf
         For j = 1 To 3
           TimserStatus.Change2 "PEST:PEADDR", i, j, HspfStatusOptional
           TimserStatus.Change2 "PEST:PEADWT", i, j, HspfStatusOptional
+          TimserStatus.Change2 "PEST:PEADEP", i, j, HspfStatusOptional
         Next j
       Next i
       For i = 1 To 2
@@ -229,20 +287,26 @@ Public Sub UpdateOutputTimeseriesPerlnd(O As HspfOperation, TimserStatus As Hspf
       TimserStatus.Change "NITR:POORN", 1, HspfStatusOptional
       TimserStatus.Change "NITR:PONITR", 1, HspfStatusOptional
       TimserStatus.Change "NITR:TDENIF", 1, HspfStatusOptional
+      TimserStatus.Change "NITR:RETAGN", 1, HspfStatusOptional
       For i = 1 To 3
         TimserStatus.Change2 "NITR:NIADDR", i, 1, HspfStatusOptional
         TimserStatus.Change2 "NITR:NIADWT", i, 1, HspfStatusOptional
+        TimserStatus.Change2 "NITR:NIADEP", i, 1, HspfStatusOptional
         TimserStatus.Change2 "NITR:NIADDR", i, 2, HspfStatusOptional
         TimserStatus.Change2 "NITR:NIADWT", i, 2, HspfStatusOptional
+        TimserStatus.Change2 "NITR:NIADEP", i, 2, HspfStatusOptional
         TimserStatus.Change "NITR:SEDN", i, HspfStatusOptional
         TimserStatus.Change "NITR:SSAMS", i, HspfStatusOptional
         TimserStatus.Change "NITR:SSNO3", i, HspfStatusOptional
         TimserStatus.Change "NITR:SSSLN", i, HspfStatusOptional
         TimserStatus.Change "NITR:SSSRN", i, HspfStatusOptional
+        TimserStatus.Change "NITR:RTLLN", i, HspfStatusOptional
+        TimserStatus.Change "NITR:RTRLN", i, HspfStatusOptional
       Next i
       For i = 1 To 4
         TimserStatus.Change "NITR:IN", i, HspfStatusOptional
         TimserStatus.Change "NITR:NUPTG", i, HspfStatusOptional
+        TimserStatus.Change "NITR:NITIF", i, HspfStatusOptional
       Next i
       For i = 1 To 5
         TimserStatus.Change "NITR:NDFCT", i, HspfStatusOptional
@@ -252,6 +316,20 @@ Public Sub UpdateOutputTimeseriesPerlnd(O As HspfOperation, TimserStatus As Hspf
         TimserStatus.Change "NITR:TSSRN", i, HspfStatusOptional
         TimserStatus.Change "NITR:NFIXFX", i, HspfStatusOptional
         TimserStatus.Change "NITR:AMVOL", i, HspfStatusOptional
+        TimserStatus.Change "NITR:TNIT", i, HspfStatusOptional
+        TimserStatus.Change "NITR:DENIF", i, HspfStatusOptional
+        TimserStatus.Change "NITR:AMNIT", i, HspfStatusOptional
+        TimserStatus.Change "NITR:AMIMB", i, HspfStatusOptional
+        TimserStatus.Change "NITR:ORNMN", i, HspfStatusOptional
+        TimserStatus.Change "NITR:NFIXFX", i, HspfStatusOptional
+        TimserStatus.Change "NITR:REFRON", i, HspfStatusOptional
+        TimserStatus.Change "NITR:NIIMB", i, HspfStatusOptional
+        TimserStatus.Change "NITR:NIUPA", i, HspfStatusOptional
+        TimserStatus.Change "NITR:AMUPA", i, HspfStatusOptional
+        TimserStatus.Change "NITR:NIUPB", i, HspfStatusOptional
+        TimserStatus.Change "NITR:AMUPB", i, HspfStatusOptional
+        TimserStatus.Change "NITR:RTLBN", i, HspfStatusOptional
+        TimserStatus.Change "NITR:RTRBN", i, HspfStatusOptional
       Next i
       For i = 1 To 8
         TimserStatus.Change "NITR:SN", i, HspfStatusOptional
@@ -272,12 +350,15 @@ Public Sub UpdateOutputTimeseriesPerlnd(O As HspfOperation, TimserStatus As Hspf
       For i = 1 To 2
         TimserStatus.Change2 "PHOS:PHADDR", i, 1, HspfStatusOptional
         TimserStatus.Change2 "PHOS:PHADWT", i, 1, HspfStatusOptional
+        TimserStatus.Change2 "PHOS:PHADEP", i, 1, HspfStatusOptional
         TimserStatus.Change2 "PHOS:PHADDR", i, 2, HspfStatusOptional
         TimserStatus.Change2 "PHOS:PHADWT", i, 2, HspfStatusOptional
+        TimserStatus.Change2 "PHOS:PHADEP", i, 2, HspfStatusOptional
         TimserStatus.Change "PHOS:SEDP", i, HspfStatusOptional
       Next i
       For i = 1 To 3
         TimserStatus.Change "PHOS:SSP4S", i, HspfStatusOptional
+        TimserStatus.Change "PHOS:PHOIF", i, HspfStatusOptional
       Next i
       For i = 1 To 4
         TimserStatus.Change "PHOS:SP", i, HspfStatusOptional
@@ -290,6 +371,9 @@ Public Sub UpdateOutputTimeseriesPerlnd(O As HspfOperation, TimserStatus As Hspf
       For i = 1 To 5
         TimserStatus.Change "PHOS:PDFCT", i, HspfStatusOptional
         TimserStatus.Change "PHOS:TSP4S", i, HspfStatusOptional
+        TimserStatus.Change "PHOS:TPHO", i, HspfStatusOptional
+        TimserStatus.Change "PHOS:P4IMB", i, HspfStatusOptional
+        TimserStatus.Change "PHOS:ORPMN", i, HspfStatusOptional
       Next i
     End If
     
@@ -305,6 +389,7 @@ Public Sub UpdateOutputTimeseriesPerlnd(O As HspfOperation, TimserStatus As Hspf
       For i = 1 To 2
         TimserStatus.Change "TRACER:TRADDR", i, HspfStatusOptional
         TimserStatus.Change "TRACER:TRADWT", i, HspfStatusOptional
+        TimserStatus.Change "TRACER:TRADEP", i, HspfStatusOptional
       Next i
       For i = 1 To 3
         TimserStatus.Change "TRACER:SSTRS", i, HspfStatusOptional

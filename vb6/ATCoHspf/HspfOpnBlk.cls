@@ -133,7 +133,7 @@ Private Sub readTables(blk As HspfBlockDef)
   Dim tabno&, s$(), c$(), i&, itable&
   Dim opf&, opl&, sopl$
   Dim lId As HspfOperation, vId As Variant
-  Dim lOpTyp&, TableComment$
+  Dim lOpTyp&, TableComment$, lCombineOk As Boolean
   
   lOpTyp = HspfOperNum(pName)
   init = 1
@@ -176,10 +176,18 @@ Private Sub readTables(blk As HspfBlockDef)
           'loop through each record
           opf = Left(s(i), 5)
           sopl = Trim(Mid(s(i), 6, 5))
+          lCombineOk = True
           If Len(sopl) > 0 Then
             opl = sopl
           Else
             opl = opf
+            'check to see if this record could have been combined with the next record
+            If i > 1 Then
+              If compareTableString(1, 10, s(i), s(i - 1)) Then
+                'if it could have but wasn't, assume the user wants it on its own line
+                lCombineOk = False
+              End If
+            End If
           End If
           For Each vId In pIds
             Set lId = vId
@@ -193,6 +201,7 @@ Private Sub readTables(blk As HspfBlockDef)
               ltable.OccurNum = thisoccur
               ltable.OccurIndex = 0
               ltable.TableComment = TableComment
+              ltable.CombineOK = lCombineOk
               If pName = "PERLND" And ltable.Def.Parent.Name = "PQUAL" Then
                 'need to compute proper index
                 If lId.TableExists("NQUALS") Then
@@ -315,18 +324,12 @@ Private Sub GetTableRecordsFromUCI(SCLU&, SGRP&, blockname$, tablename$, srec&, 
           s(sameoper) = s(sameoper) & " "
         Next i
       End If
-    ElseIf retcod = 1 Then 'normal header
-    ElseIf retcod = 3 Then 'comment, filter out headers
-      t = Left(stemp, 5)
-      If InStr(t, "#") Or InStr(t, "x") Then 'a cheap rule to identify the last header line
-        pastHeader = True
-      ElseIf pastHeader Then
-        'comments associated with next line
-        If Len(c(scnt + 1)) = 0 Then
-          c(scnt + 1) = stemp
-        Else
-          c(scnt + 1) = c(scnt + 1) & vbCrLf & stemp
-        End If
+    ElseIf retcod = 1 Then 'normal header ???
+    ElseIf retcod = 3 Then 'comment
+      If Len(c(scnt + 1)) = 0 Then
+        c(scnt + 1) = stemp
+      Else
+        c(scnt + 1) = c(scnt + 1) & vbCrLf & stemp
       End If
     ElseIf retcod = 10 Then
       Exit Do

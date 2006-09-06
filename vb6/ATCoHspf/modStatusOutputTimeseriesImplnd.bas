@@ -5,7 +5,7 @@ Option Explicit
 Public Sub UpdateOutputTimeseriesImplnd(O As HspfOperation, TimserStatus As HspfStatus)
   Dim ltable As HspfTable, nquals&
   Dim i&, icefg&, csnofg&, iffcfg&, iqadfg&(20), ctemp$
-  Dim nqof&, nqsd&
+  Dim nqof&, nqsd&, snopfg&
   
   If O.TableExists("ACTIVITY") Then
     Set ltable = O.Tables("ACTIVITY")
@@ -16,18 +16,35 @@ Public Sub UpdateOutputTimeseriesImplnd(O As HspfOperation, TimserStatus As Hspf
     End If
     
     'section snow
+    If O.TableExists("SNOW-FLAGS") Then
+      snopfg = O.Tables("SNOW-FLAGS").Parms("SNOPFG")
+    Else
+      snopfg = 0
+    End If
     If ltable.Parms("SNOWFG") = 1 Then
       TimserStatus.Change "SNOW:PACK", 1, HspfStatusOptional
       TimserStatus.Change "SNOW:PACKF", 1, HspfStatusOptional
       TimserStatus.Change "SNOW:PACKW", 1, HspfStatusOptional
       TimserStatus.Change "SNOW:PACKI", 1, HspfStatusOptional
       TimserStatus.Change "SNOW:PDEPTH", 1, HspfStatusOptional
+      TimserStatus.Change "SNOW:COVINX", 1, HspfStatusOptional
+      TimserStatus.Change "SNOW:NEGHTS", 1, HspfStatusOptional
+      TimserStatus.Change "SNOW:XLNMLT", 1, HspfStatusOptional
       TimserStatus.Change "SNOW:RDENPF", 1, HspfStatusOptional
+      TimserStatus.Change "SNOW:SKYCLR", 1, HspfStatusOptional
       TimserStatus.Change "SNOW:SNOCOV", 1, HspfStatusOptional
-      TimserStatus.Change "SNOW:ALBEDO", 1, HspfStatusOptional
+      If snopfg = 0 Then
+        TimserStatus.Change "SNOW:DULL", 1, HspfStatusOptional
+        TimserStatus.Change "SNOW:ALBEDO", 1, HspfStatusOptional
+      End If
       TimserStatus.Change "SNOW:PAKTMP", 1, HspfStatusOptional
+      TimserStatus.Change "SNOW:SNOTMP", 1, HspfStatusOptional
+      TimserStatus.Change "SNOW:DWMTMP", 1, HspfStatusOptional
       TimserStatus.Change "SNOW:SNOWF", 1, HspfStatusOptional
-      TimserStatus.Change "SNOW:SNOWE", 1, HspfStatusOptional
+      TimserStatus.Change "SNOW:PRAIN", 1, HspfStatusOptional
+      If snopfg = 0 Then
+        TimserStatus.Change "SNOW:SNOWE", 1, HspfStatusOptional
+      End If
       TimserStatus.Change "SNOW:WYIELD", 1, HspfStatusOptional
       TimserStatus.Change "SNOW:MELT", 1, HspfStatusOptional
       TimserStatus.Change "SNOW:RAINF", 1, HspfStatusOptional
@@ -38,6 +55,8 @@ Public Sub UpdateOutputTimeseriesImplnd(O As HspfOperation, TimserStatus As Hspf
       TimserStatus.Change "IWATER:IMPS", 1, HspfStatusOptional
       TimserStatus.Change "IWATER:RETS", 1, HspfStatusOptional
       TimserStatus.Change "IWATER:SURS", 1, HspfStatusOptional
+      TimserStatus.Change "IWATER:PETADJ", 1, HspfStatusOptional
+      TimserStatus.Change "IWATER:SUPY", 1, HspfStatusOptional
       TimserStatus.Change "IWATER:SURO", 1, HspfStatusOptional
       TimserStatus.Change "IWATER:PET", 1, HspfStatusOptional
       TimserStatus.Change "IWATER:IMPEV", 1, HspfStatusOptional
@@ -82,10 +101,11 @@ Public Sub UpdateOutputTimeseriesImplnd(O As HspfOperation, TimserStatus As Hspf
       Next i
     
       For i = 1 To nquals
-        TimserStatus.Change "IQUAL:IQADDR", i, HspfStatusOptional
-        TimserStatus.Change "IQUAL:IQADWT", i, HspfStatusOptional
         TimserStatus.Change "IQUAL:SOQUAL", i, HspfStatusOptional
         TimserStatus.Change "IQUAL:SOQC", i, HspfStatusOptional
+        TimserStatus.Change "IQUAL:IQADDR", i, HspfStatusOptional
+        TimserStatus.Change "IQUAL:IQADWT", i, HspfStatusOptional
+        TimserStatus.Change "IQUAL:IQADEP", i, HspfStatusOptional
       Next i
       For i = 1 To nqof
         TimserStatus.Change "IQUAL:SQO", i, HspfStatusOptional
@@ -94,6 +114,7 @@ Public Sub UpdateOutputTimeseriesImplnd(O As HspfOperation, TimserStatus As Hspf
       Next i
       For i = 1 To nqsd
         TimserStatus.Change "IQUAL:SOQS", i, HspfStatusOptional
+        TimserStatus.Change "IQUAL:SOQSP", i, HspfStatusOptional
       Next i
     End If
     

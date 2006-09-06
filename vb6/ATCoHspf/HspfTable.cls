@@ -25,6 +25,7 @@ Dim pOpn As HspfOperation
 Dim pEditAllSimilar As Boolean
 Dim pEdited As Boolean
 Dim pSuppID As Long      '>0 indicates parms on this record are in supplemental file
+Dim pCombineOK As Boolean
 
 Public Property Let OccurCount(newOccurCount As Long)
   pOccurCount = newOccurCount
@@ -114,6 +115,13 @@ Public Property Get SuppID() As Long
   SuppID = pSuppID
 End Property
 
+Public Property Get CombineOK() As Boolean
+  CombineOK = pCombineOK
+End Property
+Public Property Let CombineOK(newCombineOK As Boolean)
+  pCombineOK = newCombineOK
+End Property
+
 Public Sub initTable(s As String)
   Dim lParm As HSPFParm
   Dim vParmDef As Variant
@@ -126,6 +134,8 @@ Public Sub initTable(s As String)
     Set lParm.Parent = Me
     Set lParm.Def = lParmDef
     lParm.Value = Trim(Mid(s, lParmDef.StartCol, lParmDef.Length))
+    lParm.ValueAsRead = Mid(s, lParmDef.StartCol, lParmDef.Length)
+    If lParm.ValueAsRead = "" And Len(s) > 0 Then lParm.ValueAsRead = " "
     If Len(lParm.Value) = 0 Then  'try default
       unitfg = pOpn.OpnBlk.Uci.GlobalBlock.emfg
       If unitfg = 1 Then
@@ -188,8 +198,8 @@ End Sub
 
 Public Sub WriteUciFile(f As Integer, Optional instance As Long = 0)
   Dim lOpn As HspfOperation, ltable As HspfTable, lParm As HSPFParm
-  Dim s$, t$, ilen&, icon&, SuppStr$
-  Dim i&, tname$, j&, r!
+  Dim s$, t$, ilen&, icon&, SuppStr$, tempValue$
+  Dim i&, tname$, j&, r!, firstopn As Boolean
   Dim pFlg As Boolean, p$, units&
   Dim lFirstOccur&, lLastOccur&
   
@@ -209,18 +219,11 @@ Public Sub WriteUciFile(f As Integer, Optional instance As Long = 0)
     Else
       tname = pDef.Name & ":" & i
     End If
-    Print #f, "  " & pDef.Name '; Tab(20); pComment
+    Print #f, "  " & pDef.Name
     
-    If units = 1 Then
-      Print #f, pDef.HeaderE
-    Else
-      Print #f, pDef.HeaderM
-    End If
-    'If Len(pComment) > 0 Then
-    '  Print #f, pComment
-    'End If
     pFlg = False
     On Error GoTo noTableForThisOper:
+    firstopn = True
     For j = 1 To pOpn.OpnBlk.Ids.Count
       Set lOpn = pOpn.OpnBlk.NthOper(j)
       'write values here
@@ -232,24 +235,33 @@ Public Sub WriteUciFile(f As Integer, Optional instance As Long = 0)
         s = myFormatI(lOpn.Id, 5) & Space(5)
         For Each lParm In ltable.Parms
           With lParm
+            tempValue = lParm.Value
             s = s & Space(.Def.StartCol - Len(s) - 1) 'pad prev field
             If .Def.Typ = ATCoTxt Then 'left justify strings
-              If .Def.Length < Len(.Value) Then
-                .Value = Left(.Value, .Def.Length)
+              If .Def.Length < Len(tempValue) Then
+                tempValue = Left(tempValue, .Def.Length)
               End If
-              t = LTrim(.Value)
-            Else 'right justify everything else
-              t = Space(.Def.Length)
-              If Len(.Value) > .Def.Length Then
-                r = .Value
-                If (Len(CStr(r)) = .Def.Length + 1) And .Value < 1# Then
-                  'just leave off leading zero
-                  RSet t = Mid(CStr(r), 2)
-                Else
-                  RSet t = NumFmtRE(.Value, .Def.Length)
-                End If
+              t = LTrim(tempValue)
+            Else
+              'not a string
+              'compare format of this value with the format as read
+              If NumericallyTheSame(.ValueAsRead, tempValue, .Def.Default) Then
+                'use the value as read
+                t = .ValueAsRead
               Else
-                RSet t = CStr(.Value)
+                'right justify everything else
+                t = Space(.Def.Length)
+                If Len(tempValue) > .Def.Length Then
+                  r = tempValue
+                  If (Len(CStr(r)) = .Def.Length + 1) And tempValue < 1# Then
+                    'just leave off leading zero
+                    RSet t = Mid(CStr(r), 2)
+                  Else
+                    RSet t = NumFmtRE(tempValue, .Def.Length)
+                  End If
+                Else
+                  RSet t = CStr(tempValue)
+                End If
               End If
             End If
           End With
@@ -260,7 +272,7 @@ Public Sub WriteUciFile(f As Integer, Optional instance As Long = 0)
           s = Left(s, 10) & SuppStr & Mid(s, 11 + Len(SuppStr))
         End If
         If pFlg Then
-          If compareTableString(1, 10, p, s) Then
+          If compareTableString(1, 10, p, s) And ltable.CombineOK Then
             s = Left(p, 5) & Left(s, 5) & Right(s, Len(s) - 10)
           Else
             ilen = Len(p)
@@ -273,15 +285,24 @@ Public Sub WriteUciFile(f As Integer, Optional instance As Long = 0)
               Call PrintMultiLine(f, p)
             Else
               Print #f, p
-              If Len(ltable.Comment) > 0 Then 'an associated comment
+              If Len(ltable.Comment) > 0 Then 'an comment associated with this operation
                 Print #f, ltable.Comment
               End If
             End If
           End If
         End If
         pFlg = True
-        If Len(pComment) > 0 And j = 1 Then 'an associated comment
-          Print #f, pComment
+        If firstopn Then
+          If Len(lOpn.Tables(tname).Comment) > 0 Then  'an associated comment
+            Print #f, lOpn.Tables(tname).Comment   'pbd
+          Else
+            If units = 1 Then
+              Print #f, pDef.HeaderE
+            Else
+              Print #f, pDef.HeaderM
+            End If
+          End If
+          firstopn = False
         End If
         p = s
         GoTo notMissingTableForThisOper:
@@ -325,6 +346,7 @@ Private Sub Class_Initialize()
   Set pParms = New Collection
   pOccurCount = 0
   pEditAllSimilar = True
+  pCombineOK = True
 End Sub
 
 Private Sub PrintMultiLine(f As Integer, p As String)
@@ -421,4 +443,32 @@ Public Function TableNeededForAllQuals() As Boolean
     TableNeededForAllQuals = False
   End If
   
+End Function
+
+Private Function NumericallyTheSame(ValueAsRead$, ValueStored$, ValueDefault$) As Boolean
+  'see if the current table value is the same as the value as read from the uci
+  '4. is the same as 4.0
+  '"  " is the same as 1 if 1 is the default
+  Dim rtemp1!, rtemp2!
+  
+  NumericallyTheSame = False
+  If IsNumeric(ValueStored) Then
+    If IsNumeric(ValueAsRead) Then
+      'simple case
+      rtemp1 = ValueAsRead
+      rtemp2 = ValueStored
+      If rtemp1 = rtemp2 Then
+        NumericallyTheSame = True
+      End If
+    ElseIf Len(ValueAsRead) > 0 And Len(Trim(ValueAsRead)) = 0 Then
+      'one or more blank characters
+      'see if the value stored is the same as the default
+      rtemp1 = ValueStored
+      rtemp2 = ValueDefault
+      If rtemp1 = rtemp2 Then
+        'we can use the blanks
+        NumericallyTheSame = True
+      End If
+    End If
+  End If
 End Function

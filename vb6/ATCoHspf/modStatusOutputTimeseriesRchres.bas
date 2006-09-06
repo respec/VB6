@@ -110,8 +110,10 @@ Public Sub UpdateOutputTimeseriesRchres(O As HspfOperation, TimserStatus As Hspf
       End If
       For i = 1 To nCons
         TimserStatus.Change "CONS:CON", i, HspfStatusOptional
+        TimserStatus.Change "CONS:ICON", i, HspfStatusOptional
         TimserStatus.Change "CONS:COADDR", i, HspfStatusOptional
         TimserStatus.Change "CONS:COADWT", i, HspfStatusOptional
+        TimserStatus.Change "CONS:COADEP", i, HspfStatusOptional
         TimserStatus.Change "CONS:ROCON", i, HspfStatusOptional
         TimserStatus.Change "ROFLOW:ROCON", i, HspfStatusOptional
         If nExits > 1 Then
@@ -127,8 +129,10 @@ Public Sub UpdateOutputTimeseriesRchres(O As HspfOperation, TimserStatus As Hspf
     If ltable.Parms("HTFG") = 1 Then
       TimserStatus.Change "HTRCH:TW", 1, HspfStatusOptional
       TimserStatus.Change "HTRCH:AIRTMP", 1, HspfStatusOptional
+      TimserStatus.Change "HTRCH:IHEAT", 1, HspfStatusOptional
       TimserStatus.Change "HTRCH:HTEXCH", 1, HspfStatusOptional
       TimserStatus.Change "HTRCH:ROHEAT", 1, HspfStatusOptional
+      TimserStatus.Change "HTRCH:SHDFAC", 1, HspfStatusOptional
       TimserStatus.Change "ROFLOW:ROHEAT", 1, HspfStatusOptional
       If nExits > 1 Then
         For i = 1 To nExits
@@ -145,11 +149,13 @@ Public Sub UpdateOutputTimeseriesRchres(O As HspfOperation, TimserStatus As Hspf
     If ltable.Parms("SEDFG") = 1 Then
       For i = 1 To 4
         TimserStatus.Change "SEDTRN:SSED", i, HspfStatusOptional
+        TimserStatus.Change "SEDTRN:ISED", i, HspfStatusOptional
         TimserStatus.Change "SEDTRN:DEPSCR", i, HspfStatusOptional
         TimserStatus.Change "SEDTRN:ROSED", i, HspfStatusOptional
       Next i
       For i = 1 To 3
         TimserStatus.Change "ROFLOW:ROSED", i, HspfStatusOptional
+        TimserStatus.Change "SEDTRN:TSED", i, HspfStatusOptional
       Next i
       For i = 1 To 10
         TimserStatus.Change "SEDTRN:RSED", i, HspfStatusOptional
@@ -180,10 +186,14 @@ Public Sub UpdateOutputTimeseriesRchres(O As HspfOperation, TimserStatus As Hspf
         TimserStatus.Change "GQUAL:DQAL", i, HspfStatusOptional
         TimserStatus.Change "GQUAL:RDQAL", i, HspfStatusOptional
         TimserStatus.Change "GQUAL:RRQAL", i, HspfStatusOptional
+        TimserStatus.Change "GQUAL:IDQAL", i, HspfStatusOptional
+        TimserStatus.Change "GQUAL:TIQAL", i, HspfStatusOptional
         TimserStatus.Change "GQUAL:PDQAL", i, HspfStatusOptional
         TimserStatus.Change "GQUAL:GQADDR", i, HspfStatusOptional
         TimserStatus.Change "GQUAL:GQADWT", i, HspfStatusOptional
+        TimserStatus.Change "GQUAL:GQADEP", i, HspfStatusOptional
         TimserStatus.Change "GQUAL:RODQAL", i, HspfStatusOptional
+        TimserStatus.Change "GQUAL:TROQAL", i, HspfStatusOptional
         TimserStatus.Change "ROFLOW:RODQAL", i, HspfStatusOptional
         For j = 1 To 7
           TimserStatus.Change2 "GQUAL:DDQAL", j, i, HspfStatusOptional
@@ -198,6 +208,7 @@ Public Sub UpdateOutputTimeseriesRchres(O As HspfOperation, TimserStatus As Hspf
         Next j
         For j = 1 To 4
           TimserStatus.Change2 "GQUAL:DSQAL", j, i, HspfStatusOptional
+          TimserStatus.Change2 "GQUAL:ISQAL", j, i, HspfStatusOptional
           TimserStatus.Change2 "GQUAL:ROSQAL", j, i, HspfStatusOptional
         Next j
         For j = 1 To 3
@@ -206,6 +217,7 @@ Public Sub UpdateOutputTimeseriesRchres(O As HspfOperation, TimserStatus As Hspf
         If nExits > 1 Then
           For j = 1 To nExits
             TimserStatus.Change2 "GQUAL:ODQAL", j, i, HspfStatusOptional
+            TimserStatus.Change2 "GQUAL:TOSQAL", j, i, HspfStatusOptional
             TimserStatus.Change2 "OFLOW:ODQAL", j, i, HspfStatusOptional
             TimserStatus.Change2 "GQUAL:OSQAL", j, i, HspfStatusOptional
             TimserStatus.Change2 "OFLOW:OSQAL", j, i, HspfStatusOptional
@@ -223,6 +235,8 @@ Public Sub UpdateOutputTimeseriesRchres(O As HspfOperation, TimserStatus As Hspf
       TimserStatus.Change "OXRX:DOX", 1, HspfStatusOptional
       TimserStatus.Change "OXRX:BOD", 1, HspfStatusOptional
       TimserStatus.Change "OXRX:SATDO", 1, HspfStatusOptional
+      TimserStatus.Change "OXRX:OXIF", 1, HspfStatusOptional
+      TimserStatus.Change "OXRX:OXIF", 2, HspfStatusOptional
       TimserStatus.Change "OXRX:OXCF1", 1, HspfStatusOptional
       TimserStatus.Change "OXRX:OXCF1", 2, HspfStatusOptional
       TimserStatus.Change "ROFLOW:OXCF1", 1, HspfStatusOptional
@@ -235,6 +249,10 @@ Public Sub UpdateOutputTimeseriesRchres(O As HspfOperation, TimserStatus As Hspf
           TimserStatus.Change2 "OFLOW:OXCF2", j, 2, HspfStatusOptional
         Next j
       End If
+      For j = 1 To 8
+        TimserStatus.Change "OXRX:OXCF3", j, HspfStatusOptional
+        TimserStatus.Change "OXRX:OXCF4", j, HspfStatusOptional
+      Next j
     End If
     
     'section nutrx
@@ -245,6 +263,7 @@ Public Sub UpdateOutputTimeseriesRchres(O As HspfOperation, TimserStatus As Hspf
         TimserStatus.Change "NUTRX:SPO4", i, HspfStatusOptional
         TimserStatus.Change "NUTRX:NUADDR", i, HspfStatusOptional
         TimserStatus.Change "NUTRX:NUADWT", i, HspfStatusOptional
+        TimserStatus.Change "NUTRX:NUADEP", i, HspfStatusOptional
       Next i
       For i = 1 To 12
         TimserStatus.Change "NUTRX:RSNH4", i, HspfStatusOptional
@@ -253,17 +272,22 @@ Public Sub UpdateOutputTimeseriesRchres(O As HspfOperation, TimserStatus As Hspf
       For i = 1 To 4
         TimserStatus.Change "NUTRX:NUST", i, HspfStatusOptional
         TimserStatus.Change "NUTRX:NUCF1", i, HspfStatusOptional
+        TimserStatus.Change "NUTRX:NUIF1", i, HspfStatusOptional
+        TimserStatus.Change "NUTRX:TNUIF", i, HspfStatusOptional
+        TimserStatus.Change "NUTRX:TNUCF1", i, HspfStatusOptional
         TimserStatus.Change "ROFLOW:NUCF1", i, HspfStatusOptional
       Next i
       For i = 1 To 6
         TimserStatus.Change "NUTRX:DNUST", i, HspfStatusOptional
         TimserStatus.Change "NUTRX:DNUST2", i, HspfStatusOptional
-        TimserStatus.Change "NUTRX:NUCF4", i, HspfStatusOptional
       Next i
       For i = 1 To 7
+        TimserStatus.Change "NUTRX:NUCF4", i, HspfStatusOptional
+      Next i
+      For i = 1 To 8
         TimserStatus.Change "NUTRX:NUCF5", i, HspfStatusOptional
       Next i
-      For i = 1 To 5
+      For i = 1 To 6
         TimserStatus.Change "NUTRX:NUCF7", i, HspfStatusOptional
       Next i
       For i = 1 To 3
@@ -273,24 +297,20 @@ Public Sub UpdateOutputTimeseriesRchres(O As HspfOperation, TimserStatus As Hspf
       Next i
       For i = 1 To 4
         For j = 1 To 2
+          TimserStatus.Change2 "NUTRX:NUIF2", i, j, HspfStatusOptional
           TimserStatus.Change2 "NUTRX:NUCF2", i, j, HspfStatusOptional
           TimserStatus.Change2 "NUTRX:NUCF3", i, j, HspfStatusOptional
           TimserStatus.Change2 "NUTRX:NUCF8", i, j, HspfStatusOptional
         Next j
       Next i
-      For i = 1 To 5
-        For j = 1 To 4
-          TimserStatus.Change2 "NUTRX:NUCF9", i, j, HspfStatusOptional
-        Next j
-        For j = 1 To 3
-          TimserStatus.Change2 "NUTRX:OSNH4", i, j, HspfStatusOptional
-          TimserStatus.Change2 "NUTRX:OSPO4", i, j, HspfStatusOptional
-        Next j
-      Next i
       If nExits > 1 Then
         For i = 1 To nExits
           For j = 1 To 4
+            TimserStatus.Change2 "NUTRX:NUCF9", i, j, HspfStatusOptional
             TimserStatus.Change2 "OFLOW:NUCF9", i, j, HspfStatusOptional
+            TimserStatus.Change2 "NUTRX:OSNH4", i, j, HspfStatusOptional
+            TimserStatus.Change2 "NUTRX:OSPO4", i, j, HspfStatusOptional
+            TimserStatus.Change2 "NUTRX:TNUCF2", i, j, HspfStatusOptional
           Next j
           For j = 1 To 3
             TimserStatus.Change2 "OFLOW:OSNH4", i, j, HspfStatusOptional
@@ -319,9 +339,15 @@ Public Sub UpdateOutputTimeseriesRchres(O As HspfOperation, TimserStatus As Hspf
       TimserStatus.Change "PLANK:PKST4", 1, HspfStatusOptional
       TimserStatus.Change "PLANK:PKST4", 2, HspfStatusOptional
       For i = 1 To 5
+        TimserStatus.Change "PLANK:PKIF", i, HspfStatusOptional
+        TimserStatus.Change "PLANK:TPKIF", i, HspfStatusOptional
         TimserStatus.Change "PLANK:PKCF1", i, HspfStatusOptional
         TimserStatus.Change "ROFLOW:PKCF1", i, HspfStatusOptional
         TimserStatus.Change "PLANK:TPKCF1", i, HspfStatusOptional
+        TimserStatus.Change "PLANK:PKCF5", i, HspfStatusOptional
+        TimserStatus.Change "PLANK:PKCF8", i, HspfStatusOptional
+        TimserStatus.Change "PLANK:PKCF9", i, HspfStatusOptional
+        TimserStatus.Change "PLANK:PKCF10", i, HspfStatusOptional
         If nExits > 1 Then
           For j = 1 To nExits
             TimserStatus.Change2 "PLANK:PKCF2", j, i, HspfStatusOptional
@@ -334,15 +360,24 @@ Public Sub UpdateOutputTimeseriesRchres(O As HspfOperation, TimserStatus As Hspf
         TimserStatus.Change "PLANK:PLADDR", i, HspfStatusOptional
         TimserStatus.Change "PLANK:PLADWT", i, HspfStatusOptional
         TimserStatus.Change "PLANK:PLADEP", i, HspfStatusOptional
+        TimserStatus.Change "PLANK:PKCF6", i, HspfStatusOptional
+        TimserStatus.Change "PLANK:TPKCF7", i, HspfStatusOptional
+      Next i
+      For i = 1 To 4
+        For j = 1 To 3
+          TimserStatus.Change2 "PLANK:PKCF7", j, i, HspfStatusOptional
+        Next j
       Next i
     End If
       
     'section phcarb
     If ltable.Parms("PHFG") = 1 Or ltable.Parms("PHFG") = 3 Then
+      TimserStatus.Change "PHCARB:SATCO2", i, HspfStatusOptional
       For i = 1 To 3
         TimserStatus.Change "PHCARB:PHST", i, HspfStatusOptional
       Next i
       For i = 1 To 2
+        TimserStatus.Change "PHCARB:PHIF", i, HspfStatusOptional
         TimserStatus.Change "PHCARB:PHCF1", i, HspfStatusOptional
         TimserStatus.Change "ROFLOW:PHCF1", i, HspfStatusOptional
         If nExits > 1 Then
@@ -351,6 +386,9 @@ Public Sub UpdateOutputTimeseriesRchres(O As HspfOperation, TimserStatus As Hspf
             TimserStatus.Change2 "OFLOW:PHCF2", j, i, HspfStatusOptional
           Next j
         End If
+      Next i
+      For i = 1 To 7
+        TimserStatus.Change "PHCARB:PHCF3", i, HspfStatusOptional
       Next i
     End If
     

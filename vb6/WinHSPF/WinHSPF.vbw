@@ -1,4 +1,4 @@
-HSPFMain = 51, 40, 750, 588, , 88, 88, 734, 723, C
+HSPFMain = 102, 50, 801, 598, , 88, 88, 734, 723, C
 modMachineSpecific = 115, 173, 761, 808, C
 UTILITY = 235, 72, 977, 626, C
 utilSaveSettings = 80, 6, 767, 569, C

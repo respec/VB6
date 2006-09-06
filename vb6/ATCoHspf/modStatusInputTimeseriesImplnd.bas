@@ -5,7 +5,7 @@ Option Explicit
 Public Sub UpdateInputTimeseriesImplnd(O As HspfOperation, TimserStatus As HspfStatus)
   Dim ltable As HspfTable, nquals&
   Dim i&, icefg&, csnofg&, iffcfg&, iqadfg&(20), ctemp$
-  Dim wetadfg&, dryadfg&, qualof&, qualif&, qualgw&, qualsd&
+  Dim wetadfg&, dryadfg&, qualof&, qualif&, qualgw&, qualsd&, snopfg&
   
   If O.TableExists("ACTIVITY") Then
     Set ltable = O.Tables("ACTIVITY")
@@ -17,11 +17,21 @@ Public Sub UpdateInputTimeseriesImplnd(O As HspfOperation, TimserStatus As HspfS
     End If
     
     'section snow
+    If O.TableExists("SNOW-FLAGS") Then
+      snopfg = O.Tables("SNOW-FLAGS").Parms("SNOPFG")
+    Else
+      snopfg = 0
+    End If
     If ltable.Parms("SNOWFG") = 1 Then
       TimserStatus.Change "EXTNL:PREC", 1, HspfStatusRequired
-      TimserStatus.Change "EXTNL:DTMPG", 1, HspfStatusRequired
-      TimserStatus.Change "EXTNL:WINMOV", 1, HspfStatusRequired
-      TimserStatus.Change "EXTNL:SOLRAD", 1, HspfStatusRequired
+      If snopfg = 0 Then
+        TimserStatus.Change "EXTNL:DTMPG", 1, HspfStatusRequired
+        TimserStatus.Change "EXTNL:WINMOV", 1, HspfStatusRequired
+        TimserStatus.Change "EXTNL:SOLRAD", 1, HspfStatusRequired
+        TimserStatus.Change "EXTNL:CLOUD", 1, HspfStatusOptional
+      Else
+        TimserStatus.Change "EXTNL:DTMPG", 1, HspfStatusOptional
+      End If
       If ltable.Parms("ATMPFG") = 0 Then
         TimserStatus.Change "ATEMP:AIRTMP", 1, HspfStatusRequired
       End If

@@ -25,7 +25,16 @@ Dim pOutflow2() As Double  'with multiple subscripts
 Dim pOutflow3() As Double
 Dim pOutflow4() As Double
 Dim pOutflow5() As Double
+Dim pDepthAsRead() As String
+Dim pAreaAsRead() As String
+Dim pVolumeAsRead() As String
+Dim pOutflow1AsRead() As String
+Dim pOutflow2AsRead() As String
+Dim pOutflow3AsRead() As String
+Dim pOutflow4AsRead() As String
+Dim pOutflow5AsRead() As String
 Dim pOperation As HspfOperation
+Dim pComment As String
 
 Public Property Get Depth(row&) As Double
   Depth = pDepth(row)
@@ -83,6 +92,69 @@ Public Property Let Outflow5(row&, newOutflow#)
   pOutflow5(row) = newOutflow
 End Property
 
+Public Property Get DepthAsRead(row&) As String
+  DepthAsRead = pDepthAsRead(row)
+End Property
+Public Property Let DepthAsRead(row&, newDepth$)
+  pDepthAsRead(row) = newDepth
+End Property
+
+Public Property Get AreaAsRead(row&) As String
+  AreaAsRead = pAreaAsRead(row)
+End Property
+Public Property Let AreaAsRead(row&, newArea$)
+  pAreaAsRead(row) = newArea
+End Property
+
+Public Property Get VolumeAsRead(row&) As String
+  VolumeAsRead = pVolumeAsRead(row)
+End Property
+Public Property Let VolumeAsRead(row&, newVolume$)
+  pVolumeAsRead(row) = newVolume
+End Property
+
+Public Property Get Outflow1AsRead(row&) As String
+  Outflow1AsRead = pOutflow1AsRead(row)
+End Property
+Public Property Let Outflow1AsRead(row&, newOutflowAsRead$)
+  pOutflow1AsRead(row) = newOutflowAsRead
+End Property
+
+Public Property Get Outflow2AsRead(row&) As String
+  Outflow2AsRead = pOutflow2AsRead(row)
+End Property
+Public Property Let Outflow2AsRead(row&, newOutflowAsRead$)
+  pOutflow2AsRead(row) = newOutflowAsRead
+End Property
+
+Public Property Get Outflow3AsRead(row&) As String
+  Outflow3AsRead = pOutflow3AsRead(row)
+End Property
+Public Property Let Outflow3AsRead(row&, newOutflowAsRead$)
+  pOutflow3AsRead(row) = newOutflowAsRead
+End Property
+
+Public Property Get Outflow4AsRead(row&) As String
+  Outflow4AsRead = pOutflow4AsRead(row)
+End Property
+Public Property Let Outflow4AsRead(row&, newOutflowAsRead$)
+  pOutflow4AsRead(row) = newOutflowAsRead
+End Property
+
+Public Property Get Outflow5AsRead(row&) As String
+  Outflow5AsRead = pOutflow5AsRead(row)
+End Property
+Public Property Let Outflow5AsRead(row&, newOutflowAsRead$)
+  pOutflow5AsRead(row) = newOutflowAsRead
+End Property
+
+Public Property Get Comment() As String
+  Comment = pComment
+End Property
+Public Property Let Comment(newcomment$)
+  pComment = newcomment
+End Property
+
 Public Sub Edited()
    pOperation.Edited = True
 End Sub
@@ -120,6 +192,14 @@ Private Sub initArrays()
     ReDim Preserve pOutflow3(pNrows)
     ReDim Preserve pOutflow4(pNrows)
     ReDim Preserve pOutflow5(pNrows)
+    ReDim Preserve pDepthAsRead(pNrows)
+    ReDim Preserve pAreaAsRead(pNrows)
+    ReDim Preserve pVolumeAsRead(pNrows)
+    ReDim Preserve pOutflow1AsRead(pNrows)
+    ReDim Preserve pOutflow2AsRead(pNrows)
+    ReDim Preserve pOutflow3AsRead(pNrows)
+    ReDim Preserve pOutflow4AsRead(pNrows)
+    ReDim Preserve pOutflow5AsRead(pNrows)
   End If
 End Sub
 Public Property Get Operation() As HspfOperation
@@ -188,36 +268,72 @@ Public Sub WriteUciFile(f As Long)
     With lOpn.FTable
       Print #f, " rows cols" & Space((.Ncols - 1) * 10) & " ***"
       Print #f, myFormatI(lOpn.FTable.Nrows, 5) & myFormatI(lOpn.FTable.Ncols, 5)
-      s = "     depth      area    volume"
-      For j = 1 To .Ncols - 3
-        s = s & "  outflow" & j
-      Next j
-      Print #f, s & " ***"
+      If Len(.Comment) > 0 Then
+        Print #f, .Comment
+      Else
+        s = "     depth      area    volume"
+        For j = 1 To .Ncols - 3
+          s = s & "  outflow" & j
+        Next j
+        Print #f, s & " ***"
+      End If
       For i = 1 To .Nrows
         s = Space(10)
-        RSet s = CStr(Format(.Depth(i), fmt))
+        If NumericallyTheSame(.DepthAsRead(i), .Depth(i)) Then
+          s = .DepthAsRead(i)
+        Else
+          RSet s = CStr(Format(.Depth(i), fmt))
+        End If
         t = Space(10)
-        RSet t = CStr(Format(.Area(i), fmt))
+        If NumericallyTheSame(.AreaAsRead(i), .Area(i)) Then
+          t = .AreaAsRead(i)
+        Else
+          RSet t = CStr(Format(.Area(i), fmt))
+        End If
         s = s & t
         t = Space(10)
-        RSet t = CStr(Format(.Volume(i), fmt))
+        If NumericallyTheSame(.VolumeAsRead(i), .Volume(i)) Then
+          t = .VolumeAsRead(i)
+        Else
+          RSet t = CStr(Format(.Volume(i), fmt))
+        End If
         s = s & t
         For j = 1 To .Ncols - 3
           t = Space(10)
           If j = 1 Then
-            RSet t = CStr(Format(.Outflow1(i), fmt))
+            If NumericallyTheSame(.Outflow1AsRead(i), .Outflow1(i)) Then
+              t = .Outflow1AsRead(i)
+            Else
+              RSet t = CStr(Format(.Outflow1(i), fmt))
+            End If
           End If
           If j = 2 Then
-            RSet t = CStr(Format(.Outflow2(i), fmt))
+            If NumericallyTheSame(.Outflow2AsRead(i), .Outflow2(i)) Then
+              t = .Outflow2AsRead(i)
+            Else
+              RSet t = CStr(Format(.Outflow2(i), fmt))
+            End If
           End If
           If j = 3 Then
-            RSet t = CStr(Format(.Outflow3(i), fmt))
+            If NumericallyTheSame(.Outflow3AsRead(i), .Outflow3(i)) Then
+              t = .Outflow3AsRead(i)
+            Else
+              RSet t = CStr(Format(.Outflow3(i), fmt))
+            End If
           End If
           If j = 4 Then
-            RSet t = CStr(Format(.Outflow4(i), fmt))
+            If NumericallyTheSame(.Outflow4AsRead(i), .Outflow4(i)) Then
+              t = .Outflow4AsRead(i)
+            Else
+              RSet t = CStr(Format(.Outflow4(i), fmt))
+            End If
           End If
           If j = 5 Then
-            RSet t = CStr(Format(.Outflow5(i), fmt))
+            If NumericallyTheSame(.Outflow5AsRead(i), .Outflow5(i)) Then
+              t = .Outflow5AsRead(i)
+            Else
+              RSet t = CStr(Format(.Outflow5(i), fmt))
+            End If
           End If
           s = s & t
         Next j
@@ -534,8 +650,21 @@ End Function
 '    return ((((1.1 * dAcRc) - dAct1Rct1) < 0.0) && (((1.1 * dAt1Rt1) - dAt1t2Rt1t2) < 0.0));
 '}
 
-
-
-
+Private Function NumericallyTheSame(ValueAsRead$, ValueStored!) As Boolean
+  'see if the current ftable value is the same as the value as read from the uci
+  '4. is the same as 4.0
+  Dim rtemp1!
+  
+  NumericallyTheSame = False
+  If IsNumeric(ValueStored) Then
+    If IsNumeric(ValueAsRead) Then
+      'simple case
+      rtemp1 = ValueAsRead
+      If rtemp1 = ValueStored Then
+        NumericallyTheSame = True
+      End If
+    End If
+  End If
+End Function
 
 
