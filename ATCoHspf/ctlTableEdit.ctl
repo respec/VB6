@@ -339,7 +339,8 @@ Public Sub Save()
   With grdTable
     For j = 1 To .rows
       If .rows = 1 Then
-        Set ltable = pTable
+        Set ltable = Nothing
+        Set ltable = pTable.Opn.Tables(tname)
       Else
         'Set ltable = pTable.Opn.OpnBlk.Ids(j).Tables(tname) 'changed for sort
         Set ltable = Nothing

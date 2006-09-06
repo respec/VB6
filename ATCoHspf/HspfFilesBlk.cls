@@ -185,7 +185,7 @@ Friend Sub ReadUciFile()
       lFile.Comment = c
       pFiles.Add lFile
       c = ""
-    ElseIf rectyp = -1 And init = 0 Then 'dont save first comment, its the header
+    ElseIf rectyp = -1 Then
       'save comment
       If Len(c) = 0 Then
         c = cbuff
@@ -219,7 +219,12 @@ Friend Sub WriteUciFile(f As Integer)
   End If
   Print #f, " "
   Print #f, "FILES"
-  Print #f, "<FILE>  <UN#>***<----FILE NAME------------------------------------------------->"
+  If pFiles.Count > 0 Then
+    If Len(pFiles(1).Comment) = 0 Then
+      'need to add header
+      Print #f, "<FILE>  <UN#>***<----FILE NAME------------------------------------------------->"
+    End If
+  End If
   For Each vfile In pFiles
     lFile = vfile
     tname = lFile.Name
@@ -250,7 +255,7 @@ Public Sub newName(oldn$, newn$)
       'replace file name
       tempn = lHspfFile.Name
       l = Len(oldn)
-      itmp = InStr(1, tempn, oldn)
+      itmp = InStr(1, UCase(tempn), UCase(oldn))
       j = Len(tempn)
       islash = 0
       For i = 1 To j

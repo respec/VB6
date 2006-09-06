@@ -58,7 +58,7 @@ Public Sub GetNextRecordFromBlock(blockname$, retkey&, cbuff$, rectyp&, retcod&)
         rectyp = 0
         retcod = 2
         Exit For
-      ElseIf InStr(1, uciRec(i), "***") > 0 And blockname <> "FTABLES" Then
+      ElseIf InStr(1, uciRec(i), "***") > 0 Then
         'found comment
         retkey = i
         cbuff = uciRec(i)

@@ -15,6 +15,7 @@ Option Explicit
 'Copyright 2002 AQUA TERRA Consultants - Royalty-free use permitted under open source license
 
 Dim pMFact As Double
+Dim pMFactAsRead As String
 Dim pTyp As Long '1-ExtSource,2-Network,3-Schematic,4-ExtTarget
 Dim pTran As String
 Dim pSgapstrg As String
@@ -32,6 +33,13 @@ Public Property Get MFact() As Double
 End Property
 Public Property Let MFact(newMFact As Double)
   pMFact = newMFact
+End Property
+
+Public Property Get MFactAsRead() As String
+  MFactAsRead = pMFactAsRead
+End Property
+Public Property Let MFactAsRead(newMFactAsRead As String)
+  pMFactAsRead = newMFactAsRead
 End Property
 
 Public Property Get Uci() As HspfUci
@@ -130,12 +138,13 @@ Public Sub readTimSer(myUci As HspfUci)
       lConnection.Typ = 1
       lConnection.Source.VolName = Trim(Left(cbuff, 6))
       lConnection.Source.VolId = Mid(cbuff, 7, 4)
-      lConnection.Source.member = Trim(Mid(cbuff, 12, 6))
+      lConnection.Source.Member = Trim(Mid(cbuff, 12, 6))
       s = Trim(Mid(cbuff, 18, 2))
       If Len(s) > 0 Then lConnection.Source.MemSub1 = s
       lConnection.Ssystem = Mid(cbuff, 21, 4)
       lConnection.Sgapstrg = Mid(cbuff, 25, 4)
       s = Trim(Mid(cbuff, 29, 10))
+      lConnection.MFactAsRead = Mid(cbuff, 29, 10)
       If Len(s) > 0 Then lConnection.MFact = s
       s = Mid(cbuff, 39, 4)
       If Len(s) > 0 Then lConnection.Tran = s
@@ -144,7 +153,7 @@ Public Sub readTimSer(myUci As HspfUci)
       s = Trim(Mid(cbuff, 55, 3))
       If Len(s) > 0 Then lConnection.Target.VolIdL = s
       lConnection.Target.Group = Trim(Mid(cbuff, 59, 6))
-      lConnection.Target.member = Trim(Mid(cbuff, 66, 6))
+      lConnection.Target.Member = Trim(Mid(cbuff, 66, 6))
       s = Trim(Mid(cbuff, 72, 2))
       If Len(s) > 0 And IsNumeric(s) Then
         lConnection.Target.MemSub1 = s
@@ -196,7 +205,7 @@ Public Sub readTimSer(myUci As HspfUci)
       lConnection.Source.VolName = Trim(Left(cbuff, 6))
       lConnection.Source.VolId = Mid(cbuff, 7, 4)
       lConnection.Source.Group = Trim(Mid(cbuff, 12, 6))
-      lConnection.Source.member = Trim(Mid(cbuff, 19, 6))
+      lConnection.Source.Member = Trim(Mid(cbuff, 19, 6))
       s = Trim(Mid(cbuff, 25, 2))
       If Len(s) > 0 And IsNumeric(s) Then
         lConnection.Source.MemSub1 = s
@@ -210,6 +219,7 @@ Public Sub readTimSer(myUci As HspfUci)
         If Len(s) > 0 Then lConnection.Source.MemSub2 = myUci.CatAsInt(s)
       End If
       s = Trim(Mid(cbuff, 29, 10))
+      lConnection.MFactAsRead = Mid(cbuff, 29, 10)
       If Len(s) > 0 Then lConnection.MFact = s
       lConnection.Tran = Trim(Mid(cbuff, 39, 4))
       lConnection.Target.VolName = Trim(Mid(cbuff, 44, 6))
@@ -217,7 +227,7 @@ Public Sub readTimSer(myUci As HspfUci)
       s = Trim(Mid(cbuff, 55, 3))
       If Len(s) > 0 Then lConnection.Target.VolIdL = s
       lConnection.Target.Group = Trim(Mid(cbuff, 59, 6))
-      lConnection.Target.member = Trim(Mid(cbuff, 66, 6))
+      lConnection.Target.Member = Trim(Mid(cbuff, 66, 6))
       s = Trim(Mid(cbuff, 72, 2))
       If Len(s) > 0 And IsNumeric(s) Then
         lConnection.Target.MemSub1 = s
@@ -269,6 +279,7 @@ Public Sub readTimSer(myUci As HspfUci)
       lConnection.Source.VolName = Trim(Left(cbuff, 6))
       lConnection.Source.VolId = Mid(cbuff, 7, 4)
       s = Trim(Mid(cbuff, 29, 10))
+      lConnection.MFactAsRead = Mid(cbuff, 29, 10)
       If Len(s) > 0 Then lConnection.MFact = s
       lConnection.Target.VolName = Trim(Mid(cbuff, 44, 6))
       lConnection.Target.VolId = Mid(cbuff, 50, 4)
@@ -324,7 +335,7 @@ Public Sub readTimSer(myUci As HspfUci)
       lConnection.Source.VolName = Trim(Left(cbuff, 6))
       lConnection.Source.VolId = Mid(cbuff, 7, 4)
       lConnection.Source.Group = Trim(Mid(cbuff, 12, 6))
-      lConnection.Source.member = Trim(Mid(cbuff, 19, 6))
+      lConnection.Source.Member = Trim(Mid(cbuff, 19, 6))
       s = Trim(Mid(cbuff, 25, 2))
       If Len(s) > 0 And IsNumeric(s) Then
         lConnection.Source.MemSub1 = s
@@ -338,12 +349,13 @@ Public Sub readTimSer(myUci As HspfUci)
         If Len(s) > 0 Then lConnection.Source.MemSub1 = myUci.CatAsInt(s)
       End If
       s = Trim(Mid(cbuff, 29, 10))
+      lConnection.MFactAsRead = Mid(cbuff, 29, 10)
       If Len(s) > 0 Then lConnection.MFact = s
       s = Trim(Mid(cbuff, 39, 4))
       If Len(s) > 0 Then lConnection.Tran = s
       lConnection.Target.VolName = Trim(Mid(cbuff, 44, 6))
       lConnection.Target.VolId = Mid(cbuff, 50, 4)
-      lConnection.Target.member = Trim(Mid(cbuff, 55, 6))
+      lConnection.Target.Member = Trim(Mid(cbuff, 55, 6))
       s = Trim(Mid(cbuff, 61, 2))
       If Len(s) > 0 Then lConnection.Target.MemSub1 = s
       lConnection.Ssystem = Trim(Mid(cbuff, 64, 4))
@@ -492,12 +504,12 @@ Public Sub WriteUciFile(f As Integer, M As HspfMsg)
                 RSet t = CStr(lConn.Source.VolId)
                 str = str & t
                 str = str & Space(icol(2) - Len(str) - 1)
-                str = str & lConn.Source.member
+                str = str & lConn.Source.Member
                 str = str & Space(icol(3) - Len(str) - 1)
                 If lConn.Source.MemSub1 <> 0 Then
                   t = Space(ilen(3))
                   RSet t = CStr(lConn.Source.MemSub1)
-                  If lConn.Source.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Source.member, 1, t)
+                  If lConn.Source.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Source.Member, 1, t)
                   str = str & t
                 End If
                 str = str & Space(icol(4) - Len(str) - 1)
@@ -505,7 +517,10 @@ Public Sub WriteUciFile(f As Integer, M As HspfMsg)
                 str = str & Space(icol(5) - Len(str) - 1)
                 str = str & lConn.Sgapstrg
                 str = str & Space(icol(6) - Len(str) - 1)
-                If lConn.MFact <> 1 Then
+                If NumericallyTheSame(lConn.MFactAsRead, lConn.MFact) Then
+                  t = lConn.MFactAsRead
+                  str = str & t
+                ElseIf lConn.MFact <> 1 Then
                   t = Space(ilen(6))
                   RSet t = CStr(lConn.MFact)
                   str = str & t
@@ -521,19 +536,19 @@ Public Sub WriteUciFile(f As Integer, M As HspfMsg)
                 str = str & Space(icol(11) - Len(str) - 1)
                 str = str & lConn.Target.Group
                 str = str & Space(icol(12) - Len(str) - 1)
-                str = str & lConn.Target.member
+                str = str & lConn.Target.Member
                 str = str & Space(icol(13) - Len(str) - 1)
                 If lConn.Target.MemSub1 <> 0 Then
                   t = Space(ilen(13))
                   RSet t = CStr(lConn.Target.MemSub1)
-                  If lConn.Target.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Target.member, 1, t)
+                  If lConn.Target.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Target.Member, 1, t)
                   str = str & t
                 End If
                 str = str & Space(icol(14) - Len(str) - 1)
                 If lConn.Target.MemSub2 <> 0 Then
                   t = Space(ilen(14))
                   RSet t = CStr(lConn.Target.MemSub2)
-                  If lConn.Target.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Target.member, 2, t)
+                  If lConn.Target.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Target.Member, 2, t)
                   str = str & t
                 End If
                 If Len(lConn.Comment) > 0 Then
@@ -559,23 +574,26 @@ Public Sub WriteUciFile(f As Integer, M As HspfMsg)
                 str = str & Space(icol(2) - Len(str) - 1)
                 str = str & lConn.Source.Group
                 str = str & Space(icol(3) - Len(str) - 1)
-                str = str & lConn.Source.member
+                str = str & lConn.Source.Member
                 str = str & Space(icol(4) - Len(str) - 1)
                 If lConn.Source.MemSub1 <> 0 Then
                   t = Space(ilen(4))
                   RSet t = CStr(lConn.Source.MemSub1)
-                  If lConn.Source.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Source.member, 1, t)
+                  If lConn.Source.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Source.Member, 1, t)
                   str = str & t
                 End If
                 str = str & Space(icol(5) - Len(str) - 1)
                 If lConn.Source.MemSub2 <> 0 Then
                   t = Space(ilen(5))
                   RSet t = CStr(lConn.Source.MemSub2)
-                  If lConn.Source.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Source.member, 2, t)
+                  If lConn.Source.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Source.Member, 2, t)
                   str = str & t
                 End If
                 str = str & Space(icol(6) - Len(str) - 1)
-                If lConn.MFact <> 1 Then
+                If NumericallyTheSame(lConn.MFactAsRead, lConn.MFact) Then
+                  t = lConn.MFactAsRead
+                  str = str & t
+                ElseIf lConn.MFact <> 1 Then
                   t = Space(ilen(6))
                   RSet t = CStr(lConn.MFact)
                   str = str & t
@@ -591,19 +609,19 @@ Public Sub WriteUciFile(f As Integer, M As HspfMsg)
                 str = str & Space(icol(11) - Len(str) - 1)
                 str = str & lConn.Target.Group
                 str = str & Space(icol(12) - Len(str) - 1)
-                str = str & lConn.Target.member
+                str = str & lConn.Target.Member
                 str = str & Space(icol(13) - Len(str) - 1)
                 If lConn.Target.MemSub1 <> 0 Then
                   t = Space(ilen(13))
                   RSet t = CStr(lConn.Target.MemSub1)
-                  If lConn.Target.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Target.member, 1, t)
+                  If lConn.Target.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Target.Member, 1, t)
                   str = str & t
                 End If
                 str = str & Space(icol(14) - Len(str) - 1)
                 If lConn.Target.MemSub2 <> 0 Then
                   t = Space(ilen(14))
                   RSet t = CStr(lConn.Target.MemSub2)
-                  If lConn.Target.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Target.member, 2, t)
+                  If lConn.Target.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Target.Member, 2, t)
                   str = str & t
                 End If
                 If Len(lConn.Comment) > 0 Then
@@ -627,7 +645,10 @@ Public Sub WriteUciFile(f As Integer, M As HspfMsg)
                 RSet t = CStr(lConn.Source.VolId)
                 str = str & t
                 str = str & Space(icol(2) - Len(str) - 1)
-                If lConn.MFact <> 1 Then
+                If NumericallyTheSame(lConn.MFactAsRead, lConn.MFact) Then
+                  t = lConn.MFactAsRead
+                  str = str & t
+                ElseIf lConn.MFact <> 1 Then
                   lConn.MFact = Round(lConn.MFact, 2)
                   t = Space(ilen(2))
                   RSet t = CStr(lConn.MFact)
@@ -647,14 +668,14 @@ Public Sub WriteUciFile(f As Integer, M As HspfMsg)
                   str = str & Space(icol(6) - Len(str) - 1)
                   t = Space(ilen(6))
                   RSet t = CStr(lConn.Target.MemSub1)
-                  If lConn.Target.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Target.member, 1, t)
+                  If lConn.Target.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Target.Member, 1, t)
                   str = str & t
                 End If
                 If lConn.Target.MemSub2 > 0 Then
                   str = str & Space(icol(7) - Len(str) - 1)
                   t = Space(ilen(7))
                   RSet t = CStr(lConn.Target.MemSub2)
-                  If lConn.Target.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Target.member, 2, t)
+                  If lConn.Target.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Target.Member, 2, t)
                   str = str & t
                 End If
                 If Len(lConn.Comment) > 0 Then
@@ -680,23 +701,26 @@ Public Sub WriteUciFile(f As Integer, M As HspfMsg)
                 str = str & Space(icol(2) - Len(str) - 1)
                 str = str & lConn.Source.Group
                 str = str & Space(icol(3) - Len(str) - 1)
-                str = str & lConn.Source.member
+                str = str & lConn.Source.Member
                 str = str & Space(icol(4) - Len(str) - 1)
                 If lConn.Source.MemSub1 <> 0 Then
                   t = Space(ilen(4))
                   RSet t = CStr(lConn.Source.MemSub1)
-                  If lConn.Source.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Source.member, 1, t)
+                  If lConn.Source.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Source.Member, 1, t)
                   str = str & t
                 End If
                 str = str & Space(icol(5) - Len(str) - 1)
                 If lConn.Source.MemSub2 <> 0 Then
                   t = Space(ilen(5))
                   RSet t = CStr(lConn.Source.MemSub2)
-                  If lConn.Source.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Source.member, 2, t)
+                  If lConn.Source.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Source.Member, 2, t)
                   str = str & t
                 End If
                 str = str & Space(icol(6) - Len(str) - 1)
-                If lConn.MFact <> 1 Then
+                If NumericallyTheSame(lConn.MFactAsRead, lConn.MFact) Then
+                  t = lConn.MFactAsRead
+                  str = str & t
+                ElseIf lConn.MFact <> 1 Then
                   t = Space(ilen(6) - 1)
                   'lConn.MFact = Format(lConn.MFact, "0.#######")
                   'RSet t = CStr(lConn.MFact)
@@ -713,17 +737,17 @@ Public Sub WriteUciFile(f As Integer, M As HspfMsg)
                 RSet t = CStr(lConn.Target.VolId)
                 str = str & t
                 str = str & Space(icol(10) - Len(str) - 1)
-                If Len(lConn.Target.member) > ilen(10) Then 'dont write more chars than there is room for
-                  lConn.Target.member = Mid(lConn.Target.member, 1, ilen(10))
+                If Len(lConn.Target.Member) > ilen(10) Then 'dont write more chars than there is room for
+                  lConn.Target.Member = Mid(lConn.Target.Member, 1, ilen(10))
                 End If
-                str = Trim(str & lConn.Target.member)
+                str = Trim(str & lConn.Target.Member)
                 If (icol(11) - Len(str) - 1 > 0) Then 'check to make sure not spacing zero or fewer characters
                   str = str & Space(icol(11) - Len(str) - 1)
                 End If
                 If lConn.Target.MemSub1 <> 0 Then
                   t = Space(ilen(11))
                   RSet t = CStr(lConn.Target.MemSub1)
-                  If lConn.Target.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Target.member, 1, t)
+                  If lConn.Target.VolName = "RCHRES" Then t = pUci.IntAsCat(lConn.Target.Member, 1, t)
                   str = str & t
                 End If
                 str = str & Space(icol(12) - Len(str) - 1)
@@ -744,3 +768,20 @@ Public Sub WriteUciFile(f As Integer, M As HspfMsg)
     End If
   Next i
 End Sub
+
+Private Function NumericallyTheSame(ValueAsRead$, ValueStored!) As Boolean
+  'see if the current mfact value is the same as the value as read from the uci
+  '4. is the same as 4.0
+  Dim rtemp1!
+  
+  NumericallyTheSame = False
+  If IsNumeric(ValueStored) Then
+    If IsNumeric(ValueAsRead) Then
+      'simple case
+      rtemp1 = ValueAsRead
+      If rtemp1 = ValueStored Then
+        NumericallyTheSame = True
+      End If
+    End If
+  End If
+End Function

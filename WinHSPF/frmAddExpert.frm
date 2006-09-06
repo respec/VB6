@@ -258,6 +258,11 @@ Private Sub cmdOpt_Click(Index As Integer)
                           
   If Index = 0 Then
     'ok
+    If optHD(0).Value = True Then
+      outtu = 3  'hourly
+    Else
+      outtu = 4  'daily
+    End If
     If UserOption = 1 Then 'add calib location
       If lstLocations.ListIndex > -1 Then
         Id = lstLocations.ItemData(lstLocations.ListIndex)
@@ -285,7 +290,7 @@ Private Sub cmdOpt_Click(Index As Integer)
     ElseIf UserOption = 2 Then 'add flow location
       If lstLocations.ListIndex > -1 Then
         Id = lstLocations.ItemData(lstLocations.ListIndex)
-        Call myUci.AddOutputWDMDataSet(txtLoc.Text, "FLOW", atxBase.Value, WDMId, newdsn)
+        myUci.AddOutputWDMDataSetExt txtLoc.Text, "FLOW", atxBase.Value, WDMId, outtu, "", newdsn
         myUci.AddExtTarget "RCHRES", Id, "HYDR", "RO", 1, 1, 1#, "AVER", _
                "WDM" & CStr(WDMId), newdsn, "FLOW", 1, "ENGL", "AGGR", "REPL"
         myUci.Edited = True
@@ -327,7 +332,7 @@ Private Sub cmdOpt_Click(Index As Integer)
             End If
             group = Mid(tmem, 1, colonpos - 1)
             'now add the data set
-            Call myUci.AddOutputWDMDataSet(txtLoc.Text, tempmem, atxBase.Value, WDMId, newdsn)
+            myUci.AddOutputWDMDataSetExt txtLoc.Text, tempmem, atxBase.Value, WDMId, outtu, "", newdsn
             myUci.AddExtTarget opname, Id, group, mem, sub1, sub2, 1#, "AVER", _
                  "WDM" & CStr(WDMId), newdsn, tempmem, 1, "ENGL", "AGGR", "REPL"
             myUci.Edited = True
@@ -376,7 +381,7 @@ Private Sub cmdOpt_Click(Index As Integer)
                   'now add it
                   Call myUci.AddOutputWDMDataSet(txtLoc.Text, lConn.Target.member, atxBase.Value, WDMId, newdsn)
                   myUci.AddExtTarget toOper.Name, toOper.Id, lConn.Source.group, lConn.Source.member, _
-                     lConn.Source.memsub1, lConn.Source.memsub2, lConn.MFact, lConn.Tran, _
+                     lConn.Source.memsub1, lConn.Source.memsub2, lConn.MFact, lConn.tran, _
                      "WDM" & CStr(WDMId), newdsn, lConn.Target.member, lConn.Target.memsub1, _
                      lConn.Ssystem, lConn.Sgapstrg, lConn.Amdstrg
                   myUci.Edited = True
@@ -403,11 +408,6 @@ Private Sub cmdOpt_Click(Index As Integer)
             CheckGQUALs Id, gqualfg
             Me.MousePointer = vbHourglass
             'add data sets
-            outtu = 4
-            If optHD(0).Value = True Then
-              'hourly
-              outtu = 3
-            End If
             myUci.AddAQUATOXDsnsExt Id, txtLoc.Text, atxBase.Value, _
                                     lTable.Parms(9).Value, gqualfg, _
                                     WDMId, member, msub1, tgroup, adsn, ostr, outtu
@@ -471,11 +471,6 @@ Private Sub Form_Load()
     If UserOption = 5 Then
       'aquatox type
       txtLoc.Locked = True
-      'give option of output timeunits if hourly run, otherwise always daily
-      If myUci.OpnSeqBlock.Delt <= 60 Then
-        optHD(0).Visible = True
-        optHD(1).Visible = True
-      End If
     End If
     For i = 1 To myUci.OpnSeqBlock.Opns.Count
       Set lOper = myUci.OpnSeqBlock.Opn(i)
@@ -497,6 +492,13 @@ Private Sub Form_Load()
         lstLocations.AddItem frmOutput.agdOutput.TextMatrix(i, 0)
       End If
     Next i
+  End If
+  If UserOption = 2 Or UserOption = 3 Or UserOption = 5 Then
+    'give option of output timeunits if hourly run, otherwise always daily
+    If myUci.OpnSeqBlock.Delt <= 60 Then
+      optHD(0).Visible = True
+      optHD(1).Visible = True
+    End If
   End If
   
   txtLoc.Text = "<none>"

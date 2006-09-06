@@ -2787,39 +2787,63 @@ Private Sub ProcessFTables()
       Next vOpn
       If Not lOpn Is Nothing Then
         If Me.FastFlag Then
-          GetNextRecordFromBlock "FTABLES", retkey, cbuff, rectyp, retcod
+          rectyp = -999
+          Do Until rectyp = 0
+            GetNextRecordFromBlock "FTABLES", retkey, cbuff, rectyp, retcod
+          Loop
         Else
           Call REM_XBLOCK(Me, OmCode, init, retkey, cbuff, retcod)
         End If
         With lOpn.FTable
           .Nrows = Left(cbuff, 5)
           .Ncols = Mid(cbuff, 6, 5)
-          For i = 1 To .Nrows
+          i = 1
+          Do While i <= .Nrows
             If Me.FastFlag Then
               GetNextRecordFromBlock "FTABLES", retkey, cbuff, rectyp, retcod
             Else
+              rectyp = 0
               Call REM_XBLOCK(Me, OmCode, init, retkey, cbuff, retcod)
             End If
-            .Depth(i) = Left(cbuff, 10)
-            .Area(i) = Mid(cbuff, 11, 10)
-            .Volume(i) = Mid(cbuff, 21, 10)
-            j = .Ncols - 3
-            If j > 0 Then
-              .Outflow1(i) = Mid(cbuff, 31, 10)
+            If rectyp = -1 Then
+              'this is a comment
+              If Len(.Comment) = 0 Then
+                .Comment = cbuff
+              Else
+                .Comment = .Comment & vbCrLf & cbuff
+              End If
+            Else
+              'this is a regular record
+              .Depth(i) = Left(cbuff, 10)
+              .DepthAsRead(i) = Left(cbuff, 10)
+              .Area(i) = Mid(cbuff, 11, 10)
+              .AreaAsRead(i) = Mid(cbuff, 11, 10)
+              .Volume(i) = Mid(cbuff, 21, 10)
+              .VolumeAsRead(i) = Mid(cbuff, 21, 10)
+              j = .Ncols - 3
+              If j > 0 Then
+                .Outflow1(i) = Mid(cbuff, 31, 10)
+                .Outflow1AsRead(i) = Mid(cbuff, 31, 10)
+              End If
+              If j > 1 Then
+                .Outflow2(i) = Mid(cbuff, 41, 10)
+                .Outflow2AsRead(i) = Mid(cbuff, 41, 10)
+              End If
+              If j > 2 Then
+                .Outflow3(i) = Mid(cbuff, 51, 10)
+                .Outflow3AsRead(i) = Mid(cbuff, 51, 10)
+              End If
+              If j > 3 Then
+                .Outflow4(i) = Mid(cbuff, 61, 10)
+                .Outflow4AsRead(i) = Mid(cbuff, 61, 10)
+              End If
+              If j > 4 Then
+                .Outflow5(i) = Mid(cbuff, 71, 10)
+                .Outflow5AsRead(i) = Mid(cbuff, 71, 10)
+              End If
+              i = i + 1
             End If
-            If j > 1 Then
-              .Outflow2(i) = Mid(cbuff, 41, 10)
-            End If
-            If j > 2 Then
-              .Outflow3(i) = Mid(cbuff, 51, 10)
-            End If
-            If j > 3 Then
-              .Outflow4(i) = Mid(cbuff, 61, 10)
-            End If
-            If j > 4 Then
-              .Outflow5(i) = Mid(cbuff, 71, 10)
-            End If
-          Next i
+          Loop
         End With
       End If
     ElseIf Trim(cbuff) = "END FTABLES" Then

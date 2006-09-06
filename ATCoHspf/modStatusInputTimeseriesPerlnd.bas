@@ -6,7 +6,7 @@ Public Sub UpdateInputTimeseriesPerlnd(O As HspfOperation, TimserStatus As HspfS
   Dim ltable As HspfTable, nquals&
   Dim i&, j&, icefg&, csnofg&, iffcfg&, pqadfg&(20), ctemp$
   Dim wetadfg&, dryadfg&, qualof&, qualif&, qualgw&, qualsd&
-  Dim adopf1&, adopf2&, adopf3&, npst&
+  Dim adopf1&, adopf2&, adopf3&, npst&, snopfg&, irrgfg&
   
   If O.TableExists("ACTIVITY") Then
     Set ltable = O.Tables("ACTIVITY")
@@ -18,11 +18,21 @@ Public Sub UpdateInputTimeseriesPerlnd(O As HspfOperation, TimserStatus As HspfS
     End If
     
     'section snow
+    If O.TableExists("SNOW-FLAGS") Then
+      snopfg = O.Tables("SNOW-FLAGS").Parms("SNOPFG")
+    Else
+      snopfg = 0
+    End If
     If ltable.Parms("SNOWFG") = 1 Then
       TimserStatus.Change "EXTNL:PREC", 1, HspfStatusRequired
-      TimserStatus.Change "EXTNL:DTMPG", 1, HspfStatusRequired
-      TimserStatus.Change "EXTNL:WINMOV", 1, HspfStatusRequired
-      TimserStatus.Change "EXTNL:SOLRAD", 1, HspfStatusRequired
+      If snopfg = 0 Then
+        TimserStatus.Change "EXTNL:DTMPG", 1, HspfStatusRequired
+        TimserStatus.Change "EXTNL:WINMOV", 1, HspfStatusRequired
+        TimserStatus.Change "EXTNL:SOLRAD", 1, HspfStatusRequired
+        TimserStatus.Change "EXTNL:CLOUD", 1, HspfStatusOptional
+      Else
+        TimserStatus.Change "EXTNL:DTMPG", 1, HspfStatusOptional
+      End If
       If ltable.Parms("AIRTFG") = 0 Then
         TimserStatus.Change "ATEMP:AIRTMP", 1, HspfStatusRequired
       End If
@@ -43,13 +53,23 @@ Public Sub UpdateInputTimeseriesPerlnd(O As HspfOperation, TimserStatus As HspfS
     
     'section pwater
     If ltable.Parms("PWATFG") = 1 Then
-      TimserStatus.Change "EXTNL:SURLI", 1, HspfStatusOptional
-      TimserStatus.Change "EXTNL:IFWLI", 1, HspfStatusOptional
-      TimserStatus.Change "EXTNL:AGWLI", 1, HspfStatusOptional
       TimserStatus.Change "EXTNL:PETINP", 1, HspfStatusRequired
+      If O.TableExists("PWAT-PARM1") Then
+        irrgfg = O.Tables("PWAT-PARM1").Parms("IRRGFG")
+      Else
+        irrgfg = 0
+      End If
+      If irrgfg = 1 Then
+        TimserStatus.Change "EXTNL:IRRINP", 1, HspfStatusRequired
+      End If
       If csnofg = 0 Then
         TimserStatus.Change "EXTNL:PREC", 1, HspfStatusRequired
       End If
+      TimserStatus.Change "EXTNL:SURLI", 1, HspfStatusOptional
+      TimserStatus.Change "EXTNL:UZLI", 1, HspfStatusOptional
+      TimserStatus.Change "EXTNL:IFWLI", 1, HspfStatusOptional
+      TimserStatus.Change "EXTNL:LZLI", 1, HspfStatusOptional
+      TimserStatus.Change "EXTNL:AGWLI", 1, HspfStatusOptional
       If csnofg = 1 Then
         If ltable.Parms("AIRTFG") = 0 Then
           TimserStatus.Change "ATEMP:AIRTMP", 1, HspfStatusRequired
@@ -234,6 +254,9 @@ Public Sub UpdateInputTimeseriesPerlnd(O As HspfOperation, TimserStatus As HspfS
         For i = 1 To 5
           TimserStatus.Change "MSTLAY:MST", i, HspfStatusRequired
         Next i
+        'For i = 1 To 8
+        '  TimserStatus.Change "MSTLAY:FRAC", i, HspfStatusRequired
+        'Next i
       End If
       If O.TableExists("PEST-FLAGS") Then
         adopf1 = O.Tables("PEST-FLAGS").Parms("ADOPF1")
