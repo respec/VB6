@@ -4,7 +4,7 @@ Attribute VB_Name = "HSPFmsg"
   
     Dim hmsg$, i&, hwdm$, hscn$, dbname$, hdle&
     Dim s As String * 80
-    Dim init&, id&, kwd$, kflg&, contfg&, retid&, opnid&, offset&
+    Dim Init&, id&, kwd$, kflg&, contfg&, retid&, opnid&, offset&
     Dim tabno&, uunits&
     Dim lnflds&, lscol&(30), lflen&(30), lftyp$, lapos&(30)
     Dim limin&(30), limax&(30), lidef&(30)
@@ -26,7 +26,7 @@ Attribute VB_Name = "HSPFmsg"
     Call F90_W99OPN  'open error file
     Call F90_WDBFIN  'initialize WDM record buffer
     Call F90_PUTOLV(10)
-    ChDir ("c:\vbexperimental\hspfinfo")
+    ChDir ("c:\vb6\hspfinfo")
     
     hmsg = "c:\lib3.0\hspfmsg.wdm"
     i = 1
@@ -183,11 +183,11 @@ Attribute VB_Name = "HSPFmsg"
           End If
         Else
           'this is an operation type table
-          init = 1
+          Init = 1
           Do While retid > -1
             'loop through each operation table (perlnd, mutsin, etc)
-            Call F90_GTNXKW(init, omcode(i - 1), kwd, kflg, contfg, tabret)
-            init = 0
+            Call F90_GTNXKW(Init, omcode(i - 1), kwd, kflg, contfg, tabret)
+            Init = 0
             'do for metric table, then english
             Call F90_XTINFO(omcode(i - 1), tabno, 2, 0, _
               lnflds, lscol, lflen, lftyp, lapos, _
