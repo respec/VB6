@@ -1,7 +1,7 @@
 Attribute VB_Name = "modMain"
 Option Explicit
 
-Public gLogger As ATCoFeedback.clsATCoLogger
+Public gLogger As clsATCoLogger
 
 Private Declare Function GetTempPath Lib "kernel32" Alias "GetTempPathA" _
             (ByVal nBufferLength As Long, ByVal lpBuffer As String) As Long
@@ -46,7 +46,7 @@ Public Sub Main()
     tmpLogFilename = tmpLogFilename & "ShapeUtil.log"
     
     Set gLogger = New clsATCoLogger
-    gLogger.SetFileName tmpLogFilename
+    'gLogger.SetFileName tmpLogFilename
     gLogger.Log2Debug = False
     gLogger.DateTime = True
   
@@ -113,18 +113,13 @@ CloseLog:
   Exit Sub
   
 ErrHand:
-  If gLogger.LogMsg(Err.Description & " (" & Err.Source & ")", "ShapeUtil Main", "Ok", "View Trace") = 2 Then
-    MsgBox gLogger.CurrentLog
-  End If
+  gLogger.LogMsg Err.Description & " (" & Err.Source & ")" & vbCrLf & vbCrLf & gLogger.CurrentLog, "ShapeUtil Main"
   Resume CloseLog
 End Sub
 
 Private Function GetKeyField(shpBaseName As String) As String
-  Dim ff As New ATCoFindFile
   Dim lyrDBF As New clsDBF
-  ff.SetDialogProperties "Please locate layers.dbf", "layers.dbf"
-  ff.SetRegistryInfo "ShapeMerge", "files", "layers.dbf"
-  lyrDBF.OpenDBF ff.GetName
+  lyrDBF.OpenDBF GetSetting("ShapeMerge", "files", "layers.dbf", "")
   If lyrDBF.FindFirst(1, shpBaseName) Then
     GetKeyField = lyrDBF.Value(3) '3 = key name, 4 = key number
   Else
