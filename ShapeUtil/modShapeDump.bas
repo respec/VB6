@@ -53,7 +53,8 @@ Public Sub ShapeDump(shpFileNames() As String)
         
         pLogger.Log "----------Shapes----------"
         Select Case shpIn.getShapeHeader.ShapeType
-          Case typePoint:      DumpPoints shpIn, pLogger
+          Case typePoint
+            DumpPoints shpIn, pLogger
           'TODO: typePointM, typePointZ
           Case typePolyline, typePolygon, typeMultipoint, _
                typePolyLineZ, typePolygonZ, typeMultiPointZ, _
@@ -74,7 +75,8 @@ Public Sub ShapeDump(shpFileNames() As String)
 End Sub
 
 Private Sub DumpPoints(shpIn As CShape_IO, aLogger As clsATCoLogger)
-  Dim record As Long, nRecords As Long
+  Dim record As Long
+  Dim nRecords As Long
   Dim aXYPoint As ShapeDefines.T_shpXYPoint
   
   nRecords = shpIn.getRecordCount
@@ -132,9 +134,12 @@ End Sub
 'End Sub
 
 Private Sub DumpPolys(shpIn As CShape_IO, aLogger As clsATCoLogger)
-  Dim record As Long, nRecords As Long
+  Dim record As Long
+  Dim nRecords As Long
   Dim lPoly As ShapeDefines.T_shpPoly
-  Dim part&, point&, maxpoint&
+  Dim part As Long
+  Dim point As Long
+  Dim maxpoint As Long
   
   nRecords = shpIn.getRecordCount
   For record = 1 To nRecords
