@@ -163,7 +163,7 @@ Public Sub initTable(s As String)
           ElseIf Abs(lParm.Value) > 0 And Abs(lParm.Value) <= 10 ^ -4 Then   'pbd bug fix for small e formats
             lParm.Value = NumFmtRE(lParm.Value, lParmDef.Length)
           Else
-            lParm.Value = Format(CSng(lParm.Value), "0.####")
+            lParm.Value = Format(CSng(lParm.Value), "0.####")   'pbd no need to limit to 4 decimal places
           End If
           'If lParmDef.Length <= 5 Then
           '  Debug.Print Trim(Mid(s, lParmDef.StartCol, lParmDef.Length)), lParm.Value
