@@ -232,11 +232,18 @@ Private Function clsWebData_GetData(ByVal aQuery As ChilkatXml, ByRef aResult As
 '          End If
         End If
         FilesNotCreated = FilesNotCreated & vbCrLf
-      ElseIf Len(WDMfilename) > 0 Then
-        myDownloadFiles.Add save_filename
       Else
-        pManager.LogDbg "Copying downloaded file to " & project_dir & FilenameNoPath(save_filename)
-        FileCopy save_filename, project_dir & FilenameNoPath(save_filename)
+        'Replace LF with CR/LF
+        msg = ReplaceString(vbLf, vbclrf)
+        'Above replacement may have added some unwanted CR
+        msg = ReplaceString(vbCr & vbCr, vbCr)
+        savefilestring(msg, save_filename)
+        If Len(WDMfilename) > 0 Then
+          myDownloadFiles.Add save_filename
+        Else
+          pManager.LogDbg "Copying downloaded file to " & project_dir & FilenameNoPath(save_filename)
+          FileCopy save_filename, project_dir & FilenameNoPath(save_filename)
+        End If
       End If
       FirstFile = False
     Next
@@ -374,10 +381,10 @@ Private Function ConvertUsgsDv2Wdm(myWDMFileName As String, _
 '  myWDMExt.MsgUnit = F90_WDBOPN(CLng(0), p, Len(p))
 
   If FileExists(myWDMFileName) Then
-    myWDM.FileName = myWDMFileName
+    myWDM.filename = myWDMFileName
   Else
     myWDM.SaveAs myWDMFileName
-    If LCase(myWDM.FileName) <> LCase(myWDMFileName) Then
+    If LCase(myWDM.filename) <> LCase(myWDMFileName) Then
       pManager.LogDbg pLabel & " could not create WDM file " & myWDMFileName
       
       Exit Function '!!!!!!!!!!!!!!!!!!!!
@@ -404,7 +411,7 @@ Private Function ConvertUsgsDv2Wdm(myWDMFileName As String, _
     If pManager.State >= 999 Then Exit Function
     Set myMem = Nothing
     Set myMem = New clsTSerMemory
-    myMem.FileName = myDownloadFileName & "|" & myScriptLocation
+    myMem.filename = myDownloadFileName & "|" & myScriptLocation
     If myMem.DataCount > 0 Then
       If UBound(myMem.Data(1).Values) > 1 Then
         myWDM.AddTimSer myMem.Data(1), TsIdRenum
