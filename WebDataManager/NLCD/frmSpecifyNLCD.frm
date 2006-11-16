@@ -91,7 +91,7 @@ Begin VB.Form frmSpecifyNLCD
       Top             =   600
       Width           =   2535
    End
-   Begin VB.Label Label4 
+   Begin VB.Label lblForMoreInformation 
       Caption         =   "For More Information"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
@@ -108,15 +108,15 @@ Begin VB.Form frmSpecifyNLCD
       Top             =   2760
       Width           =   2175
    End
-   Begin VB.Label Label3 
-      Caption         =   $"frmSpecifyNLCD.frx":08CA
+   Begin VB.Label lblDescriptionText 
+      Caption         =   "TIFF data will be downloaded and unpacked in the BASINS\data\national\nlcd folder."
       Height          =   1575
       Left            =   3000
       TabIndex        =   8
       Top             =   720
       Width           =   2295
    End
-   Begin VB.Label Label2 
+   Begin VB.Label lblDescription 
       Caption         =   "Description"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
@@ -185,6 +185,10 @@ Private Sub InitializeForm(manager As clsWebDataManager)
   Dim lMatchNodeList As FastCollection
   Dim selectedStatesList As FastCollection
   Dim selectedStates As String
+  
+  If pManager.CurrentStatusGetString("launched_by") = "ArcView" Then
+    lblDescriptionText.Caption = lblDescriptionText.Caption & " Use the Add Theme (Grid) extension to add this image as a grid. (Requires Spatial Analyst)"
+  End If
   
   Set pManager = manager
   
@@ -316,4 +320,3 @@ ErrHand:
   pManager.LogMsg Err.Description & vbCr & " at step " & dbgStep, _
                          "Wizard FindNodeValues " & nodeName
 End Function
-
