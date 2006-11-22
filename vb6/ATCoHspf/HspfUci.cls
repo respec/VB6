@@ -1859,6 +1859,8 @@ Public Sub DeleteWDMDataSet(wdmid$, adsn&)
   wdmsfl = pWdmUnit(Id)
   If wdmsfl > 0 Then
     Set GenTs = GetDataSetFromDsn(Id, adsn)
+    '11/06 dont know why but it helps to do summary
+    GenTs.Dates.calcSummary
     deletedsn = pWDMObj(Id).RemoveTimSer(GenTs)
   End If
 End Sub
