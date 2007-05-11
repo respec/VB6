@@ -17,6 +17,9 @@ Dim lsdate&(5), ledate&(5), lConInt As Boolean
 Dim XLegLoc!, YLegLoc!
 Dim L45 As Boolean
 Dim ACoeff!, BCoeff!, RSquare!
+
+Const NumFDclasses As Integer = 200
+
 Public Function gausex(exprob!) As Single
 
     'GAUSSIAN PROBABILITY FUNCTIONS   W.KIRBY  JUNE 71
@@ -89,7 +92,7 @@ Public Sub GLDoFD(o As Object, opt%, fddat As Collection)
     Dim i&, j&, l&, n&, ipos&, indx&, iexp&
     Dim nci&, ncim1&, retcod&, tnum&, v#
     Dim lMin#, lMax#, c#
-    Dim bound!(1), cr!, clas!(200), clog!, rdat#(200)
+    Dim bound!(1), cr!, clas!(NumFDclasses), clog!, rdat#(NumFDclasses)
     Dim cnuma&(), numa&()
     Dim suma#(), cpcta#()
 
@@ -113,16 +116,16 @@ Public Sub GLDoFD(o As Object, opt%, fddat As Collection)
     iexp = Int(Log10(lMin))
     bound(0) = 10# ^ (iexp)
     'set up class intervals
-    cr = (bound(0) / bound(1)) ^ (1# / 201#)
+    cr = (bound(0) / bound(1)) ^ (1# / (NumFDclasses + 1))
     clas(0) = 0#
     clas(1) = bound(0)
-    clas(200) = bound(1)
-    For j = 1 To 198
-      i = 200 - j
+    clas(NumFDclasses) = bound(1)
+    For j = 1 To NumFDclasses - 2
+      i = NumFDclasses - j
       clas(i) = clas(i + 1) * cr
     Next j
     'round off class intervals
-    For i = 1 To 200
+    For i = 1 To NumFDclasses
       c = clas(i)
       clog = Log10(c) + 0.001
       If clog < 0# Then clog = clog - 1
@@ -131,12 +134,12 @@ Public Sub GLDoFD(o As Object, opt%, fddat As Collection)
       c = (c / (10# ^ l)) + 0.5
       clas(i) = (Fix(c)) * (10# ^ l)
     Next i
-    nci = 201
+    nci = NumFDclasses + 1
 
     ReDim cnuma(ncrv)
-    ReDim cpcta(ncrv, 200)
-    ReDim numa(ncrv, 200)
-    ReDim suma(ncrv, 200)
+    ReDim cpcta(ncrv, NumFDclasses)
+    ReDim numa(ncrv, NumFDclasses)
+    ReDim suma(ncrv, NumFDclasses)
 
     'define axes, x is probability percent
     XAxTyp = 6

@@ -92,10 +92,14 @@ Tables
 
 HYPERLINKS
 
-<a href="../OtherSection/RelativeFilename.txt#Header of Section">Link Text</a>
-Hypertext link to another section. The #Header of Section part and the
-.txt are optional and you probably won't want to use them. Simplified:
+A simple link to another page:
 <a href="../OtherSection/Filename">Link Text</a>
+
+To have a link go to a particular part of a page:
+<a href="../OtherSection/Filename#Place In Page to Link To">Link Text</a>
+Also insert this at the place the link leads to:
+<a name="Place In Page to Link To">
+Section headers automatically get <a name="Header of Section"> tags added to them.
 
 If the path starts with a slash, the correct relative path will be generated
 during convert: <a href="/icons/x.gif"> might become <a href="../../icons/x.gif">

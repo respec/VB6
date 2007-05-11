@@ -11,7 +11,7 @@ Private Declare Function GetTempPath Lib "kernel32" Alias "GetTempPathA" _
 '   destination merged dbf, shp, and shx. If the file already exists, its
 '   current contents will be merged with the other file(s) in <shpFileName>*
 '   If a projection file is specified, <shpFileName>* will be re-projected before merging
-'   If "dump" is specified, all the named files are dumped as text to the log file
+'   If "dump" is specified, each named file is saved as text to <shpFileName>.dump.txt
 '
 'Example: ShapeUtil c:\BASINS\data\project\st c:\temp\georgia.shp c:\temp\florida.shp c:\BASINS\data\project\prj.proj
 '   This will project georgia.shp and florida.shp from lat/long to the projection described in prj.proj,
@@ -34,6 +34,7 @@ Public Sub Main()
   Dim dumpFlag As Boolean
   Dim starttime As Single
   Dim tmpLogFilename As String
+  Dim keyField As String
   
   On Error GoTo ErrHand
 
@@ -56,7 +57,9 @@ Public Sub Main()
     curFilename = StrSplit(cmd, " ", """")
     While Len(curFilename) > 0
       If curFilename = "dump" Then
-          dumpFlag = True
+        dumpFlag = True
+      ElseIf InStr(curFilename, "key=") = 1 Then
+        keyField = Mid(curFilename, 5)
       Else
         If Not FileExists(curFilename) Then
           TryShapePointsFromDBF FilenameNoExt(curFilename) & ".dbf"
@@ -92,8 +95,12 @@ Public Sub Main()
           ShapeProject projectionDest, projectionSource, shpFileNames
         End If
         'frmShapeUtil.lblStatus.Caption = "Merging into " & newBaseFilename
-        ShapeMerge GetKeyField(FilenameOnly(newBaseFilename)), _
-                   newBaseFilename, shpFileNames
+        If Len(keyField) > 0 Then
+          ShapeMerge keyField, newBaseFilename, shpFileNames
+        Else
+          ShapeMerge GetKeyField(FilenameOnly(newBaseFilename)), _
+                     newBaseFilename, shpFileNames
+        End If
       ElseIf Len(projectionDest) > 0 Then
         shpFileNames(0) = newBaseFilename
         'frmShapeUtil.lblStatus.Caption = "Projecting..."
@@ -125,6 +132,7 @@ Private Function GetKeyField(shpBaseName As String) As String
   Else
     GetKeyField = 0
   End If
+  lyrDBF.Clear
 End Function
 
 Private Function GetLogFilename(Optional ByVal aDefaultPath As String = "", _
