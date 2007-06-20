@@ -1237,7 +1237,7 @@ Public Sub GetMetSegNames(fun&, numMetSeg&, arrayMetSegs$(), lMetDetails$(), lMe
         CStr(sdat(0)) & "," & CStr(sdat(1)) & "," & CStr(sdat(2)) & "," & CStr(sdat(3)) & "," & CStr(sdat(4)) & "," & CStr(sdat(5)) & "," & _
         CStr(edat(0)) & "," & CStr(edat(1)) & "," & CStr(edat(2)) & "," & CStr(edat(3)) & "," & CStr(edat(4)) & "," & CStr(edat(5))
       ReDim Preserve lMetDescs(numMetSeg)
-      lMetDescs(numMetSeg - 1) = lts(i).Header.Desc
+      lMetDescs(numMetSeg - 1) = lts(i).Header.desc
     End If
   Next i
 
@@ -1493,7 +1493,7 @@ Public Sub AddAQUATOXDsnsExt(Id As Long, clocn$, basedsn&, plank&, _
           .sen = UCase(cscen)
           .Con = UCase(ostr(j))
           .loc = UCase(clocn)
-          .Desc = "AQUATOX Linkage Timeseries for " & ostr(j)
+          .desc = "AQUATOX Linkage Timeseries for " & ostr(j)
         End With
         Set TsDate = New ATCclsTserDate
         With myDateSummary
@@ -1750,7 +1750,7 @@ Public Sub AddOutputWDMDataSet(clocn$, ccons$, basedsn&, wdmid&, adsn&)
   wdmid = i
 End Sub
 
-Public Sub AddOutputWDMDataSetExt(clocn$, ccons$, basedsn&, wdmid&, tunit&, Desc$, adsn&)
+Public Sub AddOutputWDMDataSetExt(clocn$, ccons$, basedsn&, wdmid&, tunit&, desc$, adsn&)
   Dim ndsn&, nfrec&, cscen$, wdmsfl&, retcod&, psa&, i&
   Dim GenTs As ATCclsTserData, addeddsn As Boolean
   Dim TsDate As ATCclsTserDate
@@ -1791,7 +1791,7 @@ Public Sub AddOutputWDMDataSetExt(clocn$, ccons$, basedsn&, wdmid&, tunit&, Desc
       .sen = UCase(cscen)
       .Con = UCase(ccons)
       .loc = UCase(clocn)
-      .Desc = Desc
+      .desc = desc
     End With
     Set TsDate = New ATCclsTserDate
     With myDateSummary
@@ -2045,7 +2045,7 @@ Public Function GetWDMAttr(wdmid$, idsn&, attr$) As String
   ElseIf Not (dsnObj Is Nothing) And attr = "CON" Then
     s = dsnObj.Header.Con
   ElseIf Not (dsnObj Is Nothing) And attr = "DESC" Then
-    s = dsnObj.Header.Desc
+    s = dsnObj.Header.desc
   Else
     s = ""
   End If
@@ -2330,7 +2330,7 @@ Private Sub newOutputDsns(oldn$, newn$, basedsn&, relabs&)
         .sen = newn
         .Con = lts(i).Header.Con
         .loc = lts(i).Header.loc
-        .Desc = lts(i).Header.Desc
+        .desc = lts(i).Header.desc
       End With
       Set TsDate = New ATCclsTserDate
       With myDateSummary
@@ -2345,7 +2345,7 @@ Private Sub newOutputDsns(oldn$, newn$, basedsn&, relabs&)
       'now add the timser
       addeddsn = AddWDMDataSet(wdmid, ndsn, newn, lts(i).Header.loc, _
                     lts(i).Header.Con, lts(i).Dates.Summary.Tu, _
-                    lts(i).Dates.Summary.ts, lts(i).Header.Desc)
+                    lts(i).Dates.Summary.ts, lts(i).Header.desc)
       
       'update tstype attribute
       Set GenTs = Me.GetDataSetFromDsn(wdmid, ndsn)
@@ -2373,7 +2373,7 @@ Private Sub newOutputDsns(oldn$, newn$, basedsn&, relabs&)
   End If
 End Sub
 
-Public Function AddWDMDataSet(wdmid&, dsn&, scen$, locn$, cons$, Tu&, ts&, Optional Desc$ = "") As Boolean
+Public Function AddWDMDataSet(wdmid&, dsn&, scen$, locn$, cons$, Tu&, ts&, Optional desc$ = "") As Boolean
   Dim TsDate As ATCclsTserDate
   Dim GenTs As New ATCclsTserData
   Dim myDateSummary As ATTimSerDateSummary
@@ -2383,8 +2383,8 @@ Public Function AddWDMDataSet(wdmid&, dsn&, scen$, locn$, cons$, Tu&, ts&, Optio
     .sen = UCase(scen)
     .Con = UCase(cons)
     .loc = UCase(locn)
-    If Len(Desc) > 0 Then
-      .Desc = UCase(Desc)
+    If Len(desc) > 0 Then
+      .desc = UCase(desc)
     End If
   End With
   Set TsDate = New ATCclsTserDate
@@ -2442,7 +2442,7 @@ Public Sub AddPointSourceDataSet(sen$, loc$, Con$, stanam$, tstype$, _
         .sen = UCase(sen)
         .Con = UCase(Con)
         .loc = UCase(loc)
-        .Desc = stanam
+        .desc = stanam
       End With
       Set TsDate = New ATCclsTserDate
       With myDateSummary
@@ -2899,8 +2899,8 @@ Public Function IntAsCat(Member As String, sub1or2 As Long, sint As String) As S
   'category equivalent.  if so, turn the integer category tag into its
   'two character equivalent
   Dim i As Long
+  IntAsCat = sint
   If Not Me.CategoryBlock Is Nothing Then
-    IntAsCat = sint
     If IsNumeric(sint) Then
       i = CInt(sint)
       If Me.CategoryBlock.Count > 0 And Me.CategoryBlock.Count >= i Then
