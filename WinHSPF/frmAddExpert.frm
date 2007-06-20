@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
+Object = "{872F11D5-3322-11D4-9D23-00A0C9768F70}#1.10#0"; "ATCoCtl.ocx"
 Begin VB.Form frmAddExpert 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "WinHSPF - Add Output"
@@ -254,7 +254,7 @@ Private Sub cmdOpt_Click(Index As Integer)
   Dim vConn As Variant, vToConn As Variant
   Dim lConn As HspfConnection, lToConn As HspfConnection
   Dim fromcalib As Boolean, outtu As Long
-  Dim member$(28), msub1&(28), tgroup$(28)
+  Dim member$(28), msub1&(28), tgroup$(28), lTrans As String
                           
   If Index = 0 Then
     'ok
@@ -332,8 +332,14 @@ Private Sub cmdOpt_Click(Index As Integer)
             End If
             group = Mid(tmem, 1, colonpos - 1)
             'now add the data set
+            If outtu = 3 Then
+              'hourly, use blank transform
+              lTrans = "    "
+            Else
+              lTrans = "AVER"
+            End If
             myUci.AddOutputWDMDataSetExt txtLoc.Text, tempmem, atxBase.Value, WDMId, outtu, "", newdsn
-            myUci.AddExtTarget opname, Id, group, mem, sub1, sub2, 1#, "AVER", _
+            myUci.AddExtTarget opname, Id, group, mem, sub1, sub2, 1#, lTrans, _
                  "WDM" & CStr(WDMId), newdsn, tempmem, 1, "ENGL", "AGGR", "REPL"
             myUci.Edited = True
           End If
@@ -381,7 +387,7 @@ Private Sub cmdOpt_Click(Index As Integer)
                   'now add it
                   Call myUci.AddOutputWDMDataSet(txtLoc.Text, lConn.Target.member, atxBase.Value, WDMId, newdsn)
                   myUci.AddExtTarget toOper.Name, toOper.Id, lConn.Source.group, lConn.Source.member, _
-                     lConn.Source.memsub1, lConn.Source.memsub2, lConn.MFact, lConn.tran, _
+                     lConn.Source.memsub1, lConn.Source.memsub2, lConn.MFact, lConn.Tran, _
                      "WDM" & CStr(WDMId), newdsn, lConn.Target.member, lConn.Target.memsub1, _
                      lConn.Ssystem, lConn.Sgapstrg, lConn.Amdstrg
                   myUci.Edited = True
@@ -555,8 +561,8 @@ Private Sub lstLocations_Click()
                     If lConn.Source.group = Mid(lTimser.Name, 1, i - 1) Then
                       If lConn.Source.member = Mid(lTimser.Name, i + 1) Then
                         If lTimser.Max > 1 Then
-                          If lConn.Source.memsub1 = lTimser.occur Mod 1000 Then
-                            If lConn.Source.memsub2 = CLng((1 + (lTimser.occur) / 1000)) Then
+                          If lConn.Source.memsub1 = lTimser.Occur Mod 1000 Then
+                            If lConn.Source.memsub2 = CLng((1 + (lTimser.Occur) / 1000)) Then
                               exttarget = True
                             End If
                           End If
@@ -573,7 +579,7 @@ Private Sub lstLocations_Click()
               If lTimser.Max = 1 Then
                 lstMember.AddItem lTimser.Name
               Else
-                lsub = "(" & lTimser.occur Mod 1000 & "," & CLng(1 + (lTimser.occur) / 1000) & ")"
+                lsub = "(" & lTimser.Occur Mod 1000 & "," & CLng(1 + (lTimser.Occur) / 1000) & ")"
                 lstMember.AddItem lTimser.Name & lsub
               End If
             End If
