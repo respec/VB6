@@ -724,7 +724,7 @@ Public Sub Source2MetSeg()
   'set any undefined mfacts to 0
   If pMetSegs.Count > 0 Then
     For Each vMetSeg In pMetSegs
-      For j = 1 To 8
+      For j = 1 To 7
         If vMetSeg.MetSegRec(j).MFactP = -999# Then
           vMetSeg.MetSegRec(j).MFactP = 0
         End If
@@ -898,7 +898,7 @@ Public Sub MetSeg2Source()
     For Each vOpn In pOpnBlks(vOpTyp).Ids
       Set lOpn = vOpn
       If Not lOpn.MetSeg Is Nothing Then
-        For segRec = 1 To 8
+        For segRec = 1 To 7
           With lOpn.MetSeg.MetSegRec(segRec)
             If .Typ <> 0 Then 'type exists
               If (lOpn.Name = "RCHRES" And .MFactR > 0#) Or _
@@ -927,8 +927,7 @@ Public Sub MetSeg2Source()
                     Case 4:   lConn.Target.Member = "WIND"
                     Case 5:   lConn.Target.Member = "SOLRAD"
                     Case 6:   lConn.Target.Member = "CLOUD"
-                    Case 7:   lConn.Target.Member = "PETINP"
-                    Case 8:   lConn.Target.Member = "POTEV"
+                    Case 7:   lConn.Target.Member = "POTEV"
                   End Select
                 Else
                   lConn.MFact = .MFactP
@@ -940,7 +939,6 @@ Public Sub MetSeg2Source()
                     Case 5:   lConn.Target.Member = "SOLRAD"
                     Case 6:   lConn.Target.Member = "CLOUD"
                     Case 7:   lConn.Target.Member = "PETINP"
-                    Case 8:   lConn.Target.Member = "POTEV"
                   End Select
                   If .Typ = 2 Then
                     'get right air temp member name
@@ -1212,12 +1210,13 @@ Public Sub GetMetSegNames(fun&, numMetSeg&, arrayMetSegs$(), lMetDetails$(), lMe
   For i = 1 To lts.Count
     loc = lts(i).Header.loc
     If Len(loc) > 0 And lts(i).File.Label = "WDM" And lts(i).File.FileUnit = fun Then
-      'first get the common dates from all timsers at this location
-      Call findtimser("OBSERVED", loc, "", llocts)
+      'first get the common dates from prec and pevt at this location
+      Call findtimser("OBSERVED", loc, "PREC", llocts)
       Set ldate = llocts(1).Dates
       sj = ldate.Summary.SJDay
       ej = ldate.Summary.EJDay
-      For j = 2 To llocts.Count
+      Call findtimser("", loc, "PEVT", llocts)
+      For j = 1 To llocts.Count
         Set ldate = llocts(j).Dates
         tempsj = ldate.Summary.SJDay
         tempej = ldate.Summary.EJDay
@@ -1237,7 +1236,7 @@ Public Sub GetMetSegNames(fun&, numMetSeg&, arrayMetSegs$(), lMetDetails$(), lMe
         CStr(sdat(0)) & "," & CStr(sdat(1)) & "," & CStr(sdat(2)) & "," & CStr(sdat(3)) & "," & CStr(sdat(4)) & "," & CStr(sdat(5)) & "," & _
         CStr(edat(0)) & "," & CStr(edat(1)) & "," & CStr(edat(2)) & "," & CStr(edat(3)) & "," & CStr(edat(4)) & "," & CStr(edat(5))
       ReDim Preserve lMetDescs(numMetSeg)
-      lMetDescs(numMetSeg - 1) = lts(i).Header.desc
+      lMetDescs(numMetSeg - 1) = lts(i).Header.Desc
     End If
   Next i
 
@@ -1493,7 +1492,7 @@ Public Sub AddAQUATOXDsnsExt(Id As Long, clocn$, basedsn&, plank&, _
           .sen = UCase(cscen)
           .Con = UCase(ostr(j))
           .loc = UCase(clocn)
-          .desc = "AQUATOX Linkage Timeseries for " & ostr(j)
+          .Desc = "AQUATOX Linkage Timeseries for " & ostr(j)
         End With
         Set TsDate = New ATCclsTserDate
         With myDateSummary
@@ -1750,7 +1749,7 @@ Public Sub AddOutputWDMDataSet(clocn$, ccons$, basedsn&, wdmid&, adsn&)
   wdmid = i
 End Sub
 
-Public Sub AddOutputWDMDataSetExt(clocn$, ccons$, basedsn&, wdmid&, tunit&, desc$, adsn&)
+Public Sub AddOutputWDMDataSetExt(clocn$, ccons$, basedsn&, wdmid&, tunit&, Desc$, adsn&)
   Dim ndsn&, nfrec&, cscen$, wdmsfl&, retcod&, psa&, i&
   Dim GenTs As ATCclsTserData, addeddsn As Boolean
   Dim TsDate As ATCclsTserDate
@@ -1791,7 +1790,7 @@ Public Sub AddOutputWDMDataSetExt(clocn$, ccons$, basedsn&, wdmid&, tunit&, desc
       .sen = UCase(cscen)
       .Con = UCase(ccons)
       .loc = UCase(clocn)
-      .desc = desc
+      .Desc = Desc
     End With
     Set TsDate = New ATCclsTserDate
     With myDateSummary
@@ -2045,7 +2044,7 @@ Public Function GetWDMAttr(wdmid$, idsn&, attr$) As String
   ElseIf Not (dsnObj Is Nothing) And attr = "CON" Then
     s = dsnObj.Header.Con
   ElseIf Not (dsnObj Is Nothing) And attr = "DESC" Then
-    s = dsnObj.Header.desc
+    s = dsnObj.Header.Desc
   Else
     s = ""
   End If
@@ -2330,7 +2329,7 @@ Private Sub newOutputDsns(oldn$, newn$, basedsn&, relabs&)
         .sen = newn
         .Con = lts(i).Header.Con
         .loc = lts(i).Header.loc
-        .desc = lts(i).Header.desc
+        .Desc = lts(i).Header.Desc
       End With
       Set TsDate = New ATCclsTserDate
       With myDateSummary
@@ -2345,7 +2344,7 @@ Private Sub newOutputDsns(oldn$, newn$, basedsn&, relabs&)
       'now add the timser
       addeddsn = AddWDMDataSet(wdmid, ndsn, newn, lts(i).Header.loc, _
                     lts(i).Header.Con, lts(i).Dates.Summary.Tu, _
-                    lts(i).Dates.Summary.ts, lts(i).Header.desc)
+                    lts(i).Dates.Summary.ts, lts(i).Header.Desc)
       
       'update tstype attribute
       Set GenTs = Me.GetDataSetFromDsn(wdmid, ndsn)
@@ -2373,7 +2372,7 @@ Private Sub newOutputDsns(oldn$, newn$, basedsn&, relabs&)
   End If
 End Sub
 
-Public Function AddWDMDataSet(wdmid&, dsn&, scen$, locn$, cons$, Tu&, ts&, Optional desc$ = "") As Boolean
+Public Function AddWDMDataSet(wdmid&, dsn&, scen$, locn$, cons$, Tu&, ts&, Optional Desc$ = "") As Boolean
   Dim TsDate As ATCclsTserDate
   Dim GenTs As New ATCclsTserData
   Dim myDateSummary As ATTimSerDateSummary
@@ -2383,8 +2382,8 @@ Public Function AddWDMDataSet(wdmid&, dsn&, scen$, locn$, cons$, Tu&, ts&, Optio
     .sen = UCase(scen)
     .Con = UCase(cons)
     .loc = UCase(locn)
-    If Len(desc) > 0 Then
-      .desc = UCase(desc)
+    If Len(Desc) > 0 Then
+      .Desc = UCase(Desc)
     End If
   End With
   Set TsDate = New ATCclsTserDate
@@ -2442,7 +2441,7 @@ Public Sub AddPointSourceDataSet(sen$, loc$, Con$, stanam$, tstype$, _
         .sen = UCase(sen)
         .Con = UCase(Con)
         .loc = UCase(loc)
-        .desc = stanam
+        .Desc = stanam
       End With
       Set TsDate = New ATCclsTserDate
       With myDateSummary

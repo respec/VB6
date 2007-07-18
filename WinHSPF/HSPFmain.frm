@@ -1,12 +1,12 @@
 VERSION 5.00
 Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX"
-Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
-Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "comdlg32.ocx"
+Object = "{872F11D5-3322-11D4-9D23-00A0C9768F70}#1.10#0"; "ATCoCtl.ocx"
 Begin VB.Form HSPFMain 
    Caption         =   "Hydrological Simulation Program - Fortran (HSPF)"
    ClientHeight    =   6720
    ClientLeft      =   132
-   ClientTop       =   708
+   ClientTop       =   612
    ClientWidth     =   12120
    BeginProperty Font 
       Name            =   "Arial"
@@ -708,21 +708,21 @@ End Sub
 
 Private Sub PopulateMetGrid()
   Dim r&, cdata&, cSour&, cMfacP&, ctran&, cMfacR&
-  Dim lMetSeg As HspfMetSeg
+  Dim lmetseg As HspfMetSeg
   
   If myUci.Name = "" Then Exit Sub
   If myUci.MetSegs.Count = 0 Then Exit Sub
   
   If IsNumeric(picLegend(MetSelected).tag) Then
-    Set lMetSeg = myUci.MetSegs(CInt(picLegend(MetSelected).tag))
+    Set lmetseg = myUci.MetSegs(CInt(picLegend(MetSelected).tag))
   Else
-    Set lMetSeg = myUci.MetSegs(1)
+    Set lmetseg = myUci.MetSegs(1)
   End If
   With agdDetails
     .Visible = False
     .ClearData
     .Header = ""
-    .rows = 8
+    .rows = 7
     cdata = 0
     cSour = 1
     cMfacP = 2
@@ -736,8 +736,8 @@ Private Sub PopulateMetGrid()
     .ColTitle(ctran) = "Tran":      .ColType(4) = ATCoTxt
   End With
   
-  For r = 1 To 8
-    With lMetSeg.MetSegRec(r)
+  For r = 1 To 7
+    With lmetseg.MetSegRec(r)
       Select Case r
         Case 1: agdDetails.TextMatrix(r, cdata) = "Precip"
         Case 2: agdDetails.TextMatrix(r, cdata) = "Air Temp"
@@ -745,8 +745,7 @@ Private Sub PopulateMetGrid()
         Case 4: agdDetails.TextMatrix(r, cdata) = "Wind"
         Case 5: agdDetails.TextMatrix(r, cdata) = "Solar Rad"
         Case 6: agdDetails.TextMatrix(r, cdata) = "Cloud"
-        Case 7: agdDetails.TextMatrix(r, cdata) = "Evapotrans"
-        Case 8: agdDetails.TextMatrix(r, cdata) = "Pot Evap"
+        Case 7: agdDetails.TextMatrix(r, cdata) = "Pot Evap"
       End Select
       If .Typ = 0 Then
         agdDetails.TextMatrix(r, cSour) = ""
@@ -889,7 +888,7 @@ Public Sub UpdateLegend()
       Set LegendOrder = New Collection
       picTab.CurrentX = 0
       picTab.CurrentY = 0
-      picTab.Font.Size = 8
+      picTab.Font.size = 8
       If picTab.TextWidth("Perlnd   Implnd") > picTab.Width Then
         picTab.CurrentX = (boxWidth - picTab.TextWidth("Per")) / 2
         picTab.Print " Per";
@@ -948,18 +947,18 @@ Public Sub UpdateLegend()
         If picLegend(Index).tag <> "" Then LegendOrder.Add picLegend(Index).tag
       Next Index
     Case LegMet
-      Dim lMetSeg As HspfMetSeg
-      For Each lMetSeg In myUci.MetSegs
+      Dim lmetseg As HspfMetSeg
+      For Each lmetseg In myUci.MetSegs
         If Index >= picLegend.Count Then load picLegend(Index)
         With picLegend(Index)
           .tag = Index + 1
-          i = InStr(1, lMetSeg.Name, ",")
+          i = InStr(1, lmetseg.Name, ",")
           If i > 0 Then
-            S = Mid(lMetSeg.Name, 1, i - 1) & vbCr & Mid(lMetSeg.Name, i + 1)
+            S = Mid(lmetseg.Name, 1, i - 1) & vbCr & Mid(lmetseg.Name, i + 1)
           Else
-            S = lMetSeg.Name
+            S = lmetseg.Name
           End If
-          Key = lMetSeg.Id & ":" & S
+          Key = lmetseg.Id & ":" & S
           .CurrentX = (.Width - .TextWidth(Key)) / 2
           .CurrentY = (.Height - .TextHeight(Key)) / 2
           picLegend(Index).Print Key  'Precip location name might be nicer
@@ -1253,8 +1252,8 @@ Private Sub mnuEditOperParent_Click(Index As Integer)
       myUci.OpnSeqBlock.Edit
     ElseIf tabname = "FILES" Then
       myUci.filesblock.Edit
-    ElseIf tabname = "CATEGORY" And Not myUci.CategoryBlock Is Nothing Then
-      myUci.CategoryBlock.Edit
+    ElseIf tabname = "CATEGORY" And Not myUci.categoryblock Is Nothing Then
+      myUci.categoryblock.Edit
     ElseIf tabname = "FTABLES" Then
       myUci.OpnBlks("RCHRES").Ids(1).Ftable.Edit
     ElseIf tabname = "MONTH-DATA" And Not myUci.MonthData Is Nothing Then
@@ -1880,7 +1879,7 @@ Public Sub OpenUCI(Optional ByVal myFileName As String)
   DisableAll False
 End Sub
 
-Public Sub OpenDefaultUCI(FilePath$, Filename$)
+Public Sub OpenDefaultUCI(filepath$, Filename$)
   Dim f$, S$, hin&, hout&, filesok As Boolean, echofile$
 
   'IPC.SendMonitorMessage "(in openDefaultUCI)" & W_HSPFMSGWDM
@@ -1896,7 +1895,7 @@ Public Sub OpenDefaultUCI(FilePath$, Filename$)
   'ChDrive Left(W_STARTERPATH, 1)
   'ChDir (W_STARTERPATH)
   'f = "starter.uci"
-  ChDriveDir FilePath
+  ChDriveDir filepath
   f = Filename
   Me.MousePointer = vbHourglass
   Set defUci = Nothing

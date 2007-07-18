@@ -14,7 +14,7 @@ Attribute VB_Exposed = True
 Option Explicit
 'Copyright 2002 AQUA TERRA Consultants - Royalty-free use permitted under open source license
 
-Dim pMetSegRecs(8) As HspfMetSegRecord
+Dim pMetSegRecs(7) As HspfMetSegRecord
 Dim pId As Long
 Dim pName As String
 Dim pUci As HspfUci
@@ -29,7 +29,7 @@ Attribute MetSegRec.VB_MemberFlags = "200"
 End Property
 Public Property Let MetSegRecs(newMetSegRecs() As HspfMetSegRecord)
   Dim itype&
-  For itype = 1 To 8
+  For itype = 1 To 7
     Set pMetSegRecs(itype) = newMetSegRecs(itype)
   Next
 End Property
@@ -112,7 +112,7 @@ Private Function Str2Type(str$) As MetSegRecordType
     Case "SOLRAD": Str2Type = msrSOLRAD
     Case "CLOUD":  Str2Type = msrCLOUD
     Case "PETINP": Str2Type = msrPETINP
-    Case "POTEV":  Str2Type = msrPOTEV
+    Case "POTEV":  Str2Type = msrPETINP
     Case Else:     Str2Type = msrUNK
   End Select
 End Function
@@ -123,7 +123,7 @@ Public Function Compare(newMetSeg As HspfMetSeg, opname As String) As Boolean
   Dim newMetSegRecs() As HspfMetSegRecord
   
   newMetSegRecs = newMetSeg.MetSegRecs
-  For itype = 1 To 8
+  For itype = 1 To 7
     If Not (pMetSegRecs(itype).Compare(newMetSegRecs(itype), opname)) Then
       Compare = False
     End If
@@ -135,7 +135,7 @@ Public Sub UpdateMetSeg(newMetSeg As HspfMetSeg)
   Dim newMetSegRecs() As HspfMetSegRecord
   
   newMetSegRecs = newMetSeg.MetSegRecs
-  For itype = 1 To 8
+  For itype = 1 To 7
     If pMetSegRecs(itype).MFactR = -999# And newMetSegRecs(itype).MFactR <> -999# Then
       pMetSegRecs(itype).MFactR = newMetSegRecs(itype).MFactR
       pMetSegRecs(itype).Sgapstrg = newMetSegRecs(itype).Sgapstrg
@@ -150,7 +150,7 @@ End Sub
 Private Sub Class_Initialize()
   Dim itype&
   
-  For itype = 1 To 8
+  For itype = 1 To 7
     Set pMetSegRecs(itype) = New HspfMetSegRecord
   Next itype
   pAirType = 0
@@ -163,7 +163,7 @@ Public Sub ExpandMetSegName(wdmid$, idsn&)
   Me.Name = Me.Uci.GetWDMAttr(wdmid, idsn, "LOC")
   
   newMetSegRecs = Me.MetSegRecs
-  For itype = 1 To 8
+  For itype = 1 To 7
     Select Case itype
       Case 1: Con = "PREC"
       Case 2: Con = "GATMP"
@@ -172,7 +172,6 @@ Public Sub ExpandMetSegName(wdmid$, idsn&)
       Case 5: Con = "SOLRAD"
       Case 6: Con = "CLOUD"
       Case 7: Con = "PETINP"
-      Case 8: Con = "POTEV"
     End Select
     If itype = 2 And Me.AirType = 2 Then
       Con = "AIRTMP"
@@ -228,7 +227,7 @@ Public Sub WriteRecs(optyp$, firstid&, lastid&, icol&(), ilen&(), f)
   Dim j&, i&, str$, t$
   Dim segRec As Long, tmember$
  
-  For segRec = 1 To 8
+  For segRec = 1 To 7
     With pMetSegRecs(segRec)
       If .Typ <> 0 Then 'type exists
         If (optyp = "RCHRES" And .MFactR > 0#) Or _
@@ -295,8 +294,7 @@ Public Sub WriteRecs(optyp$, firstid&, lastid&, icol&(), ilen&(), f)
               Case 4:   tmember = "WIND"
               Case 5:   tmember = "SOLRAD"
               Case 6:   tmember = "CLOUD"
-              Case 7:   tmember = "PETINP"
-              Case 8:   tmember = "POTEV"
+              Case 7:   tmember = "POTEV"
             End Select
           Else
             Select Case .Typ
@@ -307,7 +305,6 @@ Public Sub WriteRecs(optyp$, firstid&, lastid&, icol&(), ilen&(), f)
               Case 5:   tmember = "SOLRAD"
               Case 6:   tmember = "CLOUD"
               Case 7:   tmember = "PETINP"
-              Case 8:   tmember = "POTEV"
             End Select
             If .Typ = 2 Then
               'get right air temp member name

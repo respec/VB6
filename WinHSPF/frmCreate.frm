@@ -1,4 +1,5 @@
 VERSION 5.00
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "comdlg32.ocx"
 Begin VB.Form frmCreate 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "WinHSPF - Create Project"
@@ -29,7 +30,7 @@ Begin VB.Form frmCreate
       Left            =   120
       TabIndex        =   15
       Top             =   1680
-      Width           =   4335
+      Width           =   5532
       Begin VB.ListBox lstMet 
          BackColor       =   &H80000004&
          Enabled         =   0   'False
@@ -37,7 +38,14 @@ Begin VB.Form frmCreate
          Left            =   240
          TabIndex        =   16
          Top             =   360
-         Width           =   3855
+         Width           =   5052
+      End
+      Begin VB.Label lblStar 
+         Height          =   252
+         Left            =   3480
+         TabIndex        =   17
+         Top             =   1420
+         Width           =   1812
       End
    End
    Begin VB.CommandButton cmdOkayCancel 
@@ -63,30 +71,30 @@ Begin VB.Form frmCreate
    Begin VB.Frame fraScheme 
       Caption         =   "Model Segmentation"
       Height          =   1695
-      Left            =   4560
+      Left            =   5760
       TabIndex        =   10
       Top             =   1680
-      Width           =   3375
+      Width           =   2172
       Begin VB.OptionButton opnScheme 
          Caption         =   "Grouped"
          Height          =   255
          Index           =   0
-         Left            =   480
+         Left            =   360
          TabIndex        =   12
          ToolTipText     =   "Each Perlnd/Implnd connects to multiple Rchres"
          Top             =   600
          Value           =   -1  'True
-         Width           =   2535
+         Width           =   1572
       End
       Begin VB.OptionButton opnScheme 
          Caption         =   "Individual"
          Height          =   255
          Index           =   1
-         Left            =   480
+         Left            =   360
          TabIndex        =   11
          ToolTipText     =   "Each Perlnd/Implnd connects to only one Rchres"
          Top             =   960
-         Width           =   2775
+         Width           =   1572
       End
    End
    Begin VB.Frame fraFiles 
@@ -206,7 +214,7 @@ Option Explicit
 Dim WDMId$(4), MetDetails$()
 
 Private Sub cmdFile_Click(Index As Integer)
-  Dim iwdm&, i&, s$, f$, fun&, numMetSeg&, arrayMetSegs$(), wid$
+  Dim iwdm&, i&, S$, f$, fun&, numMetSeg&, arrayMetSegs$(), wid$
   Dim tmetseg, lMetDetails$(), lMetDescs$()
   
   If Index = 0 And lblFile(0).Caption <> "<none>" Then
@@ -265,8 +273,16 @@ Private Sub cmdFile_Click(Index As Integer)
                 tmetseg = UBound(MetDetails)
               End If
               ReDim Preserve MetDetails(tmetseg + numMetSeg)
+              Dim lLeadingChar As String
               For i = 0 To numMetSeg - 1
-                lstMet.AddItem arrayMetSegs(i) & ":" & lMetDescs(i)
+                If IsBASINSMetWDM(lMetDetails(i) & "," & wid) Then
+                  'full set available here
+                  lLeadingChar = "*"
+                  lblStar.Caption = "* Full set available"
+                Else
+                  lLeadingChar = ""
+                End If
+                lstMet.AddItem lLeadingChar & arrayMetSegs(i) & ":" & lMetDescs(i) & " " & DateStringFromMetDetails(lMetDetails(i))
                 MetDetails(tmetseg + i) = lMetDetails(i) & "," & wid
               Next i
               lstMet.Enabled = True
@@ -327,9 +343,10 @@ Private Sub cmdFile_Click(Index As Integer)
 End Sub
 
 Private Sub cmdOkayCancel_Click(Index As Integer)
-    Dim i&, s$, wdmname$(3), outwdm$, tmpuci$, iresp&, lmetdetail$, continuefg As Boolean
-    Dim dsn&, lwdmid$, lId&, sjday#, ejday#, sdat&(6), edat&(6)
+    Dim i&, S$, wdmname$(3), outwdm$, tmpuci$, iresp&, lmetdetail$, continuefg As Boolean
+    Dim lPrecDsn&, lPrecWdmid$, lId&, sjday#, ejday#, sdat&(6), edat&(6)
     Dim tmetseg As HspfMetSeg
+    Dim lPetDsn&, lPetWdmid$, sjday2#, ejday2#
     
     If Index = 0 And lblFile(0) = "<none>" Then
       'no project file specified, don't allow to okay
@@ -368,7 +385,7 @@ Private Sub cmdOkayCancel_Click(Index As Integer)
             continuefg = True
             If Not IsBASINSMetWDM(lmetdetail) Then
               'do window to specify met data details
-              frmAddMet.Init "", 2
+              frmAddMet.Init lstMet.List(lstMet.ListIndex), 2
               frmAddMet.Show vbModal
               If myUci.MetSegs.Count = 0 Then
                 'user clicked cancel
@@ -376,21 +393,33 @@ Private Sub cmdOkayCancel_Click(Index As Integer)
               Else
                 'specified met segment
                 Set tmetseg = myUci.MetSegs(1)
-                dsn = tmetseg.MetSegRec(1).Source.volid
-                lwdmid = tmetseg.MetSegRec(1).Source.volname
-                If Len(lwdmid) > 0 Then
-                  lId = CInt(Mid(lwdmid, 4, 1))
+                lPrecDsn = tmetseg.MetSegRec(1).Source.volid
+                lPrecWdmid = tmetseg.MetSegRec(1).Source.volname
+                If Len(lPrecWdmid) > 0 Then
+                  lId = CInt(Mid(lPrecWdmid, 4, 1))
                 End If
-                If lId > 0 And dsn > 0 Then
-                  sjday = myUci.GetDataSetFromDsn(lId, dsn).dates.Summary.sjday
-                  ejday = myUci.GetDataSetFromDsn(lId, dsn).dates.Summary.ejday
-                  Call J2Date(sjday, sdat)
-                  Call J2Date(ejday, edat)
+                If lId > 0 And lPrecDsn > 0 Then
+                  sjday = myUci.GetDataSetFromDsn(lId, lPrecDsn).Dates.Summary.sjday
+                  ejday = myUci.GetDataSetFromDsn(lId, lPrecDsn).Dates.Summary.ejday
                 End If
+                lPetDsn = tmetseg.MetSegRec(7).Source.volid
+                lPetWdmid = tmetseg.MetSegRec(7).Source.volname
+                If Len(lPetWdmid) > 0 Then
+                  lId = CInt(Mid(lPetWdmid, 4, 1))
+                End If
+                If lId > 0 And lPetDsn > 0 Then
+                  sjday2 = myUci.GetDataSetFromDsn(lId, lPetDsn).Dates.Summary.sjday
+                  ejday2 = myUci.GetDataSetFromDsn(lId, lPetDsn).Dates.Summary.ejday
+                End If
+                'use the common period of the prec and pet data sets
+                If sjday2 > sjday Then sjday = sjday2
+                If ejday2 < ejday Then ejday = ejday2
+                Call J2Date(sjday, sdat)
+                Call J2Date(ejday, edat)
                 lmetdetail = CStr(-1 * dsn) & "," & _
                    CStr(sdat(0)) & "," & CStr(sdat(1)) & "," & CStr(sdat(2)) & "," & CStr(sdat(3)) & "," & CStr(sdat(4)) & "," & CStr(sdat(5)) & "," & _
                    CStr(edat(0)) & "," & CStr(edat(1)) & "," & CStr(edat(2)) & "," & CStr(edat(3)) & "," & CStr(edat(4)) & "," & CStr(edat(5)) & "," & _
-                   lwdmid
+                   lPrecWdmid
               End If
             Else
               'default first met seg from basins data
@@ -403,7 +432,7 @@ Private Sub cmdOkayCancel_Click(Index As Integer)
             
               setDefault myUci, defUci
               setDefaultML myUci, defUci
-              myUci.save
+              myUci.Save
               Me.MousePointer = vbNormal
               Unload Me
             End If
@@ -458,7 +487,7 @@ Private Function IsBASINSMetWDM(MetDetails$)
     metwdmid = lMetDetails
     
     'look for matching WDM datasets
-    Call myUci.FindTimSer("OBSERVED", "", "", lts)
+    Call myUci.findtimser("", "", "", lts)
     lunit = 0
     For i = 1 To lts.Count
       If lts(i).Header.Id = basedsn Then
@@ -472,40 +501,36 @@ Private Function IsBASINSMetWDM(MetDetails$)
     checkcount = 0
     For i = 1 To lts.Count
       If lts(i).Header.Id = basedsn And lts(i).File.FileUnit = lunit Then
-        If lts(i).attrib("TSTYPE") = "PREC" Then
-          checkcount = checkcount + 1
-        End If
-      ElseIf lts(i).Header.Id = basedsn + 1 And lts(i).File.FileUnit = lunit Then
-        If lts(i).attrib("TSTYPE") = "EVAP" Then
+        If lts(i).Attrib("TSTYPE") = "PREC" Then
           checkcount = checkcount + 1
         End If
       ElseIf lts(i).Header.Id = basedsn + 2 And lts(i).File.FileUnit = lunit Then
-        If lts(i).attrib("TSTYPE") = "ATEM" Then
+        If lts(i).Attrib("TSTYPE") = "ATEM" Then
           checkcount = checkcount + 1
         End If
       ElseIf lts(i).Header.Id = basedsn + 3 And lts(i).File.FileUnit = lunit Then
-        If lts(i).attrib("TSTYPE") = "WIND" Then
+        If lts(i).Attrib("TSTYPE") = "WIND" Then
           checkcount = checkcount + 1
         End If
       ElseIf lts(i).Header.Id = basedsn + 4 And lts(i).File.FileUnit = lunit Then
-        If lts(i).attrib("TSTYPE") = "SOLR" Then
+        If lts(i).Attrib("TSTYPE") = "SOLR" Then
           checkcount = checkcount + 1
         End If
       ElseIf lts(i).Header.Id = basedsn + 5 And lts(i).File.FileUnit = lunit Then
-        If lts(i).attrib("TSTYPE") = "PEVT" Then
+        If lts(i).Attrib("TSTYPE") = "PEVT" Then
           checkcount = checkcount + 1
         End If
       ElseIf lts(i).Header.Id = basedsn + 6 And lts(i).File.FileUnit = lunit Then
-        If lts(i).attrib("TSTYPE") = "DEWP" Then
+        If lts(i).Attrib("TSTYPE") = "DEWP" Then
           checkcount = checkcount + 1
         End If
       ElseIf lts(i).Header.Id = basedsn + 7 And lts(i).File.FileUnit = lunit Then
-        If lts(i).attrib("TSTYPE") = "CLOU" Then
+        If lts(i).Attrib("TSTYPE") = "CLOU" Then
           checkcount = checkcount + 1
         End If
       End If
     Next i
-    If checkcount = 8 Then
+    If checkcount = 7 Then
       IsBASINSMetWDM = True
     End If
   End If
@@ -516,7 +541,7 @@ Private Sub DefaultBASINSMetseg(MetDetails As String)
   Dim r&, i&
   Dim SDate&(6), EDate&(6)
   Dim delim$, quote$, basedsn&, metwdmid$, lMetDetails$
-  Dim lMetSeg As HspfMetSeg
+  Dim lmetseg As HspfMetSeg
   
   lMetDetails = MetDetails
   If Len(lMetDetails) > 0 Then
@@ -532,60 +557,76 @@ Private Sub DefaultBASINSMetseg(MetDetails As String)
     Next i
     metwdmid = lMetDetails
     
-    Set lMetSeg = New HspfMetSeg
-    Set lMetSeg.Uci = myUci
-    For r = 1 To 8
-      lMetSeg.MetSegRec(r).Source.volname = metwdmid
-      lMetSeg.MetSegRec(r).Sgapstrg = ""
-      lMetSeg.MetSegRec(r).Ssystem = "ENGL"
-      lMetSeg.MetSegRec(r).Tran = "SAME"
-      lMetSeg.MetSegRec(r).typ = r
+    Set lmetseg = New HspfMetSeg
+    Set lmetseg.Uci = myUci
+    For r = 1 To 7
+      lmetseg.MetSegRec(r).Source.volname = metwdmid
+      lmetseg.MetSegRec(r).Sgapstrg = ""
+      lmetseg.MetSegRec(r).Ssystem = "ENGL"
+      lmetseg.MetSegRec(r).Tran = "SAME"
+      lmetseg.MetSegRec(r).Typ = r
       Select Case r
         Case 1:
-          lMetSeg.MetSegRec(r).Source.volid = basedsn
-          lMetSeg.MetSegRec(r).Source.member = "PREC"
-          lMetSeg.MetSegRec(r).MFactP = 1
-          lMetSeg.MetSegRec(r).MFactR = 1
-          lMetSeg.MetSegRec(r).Sgapstrg = "ZERO"
+          lmetseg.MetSegRec(r).Source.volid = basedsn
+          lmetseg.MetSegRec(r).Source.member = "PREC"
+          lmetseg.MetSegRec(r).MFactP = 1
+          lmetseg.MetSegRec(r).MFactR = 1
+          lmetseg.MetSegRec(r).Sgapstrg = "ZERO"
         Case 2:
-          lMetSeg.MetSegRec(r).Source.volid = basedsn + 2
-          lMetSeg.MetSegRec(r).Source.member = "ATEM"
-          lMetSeg.MetSegRec(r).MFactP = 1
-          lMetSeg.MetSegRec(r).MFactR = 1
+          lmetseg.MetSegRec(r).Source.volid = basedsn + 2
+          lmetseg.MetSegRec(r).Source.member = "ATEM"
+          lmetseg.MetSegRec(r).MFactP = 1
+          lmetseg.MetSegRec(r).MFactR = 1
         Case 3:
-          lMetSeg.MetSegRec(r).Source.volid = basedsn + 6
-          lMetSeg.MetSegRec(r).Source.member = "DEWP"
-          lMetSeg.MetSegRec(r).MFactP = 1
-          lMetSeg.MetSegRec(r).MFactR = 1
+          lmetseg.MetSegRec(r).Source.volid = basedsn + 6
+          lmetseg.MetSegRec(r).Source.member = "DEWP"
+          lmetseg.MetSegRec(r).MFactP = 1
+          lmetseg.MetSegRec(r).MFactR = 1
         Case 4:
-          lMetSeg.MetSegRec(r).Source.volid = basedsn + 3
-          lMetSeg.MetSegRec(r).Source.member = "WIND"
-          lMetSeg.MetSegRec(r).MFactP = 1
-          lMetSeg.MetSegRec(r).MFactR = 1
+          lmetseg.MetSegRec(r).Source.volid = basedsn + 3
+          lmetseg.MetSegRec(r).Source.member = "WIND"
+          lmetseg.MetSegRec(r).MFactP = 1
+          lmetseg.MetSegRec(r).MFactR = 1
         Case 5:
-          lMetSeg.MetSegRec(r).Source.volid = basedsn + 4
-          lMetSeg.MetSegRec(r).Source.member = "SOLR"
-          lMetSeg.MetSegRec(r).MFactP = 1
-          lMetSeg.MetSegRec(r).MFactR = 1
+          lmetseg.MetSegRec(r).Source.volid = basedsn + 4
+          lmetseg.MetSegRec(r).Source.member = "SOLR"
+          lmetseg.MetSegRec(r).MFactP = 1
+          lmetseg.MetSegRec(r).MFactR = 1
         Case 6:
-          lMetSeg.MetSegRec(r).Source.volid = basedsn + 7
-          lMetSeg.MetSegRec(r).Source.member = "CLOU"
-          lMetSeg.MetSegRec(r).MFactP = 0
-          lMetSeg.MetSegRec(r).MFactR = 1
+          lmetseg.MetSegRec(r).Source.volid = basedsn + 7
+          lmetseg.MetSegRec(r).Source.member = "CLOU"
+          lmetseg.MetSegRec(r).MFactP = 0
+          lmetseg.MetSegRec(r).MFactR = 1
         Case 7:
-          lMetSeg.MetSegRec(r).Source.volid = basedsn + 5
-          lMetSeg.MetSegRec(r).Source.member = "PEVT"
-          lMetSeg.MetSegRec(r).MFactP = 1
-          lMetSeg.MetSegRec(r).MFactR = 0
-        Case 8:
-          lMetSeg.MetSegRec(r).Source.volid = basedsn + 1
-          lMetSeg.MetSegRec(r).Source.member = "EVAP"
-          lMetSeg.MetSegRec(r).MFactP = 0
-          lMetSeg.MetSegRec(r).MFactR = 1
+          lmetseg.MetSegRec(r).Source.volid = basedsn + 5
+          lmetseg.MetSegRec(r).Source.member = "PEVT"
+          lmetseg.MetSegRec(r).MFactP = 1
+          lmetseg.MetSegRec(r).MFactR = 1
       End Select
     Next r
-    lMetSeg.ExpandMetSegName metwdmid, basedsn
-    lMetSeg.Id = myUci.MetSegs.Count + 1
-    myUci.MetSegs.Add lMetSeg
+    lmetseg.ExpandMetSegName metwdmid, basedsn
+    lmetseg.Id = myUci.MetSegs.Count + 1
+    myUci.MetSegs.Add lmetseg
   End If
 End Sub
+
+Private Function DateStringFromMetDetails(aMetDetails As String)
+    Dim lDelim As String, lQuote As String
+    Dim lSdate(6) As Integer
+    Dim lEdate(6) As Integer
+    Dim lBaseDsn As String
+    Dim i As Integer
+    Dim lMetDetails As String
+
+    lDelim = ","
+    lQuote = """"
+    lMetDetails = aMetDetails
+    lBaseDsn = StrSplit(lMetDetails, lDelim, lQuote)
+    For i = 0 To 5
+      lSdate(i) = StrSplit(lMetDetails, lDelim, lQuote)
+    Next i
+    For i = 0 To 5
+      lEdate(i) = StrSplit(lMetDetails, lDelim, lQuote)
+    Next i
+    DateStringFromMetDetails = "(" & lSdate(0) & "/" & lSdate(1) & "/" & lSdate(2) & "-" & lEdate(0) & "/" & lEdate(1) & "/" & lEdate(2) & ")"
+End Function
