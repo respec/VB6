@@ -1,15 +1,15 @@
 VERSION 5.00
-Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "comdlg32.ocx"
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form frmCreate 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "WinHSPF - Create Project"
    ClientHeight    =   4260
-   ClientLeft      =   48
-   ClientTop       =   336
+   ClientLeft      =   45
+   ClientTop       =   330
    ClientWidth     =   8040
    BeginProperty Font 
       Name            =   "MS Sans Serif"
-      Size            =   7.8
+      Size            =   8.25
       Charset         =   0
       Weight          =   700
       Underline       =   0   'False
@@ -34,7 +34,7 @@ Begin VB.Form frmCreate
       Begin VB.ListBox lstMet 
          BackColor       =   &H80000004&
          Enabled         =   0   'False
-         Height          =   1008
+         Height          =   840
          Left            =   240
          TabIndex        =   16
          Top             =   360
@@ -107,7 +107,7 @@ Begin VB.Form frmCreate
       Begin VB.ListBox lstWDM 
          Appearance      =   0  'Flat
          BackColor       =   &H80000004&
-         Height          =   216
+         Height          =   225
          Left            =   3480
          TabIndex        =   4
          Top             =   600
@@ -197,8 +197,8 @@ Begin VB.Form frmCreate
    Begin MSComDlg.CommonDialog CDFile 
       Left            =   7440
       Top             =   3480
-      _ExtentX        =   699
-      _ExtentY        =   699
+      _ExtentX        =   688
+      _ExtentY        =   688
       _Version        =   393216
       FontSize        =   4.09255e-38
    End
@@ -214,7 +214,7 @@ Option Explicit
 Dim WDMId$(4), MetDetails$()
 
 Private Sub cmdFile_Click(Index As Integer)
-  Dim iwdm&, i&, S$, f$, fun&, numMetSeg&, arrayMetSegs$(), wid$
+  Dim iwdm&, i&, s$, f$, fun&, numMetSeg&, arrayMetSegs$(), wid$
   Dim tmetseg, lMetDetails$(), lMetDescs$()
   
   If Index = 0 And lblFile(0).Caption <> "<none>" Then
@@ -258,7 +258,7 @@ Private Sub cmdFile_Click(Index As Integer)
           lstWDM.AddItem f
           iwdm = 0
           wid = "WDM" & lstWDM.listcount + 1
-          myUci.openWDM iwdm, f, fun, wid
+          myUci.OpenWDM iwdm, f, fun, wid
           WDMId(lstWDM.listcount) = wid
           If fun < 1 Then
             Call MsgBox("Problem opening the Met WDM file.", _
@@ -311,7 +311,7 @@ Private Sub cmdFile_Click(Index As Integer)
         iwdm = 2
 30      'open wdm file
         wid = "WDM1"
-        myUci.openWDM iwdm, lblFile(0).Caption, fun, wid
+        myUci.OpenWDM iwdm, lblFile(0).Caption, fun, wid
         If iwdm = 2 And fun < 1 Then
           Call MsgBox("Problem creating the project WDM file.", _
                         vbOKOnly, "Create Project Problem")
@@ -343,7 +343,7 @@ Private Sub cmdFile_Click(Index As Integer)
 End Sub
 
 Private Sub cmdOkayCancel_Click(Index As Integer)
-    Dim i&, S$, wdmname$(3), outwdm$, tmpuci$, iresp&, lmetdetail$, continuefg As Boolean
+    Dim i&, s$, wdmname$(3), outwdm$, tmpuci$, iresp&, lmetdetail$, continuefg As Boolean
     Dim lPrecDsn&, lPrecWdmid$, lId&, sjday#, ejday#, sdat&(6), edat&(6)
     Dim tmetseg As HspfMetSeg
     Dim lPetDsn&, lPetWdmid$, sjday2#, ejday2#
@@ -416,7 +416,7 @@ Private Sub cmdOkayCancel_Click(Index As Integer)
                 If ejday2 < ejday Then ejday = ejday2
                 Call J2Date(sjday, sdat)
                 Call J2Date(ejday, edat)
-                lmetdetail = CStr(-1 * dsn) & "," & _
+                lmetdetail = CStr(-1 * lPrecDsn) & "," & _
                    CStr(sdat(0)) & "," & CStr(sdat(1)) & "," & CStr(sdat(2)) & "," & CStr(sdat(3)) & "," & CStr(sdat(4)) & "," & CStr(sdat(5)) & "," & _
                    CStr(edat(0)) & "," & CStr(edat(1)) & "," & CStr(edat(2)) & "," & CStr(edat(3)) & "," & CStr(edat(4)) & "," & CStr(edat(5)) & "," & _
                    lPrecWdmid
