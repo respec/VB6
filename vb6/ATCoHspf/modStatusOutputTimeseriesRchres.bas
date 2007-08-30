@@ -372,7 +372,7 @@ Public Sub UpdateOutputTimeseriesRchres(O As HspfOperation, TimserStatus As Hspf
       
     'section phcarb
     If ltable.Parms("PHFG") = 1 Or ltable.Parms("PHFG") = 3 Then
-      TimserStatus.Change "PHCARB:SATCO2", i, HspfStatusOptional
+      TimserStatus.Change "PHCARB:SATCO2", 1, HspfStatusOptional
       For i = 1 To 3
         TimserStatus.Change "PHCARB:PHST", i, HspfStatusOptional
       Next i
