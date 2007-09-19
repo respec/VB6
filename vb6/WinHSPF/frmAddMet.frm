@@ -295,6 +295,8 @@ Private Sub cboName_Click()
                 .TextMatrix(i, 2) = ""
                 If tstypecol("CLOU") = "CLOU" Then
                   .TextMatrix(i, 2) = "CLOU"
+                ElseIf tstypecol("CLDC") = "CLDC" Then
+                  .TextMatrix(i, 2) = "CLDC"
                 End If
               End If
               .TextMatrix(i, 4) = 0
