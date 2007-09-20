@@ -1,0 +1,4 @@
+VBGROUP 5.0
+StartupProject=StreamStatsDB.vbp
+Project=..\libStreamStatsDB\libStreamStatsDB.vbp
+Project=..\ATCoCtl\ATCoCtl.vbp
