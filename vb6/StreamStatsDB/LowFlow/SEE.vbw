@@ -1,0 +1,6 @@
+frmLowFlow = 1, 19, 776, 569, , 76, 18, 758, 621, C
+frmUserInfo = 44, 44, 676, 467, , 66, 66, 694, 491, C
+modUserInfo = 66, 66, 757, 489, C
+UTILITY = 127, 66, 755, 491, C
+modShell = 0, 0, 628, 425, C
+modWin32Api = 44, 44, 672, 469, C
