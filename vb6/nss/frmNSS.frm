@@ -448,7 +448,7 @@ Attribute VB_Exposed = False
 Option Explicit
 'Copyright 2001 by AQUA TERRA Consultants
 
-Private Const AppName As String = "NSS"
+Private Const appName As String = "NSS"
 Private Const SectionMainWin As String = "Main Window"
 Private Const SectionRecentFiles As String = "Recent Files"
 Private Const MaxRecentFiles As Integer = 6
@@ -538,7 +538,7 @@ Private Sub cmdFrequency_Click()
   If NumFloodScens > 0 Then
     frmFreq.Show
   Else
-    MsgBox "No Flood Frequency scenarios available to graph", vbOKOnly, AppName
+    MsgBox "No Flood Frequency scenarios available to graph", vbOKOnly, appName
   End If
 End Sub
 
@@ -558,7 +558,7 @@ Private Sub cmdHydrograph_Click()
   If NumFloodScens > 0 Then
     frmHyd.Show
   Else
-    MsgBox "No Flood Frequency scenarios available to graph", vbOKOnly, AppName
+    MsgBox "No Flood Frequency scenarios available to graph", vbOKOnly, appName
   End If
 End Sub
 
@@ -844,35 +844,34 @@ Private Sub mnuDatabase_Click()
   Dim ff As New ATCoFindFile
   Dim answer As VbMsgBoxResult
 
-  On Error GoTo NoDB
-
 FindDB:
   'Open NSS/StreamStats Database
   ff.SetDialogProperties "Please locate NSS or StreamStats database version 4", "NSSv4.mdb"
   ff.SetRegistryInfo "StreamStatsDB", "Defaults", "nssDatabaseV4"
   dbPath = ff.GetName(True)
   
-NoDB:
-  If Not FileExists(dbPath) Then
-    If MsgBox("Could not open database or project" & vbCr & vbCr _
-          & Err.Description & vbCr & vbCr _
-          & "Search for current database?", vbOKCancel, "NSS Database Problem") = vbOK Then
-      SaveSetting "StreamStatsDB", "Defaults", "nssDatabaseV4", "NSSv4.mdb"
-      GoTo FindDB
+  If Len(dbPath) > 0 Then
+    If Not FileExists(dbPath) Then
+      If MsgBox("Could not open database or project" & vbCr & vbCr _
+            & Err.Description & vbCr & vbCr _
+            & "Search for current database?", vbOKCancel, "NSS Database Problem") = vbOK Then
+        SaveSetting "StreamStatsDB", "Defaults", "nssDatabaseV4", "NSSv4.mdb"
+        GoTo FindDB
+      Else
+        End
+      End If
     Else
-      End
-    End If
-  Else
-    If Project.RuralScenarios.Count + Project.UrbanScenarios.Count > 0 Then
-      answer = MsgBox("Changing the database will clear any existing estimates." & vbCr & _
-                      "Are you sure you want to change the database?", vbOKCancel)
-    Else
-      answer = vbOK
-    End If
-    If answer = vbOK Then
-      Project.Clear
-      Clear
-      Project.LoadNSSdatabase dbPath
+      If Project.RuralScenarios.Count + Project.UrbanScenarios.Count > 0 Then
+        answer = MsgBox("Changing the database will clear any existing estimates." & vbCr & _
+                        "Are you sure you want to change the database?", vbOKCancel)
+      Else
+        answer = vbOK
+      End If
+      If answer = vbOK Then
+        Project.Clear
+        Clear
+        Project.LoadNSSdatabase dbPath
+      End If
     End If
   End If
 
@@ -888,7 +887,7 @@ Private Sub mnuGraphFrequency_Click()
   If Project.RuralScenarios.Count + Project.UrbanScenarios.Count > 0 Then
     frmFreq.Show
   Else
-    MsgBox "No scenarios available to graph", vbOKOnly, AppName
+    MsgBox "No scenarios available to graph", vbOKOnly, appName
   End If
 End Sub
 
@@ -896,7 +895,7 @@ Private Sub mnuGraphHydrograph_Click()
   If Project.RuralScenarios.Count + Project.UrbanScenarios.Count > 0 Then
     frmHyd.Show
   Else
-    MsgBox "No scenarios available to graph", vbOKOnly, AppName
+    MsgBox "No scenarios available to graph", vbOKOnly, appName
   End If
 End Sub
 
@@ -915,10 +914,10 @@ Private Sub mnuOpen_Click()
     .Filter = "NSS Status Files (*.nss)|*.nss|All Files|*.*"
     .FilterIndex = 0
     .ShowOpen
-    Project.filename = .filename
-    If Len(Dir(Project.filename)) > 0 Then
-      Project.XML = WholeFileString(Project.filename)
-      AddRecentFile Project.filename
+    Project.FileName = .FileName
+    If Len(Dir(Project.FileName)) > 0 Then
+      Project.XML = WholeFileString(Project.FileName)
+      AddRecentFile Project.FileName
     End If
   End With
 
@@ -926,8 +925,8 @@ Private Sub mnuOpen_Click()
 
 ErrExit:
   If Err.Number <> 32755 Then 'If something other than "Cancel was selected" then notify user
-    MsgBox "Error opening NSS Status File '" & cdlg.filename & "'" & vbCr _
-          & Err.Description, vbCritical, AppName
+    MsgBox "Error opening NSS Status File '" & cdlg.FileName & "'" & vbCr _
+          & Err.Description, vbCritical, appName
   End If
 End Sub
 
@@ -940,7 +939,7 @@ Private Sub mnuRecent_Click(Index As Integer)
                  "Load Project") = vbCancel Then Exit Sub
     'End If
     If Len(Dir(newFilePath)) > 0 Then
-      Project.filename = newFilePath
+      Project.FileName = newFilePath
       Project.XML = WholeFileString(newFilePath)
     Else 'status file not currently available, remove from menu
       While Index < mnuRecent.Count - 1
@@ -965,15 +964,15 @@ Private Sub mnuReport_Click()
     .Filter = "NSS Report (*.txt)|*.txt|All Files|*.*"
     .FilterIndex = 0
     .ShowSave
-    SaveFileString .filename, Project.Report
-    OpenFile .filename
+    SaveFileString .FileName, Project.Report
+    OpenFile .FileName
   End With
   
   Exit Sub
 
 ErrHand:
   If Err.Description <> "Cancel was selected." Then
-    MsgBox "Error saving report" & vbCr & Err.Description, vbCritical, AppName
+    MsgBox "Error saving report" & vbCr & Err.Description, vbCritical, appName
   End If
 End Sub
 
@@ -984,16 +983,16 @@ Private Sub mnuSaveAs_Click()
     .Filter = "NSS Status Files (*.nss)|*.nss|All Files|*.*"
     .FilterIndex = 0
     .ShowSave
-    SaveFileString .filename, Project.XML
-    AddRecentFile .filename
+    SaveFileString .FileName, Project.XML
+    AddRecentFile .FileName
   End With
 
   Exit Sub
 
 ErrExit:
   If Err.Number <> 32755 Then 'If something other than "Cancel was selected" then notify user
-    MsgBox "Error saving NSS Status File '" & cdlg.filename & "'" _
-           & vbCr & Err.Description, vbCritical, AppName
+    MsgBox "Error saving NSS Status File '" & cdlg.FileName & "'" _
+           & vbCr & Err.Description, vbCritical, appName
   End If
 End Sub
 
@@ -1150,17 +1149,17 @@ End Sub
 Private Sub SaveWindowSettings()
   Dim rf&
   If Height > 800 And Left < Screen.Width And Top < Screen.Height Then
-    SaveSetting AppName, SectionMainWin, "Width", Width
-    SaveSetting AppName, SectionMainWin, "Height", Height
-    SaveSetting AppName, SectionMainWin, "Left", Left
-    SaveSetting AppName, SectionMainWin, "Top", Top
-    SaveSetting AppName, SectionMainWin, "LeftWidthFraction", LeftWidthFraction
+    SaveSetting appName, SectionMainWin, "Width", Width
+    SaveSetting appName, SectionMainWin, "Height", Height
+    SaveSetting appName, SectionMainWin, "Left", Left
+    SaveSetting appName, SectionMainWin, "Top", Top
+    SaveSetting appName, SectionMainWin, "LeftWidthFraction", LeftWidthFraction
   End If
   For rf = mnuRecent.Count - 1 To 1 Step -1
-    SaveSetting AppName, SectionRecentFiles, CStr(rf), mnuRecent(rf).Tag
+    SaveSetting appName, SectionRecentFiles, CStr(rf), mnuRecent(rf).Tag
   Next rf
-  While GetSetting(AppName, SectionRecentFiles, CStr(rf)) <> ""
-    SaveSetting AppName, SectionRecentFiles, CStr(rf), ""
+  While GetSetting(appName, SectionRecentFiles, CStr(rf)) <> ""
+    SaveSetting appName, SectionRecentFiles, CStr(rf), ""
     rf = rf + 1
   Wend
 End Sub
@@ -1168,30 +1167,30 @@ End Sub
 Private Sub RetrieveWindowSettings()
   Dim setting As Variant, rf&
   
-  setting = GetSetting(AppName, SectionMainWin, "LeftWidthFraction", "0.55")
+  setting = GetSetting(appName, SectionMainWin, "LeftWidthFraction", "0.55")
   If IsNumeric(setting) Then
     If setting > 0 Then LeftWidthFraction = setting
   End If
   
-  setting = GetSetting(AppName, SectionMainWin, "Left")
+  setting = GetSetting(appName, SectionMainWin, "Left")
   If IsNumeric(setting) Then
     If setting < Screen.Width Then Left = setting
   End If
-  setting = GetSetting(AppName, SectionMainWin, "Top")
+  setting = GetSetting(appName, SectionMainWin, "Top")
   If IsNumeric(setting) Then
     If setting >= 0 And setting < Screen.Height * 0.9 Then Top = setting
   End If
-  setting = GetSetting(AppName, SectionMainWin, "Width")
+  setting = GetSetting(appName, SectionMainWin, "Width")
   If IsNumeric(setting) Then
     If setting > 200 And setting <= Screen.Width Then Width = setting
   End If
-  setting = GetSetting(AppName, SectionMainWin, "Height")
+  setting = GetSetting(appName, SectionMainWin, "Height")
   If IsNumeric(setting) Then
     If setting > 200 And setting <= Screen.Height Then Height = setting
   End If
   
   For rf = MaxRecentFiles To 1 Step -1
-    setting = GetSetting(AppName, SectionRecentFiles, CStr(rf))
+    setting = GetSetting(appName, SectionRecentFiles, CStr(rf))
     If setting <> "" Then AddRecentFile CStr(setting)
   Next rf
 End Sub

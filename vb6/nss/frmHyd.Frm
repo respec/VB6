@@ -404,7 +404,8 @@ Private Sub CalcHyd(useGraph As Boolean)
     StepName = "agr.SetVarInfo"
     agr.SetVarInfo vmin, vmax, which, tran, vlab
     'set axes types and labels
-    titl = "Hydrograph for " & cboInterval.Text & "-yr interval"
+    titl = "Hydrograph for " & cboInterval.Text & "-yr interval&" & _
+           "NOTE:  May not represent actual hydrograph"
     capt = "Hydrograph Plot"
     'set x-axis to arithmetic as time axis not yet implemented
     StepName = "agr.SetTitles"
