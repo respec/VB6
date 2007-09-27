@@ -26,7 +26,7 @@ Begin VB.Form frmEditWeight
       AllowEditHeader =   0   'False
       AllowLoad       =   0   'False
       AllowSorting    =   0   'False
-      Rows            =   1
+      Rows            =   2
       Cols            =   4
       ColWidthMinimum =   300
       gridFontBold    =   0   'False
@@ -1001,46 +1001,46 @@ End Sub
 '  PopulateResults
 'End Sub
 
-Private Sub txtObs_Change(Index As Integer)
-  Dim ReturnIndex As Long
-  If pFinishedInit Then
-    For ReturnIndex = 1 To pFirstReturns.Count
-      If IsNumeric(txtObs(ReturnIndex).Text) Then
-        pScenario.Weight.SetGagedValue pFirstReturns(ReturnIndex).Name, txtObs(ReturnIndex).Text
-      End If
-    Next
-    PopulateResults
-  End If
-End Sub
-
-Private Sub txtObs_GotFocus(Index As Integer)
-  pCurrentControl = Index
-  txtObs(Index).SelStart = 0
-  txtObs(Index).SelLength = Len(txtObs(Index).Text)
-End Sub
-
-Private Sub txtObs_KeyDown(Index As Integer, KeyCode As Integer, Shift As Integer)
-  Dim newIndex As Integer
-  Select Case KeyCode
-    Case vbKeyReturn, vbKeyDown, vbKeyUp
-      If KeyCode = vbKeyUp Then newIndex = Index - 1 Else newIndex = Index + 1
-      If newIndex < 1 Then
-        If cboWgtSelect.Visible And cboWgtSelect.Enabled Then
-          cboWgtSelect.SetFocus
-        ElseIf txtYears.Visible And txtYears.Enabled Then
-          txtYears.SetFocus
-        End If
-      ElseIf newIndex <= txtObs.Count Then
-        If txtObs(newIndex).Visible Then
-          txtObs(newIndex).SetFocus
-        Else
-          cmdApply(1).SetFocus
-        End If
-      Else
-        cmdApply(1).SetFocus
-      End If
-  End Select
-End Sub
+'Private Sub txtObs_Change(Index As Integer)
+'  Dim ReturnIndex As Long
+'  If pFinishedInit Then
+'    For ReturnIndex = 1 To pFirstReturns.Count
+'      If IsNumeric(txtObs(ReturnIndex).Text) Then
+'        pScenario.Weight.SetGagedValue pFirstReturns(ReturnIndex).Name, txtObs(ReturnIndex).Text
+'      End If
+'    Next
+'    PopulateResults
+'  End If
+'End Sub
+'
+'Private Sub txtObs_GotFocus(Index As Integer)
+'  pCurrentControl = Index
+'  txtObs(Index).SelStart = 0
+'  txtObs(Index).SelLength = Len(txtObs(Index).Text)
+'End Sub
+'
+'Private Sub txtObs_KeyDown(Index As Integer, KeyCode As Integer, Shift As Integer)
+'  Dim newIndex As Integer
+'  Select Case KeyCode
+'    Case vbKeyReturn, vbKeyDown, vbKeyUp
+'      If KeyCode = vbKeyUp Then newIndex = Index - 1 Else newIndex = Index + 1
+'      If newIndex < 1 Then
+'        If cboWgtSelect.Visible And cboWgtSelect.Enabled Then
+'          cboWgtSelect.SetFocus
+'        ElseIf txtYears.Visible And txtYears.Enabled Then
+'          txtYears.SetFocus
+'        End If
+'      ElseIf newIndex <= txtObs.Count Then
+'        If txtObs(newIndex).Visible Then
+'          txtObs(newIndex).SetFocus
+'        Else
+'          cmdApply(1).SetFocus
+'        End If
+'      Else
+'        cmdApply(1).SetFocus
+'      End If
+'  End Select
+'End Sub
 
 Private Sub txtYears_Change()
   Dim ReturnIndex As Long
