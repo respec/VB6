@@ -259,9 +259,11 @@ Public Sub Add(ByRef NewValues() As String, StaIndex As Long, Optional ImportFlg
     If .RecordCount > 0 Then 'check to see if station with this ID or name already exists
       .FindFirst "StaID='" & NewValues(2, StaIndex, 1) & "'"
       If Not .NoMatch Then  'Station with this code already exists for this state
-        ssMessageBox "There is already a station in " & pDB.State.Name & " with the code " & _
-            NewValues(2, StaIndex, 1) & "." & vbCrLf & "No new station was created.", _
-            vbCritical, "Code already exists"
+        If ImportFlg <> 1 Then
+          ssMessageBox "There is already a station in " & pDB.State.Name & " with the code " & _
+              NewValues(2, StaIndex, 1) & "." & vbCrLf & "No new station was created.", _
+               vbExclamation, "Code already exists"
+        End If
         Me.Name = "bad"
         GoTo AddStateStationReference
       End If
@@ -270,7 +272,7 @@ Public Sub Add(ByRef NewValues() As String, StaIndex As Long, Optional ImportFlg
         If ImportFlg <> 1 Then
           ssMessageBox "There is already a station in " & pDB.State.Name & " with the name " & _
               NewValues(2, StaIndex, 2) & "." & vbCrLf & "No new station was created.", _
-              vbCritical, "Name already exists"
+              vbExclamation, "Name already exists"
         End If
         Me.Name = "bad"
         GoTo AddStateStationReference
@@ -327,6 +329,7 @@ AddStateStationReference:
       End If
       .Update
     ElseIf Not .NoMatch And ROIIndex > 0 Then 'importing ROI, update ROI field
+      .Edit
       .Fields("ROI") = ROIIndex
       .Update
     End If

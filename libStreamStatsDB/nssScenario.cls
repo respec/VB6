@@ -34,6 +34,7 @@ Private pRHO As Variant
 Private pCF As Variant
 Private pParmOutOfRange As Boolean
 Private pErrorDescription As String
+Private pExtrapolated As Boolean
 
 Public Function ErrorDescription() As String
   ErrorDescription = pErrorDescription
@@ -685,7 +686,7 @@ Public Function Discharges() As Double()
         RegionVal = CurReturn.Constant
         StepName = "For ComponentIndex = 1 To CurReturn.Components.Count"
         'Some 500-year returns are supposed to be missing components, so we don't want to warn about them
-        If CurReturn.Components.Count = 0 And Not WarnedAboutMissingComponents And CurReturn.Name <> "500" Then
+        If CurReturn.Components.Count = 0 And Not WarnedAboutMissingComponents And InStr(CurReturn.Name, "500") = 0 Then
           StepName = "Error: Components for return period " & CurReturn.Name & " of " & CurRegion.Region.Name & " are missing from the database"
           pErrorDescription = pErrorDescription & StepName & vbCrLf
           ssMessageBox StepName, vbOKOnly, "NSS Discharges"
@@ -761,11 +762,12 @@ Public Function Discharges() As Double()
       End If
 NextInterval:
     Next
-    If FirstReturns(FirstReturns.Count).Name = "500" And _
+    If InStr(FirstReturns(FirstReturns.Count).Name, "500") > 0 And _
        IntervalDischarge(FirstReturns.Count) < 0.001 Then
       'not able to compute 500 year flood, extrapolate it
       StepName = "nss500"
       IntervalDischarge(FirstReturns.Count) = nss500(IntervalDischarge, Me.Intervals)
+      pExtrapolated = True
     End If
   End If
   Discharges = IntervalDischarge
@@ -984,6 +986,7 @@ Private Sub Class_Initialize()
   Set pWeight = New nssWeight
   ReDim pSaveEquivYears(0)
   ReDim pSaveStdError(0)
+  pExtrapolated = False
 End Sub
 
 Public Function EstimateString() As String
@@ -1180,10 +1183,11 @@ Public Function EstimateString() As String
     Else
       DecimalAlign FlowText, True, True, 11
     End If
-      If InStr(IntervalText(nIntervals), "500") > 0 Then
-        llen = Len(FlowText(nIntervals)) - 1
-        FlowText(nIntervals) = Left(FlowText(nIntervals), llen) & "*"
-      End If
+    
+    If pExtrapolated Then 'add "*" to extrapolated 500-year value
+      llen = Len(FlowText(nIntervals)) - 1
+      FlowText(nIntervals) = Left(FlowText(nIntervals), llen) & "*"
+    End If
     
     DecimalAlign YearsText, True, True, 10
     If Me.UsePredInts And Me.Weight.WeightType = 0 Then
@@ -1207,7 +1211,7 @@ Public Function EstimateString() As String
       End If
       If YearsOn Then txt = txt & YearsText(Index)
     Next
-    txt = txt & vbCrLf & vbCrLf & "  *Extrapolated value"
+    If pExtrapolated Then txt = txt & vbCrLf & vbCrLf & "  *Extrapolated value"
     If Me.RegCrippenBue > 0 Then
       txt = txt & vbCrLf & "maximum: " _
                 & SignificantDigits(Me.MaxFloodEnvelope(useMetric), 3) _
@@ -1223,7 +1227,7 @@ End Function
 Private Sub GetMatrixBinary(MatType As Integer, MatVar As Variant)
   Dim i As Long, j As Long, Fun As Long, Fnv As Long, nv As Long
   Dim FileType As Integer '1 - RHO, 2 - REC
-  Dim FileName As String
+  Dim Filename As String
   Dim iVal As Integer
   Dim rval As Single
   Dim FTotVal As Single, TotVal As Single
@@ -1233,15 +1237,15 @@ Private Sub GetMatrixBinary(MatType As Integer, MatVar As Variant)
 '    Filename = GetSetting("StreamStatsDB", "Defaults", Me.Project.State.Abbrev & "_RHOImportFile")
     ff.SetDialogProperties "Please locate ROI RHO binary file", Me.Project.State.Abbrev & ".rho.bin"
     ff.SetRegistryInfo "StreamStatsDB", "Defaults", Me.Project.State.Abbrev & "RHOBinary"
-    FileName = ff.GetName
+    Filename = ff.GetName
   Else 'REC
 '    Filename = GetSetting("StreamStatsDB", "Defaults", Me.Project.State.Abbrev & "_MConImportFile")
     ff.SetDialogProperties "Please locate ROI REC binary file", Me.Project.State.Abbrev & ".rec.bin"
     ff.SetRegistryInfo "StreamStatsDB", "Defaults", Me.Project.State.Abbrev & "RECBinary"
-    FileName = ff.GetName
+    Filename = ff.GetName
   End If
   Fun = FreeFile(0)
-  Open FileName For Binary As #Fun
+  Open Filename For Binary As #Fun
   Get #Fun, , FileType
   Get #Fun, , Fnv
   Get #Fun, , FTotVal

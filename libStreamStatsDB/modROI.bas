@@ -131,7 +131,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   ReDim PkLab(NumPeaks)
   ReDim Ak(NumPeaks)
   For i = 1 To NumPeaks
-    j = InStr(Scenario.Project.State.ROIPeakFlows(i).Name, "-")
+    j = InStr(Scenario.Project.State.ROIPeakFlows(i).Name, "_")
     If j > 0 Then
       str = Left(Scenario.Project.State.ROIPeakFlows(i).Name, j - 1)
       PkLab(i) = PkLabColl(str)

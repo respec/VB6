@@ -1,7 +1,7 @@
 Type=OleDll
-Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#..\..\WINDOWS\system32\stdole2.tlb#OLE Automation
-Reference=*\G{18F0904D-D01A-4967-90D6-FB9B55A332EC}#1.0#0#..\..\WINDOWS\system32\FColl.dll#Edanmo's FastCollection Class v1
-Reference=*\G{00025E01-0000-0000-C000-000000000046}#5.0#0#..\..\Program Files\Common Files\Microsoft Shared\DAO\dao360.dll#Microsoft DAO 3.6 Object Library
+Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#..\..\..\WINDOWS\system32\stdole2.tlb#OLE Automation
+Reference=*\G{18F0904D-D01A-4967-90D6-FB9B55A332EC}#1.0#0#..\..\..\WINDOWS\system32\FColl.dll#Edanmo's FastCollection Class v1
+Reference=*\G{00025E01-0000-0000-C000-000000000046}#5.0#0#..\..\..\Program Files\Common Files\Microsoft Shared\DAO\dao360.dll#Microsoft DAO 3.6 Object Library
 Object={872F11D5-3322-11D4-9D23-00A0C9768F70}#1.10#0; ATCoCtl.ocx
 Class=nssComponent; nssComponent.cls
 Class=nssDatabase; nssDatabase.cls
