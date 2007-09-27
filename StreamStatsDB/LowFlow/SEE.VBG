@@ -1,4 +1,4 @@
 VBGROUP 5.0
 StartupProject=SEE.vbp
-Project=..\..\..\VBExperimental\libStreamStatsDB\libStreamStatsDB.vbp
-Project=..\..\..\VBExperimental\ATCoCtl\ATCoCtl.vbp
+Project=..\..\..\vb6\libStreamStatsDB\libStreamStatsDB.vbp
+Project=..\..\..\vb6\ATCoCtl\ATCoCtl.vbp
