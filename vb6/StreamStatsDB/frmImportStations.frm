@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "*\A..\..\VBEXPE~2\ATCoCtl\ATCoCtl.vbp"
+Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmImportStations 
    Caption         =   "Import Stations"
    ClientHeight    =   3240
@@ -86,7 +86,7 @@ Begin VB.Form frmImportStations
       AllowEditHeader =   0   'False
       AllowLoad       =   0   'False
       AllowSorting    =   0   'False
-      Rows            =   73
+      Rows            =   77
       Cols            =   2
       ColWidthMinimum =   300
       gridFontBold    =   0   'False
@@ -218,20 +218,20 @@ Private Sub DiscoverFormat()
   End If
 End Sub
 
-Public Sub OpenDataFile(Optional Filename As String = "")
-  Dim Msg As String
+Public Sub OpenDataFile(Optional filename As String = "")
+  Dim msg As String
   Dim m_FileName As String
   Dim ff As ATCoFindFile
   
-  If Len(Filename) > 0 Then
-    If Len(Dir(Filename)) > 0 Then
-      NameDataFile = Filename
+  If Len(filename) > 0 Then
+    If Len(Dir(filename)) > 0 Then
+      NameDataFile = filename
       GoTo OpenIt
     End If
   End If
   
   Set ff = New ATCoFindFile
-  ff.SetDialogProperties "Open Station File", Filename
+  ff.SetDialogProperties "Open Station File", filename
   ff.SetRegistryInfo "StreamStats", "files", "Stations"
   NameDataFile = ff.GetName(True)
     
@@ -460,7 +460,7 @@ Private Sub cmdLastRow_Click()
   PopulateSample
 End Sub
 
-Private Sub cmdok_Click()
+Private Sub cmdOK_Click()
   Import
   Unload Me
 End Sub
@@ -503,6 +503,8 @@ Sub Import()
 '  Set myCitation.Db = SSDB
 '  myCitation.Add "Imported from station file " & FilenameNoPath(NameDataFile)
   roiRegnCount = 0
+  Set myStatistic = New ssStatistic
+  Set myStatistic.Db = SSDB
 
   For fileline = 1 + SkipDataLinesStart To DataFileLines - SkipDataLinesEnd - SkipDataLinesStart
     textLine = DataFileLine(fileline)
@@ -547,6 +549,7 @@ Sub Import()
           Case "":             'Ignore columns with no category
           Case "station id":
             stationValues(2, 1, 1) = parsed(col)
+            If Len(stationValues(2, 1, 1)) = 7 Then stationValues(2, 1, 1) = "0" & stationValues(2, 1, 1)
           Case "Descriptive Information":
             Select Case LCase(Trim(agd.TextMatrix(3, col)))
               Case "station_name": stationValues(2, 1, 2) = parsed(col)
@@ -609,6 +612,7 @@ Stat:
                   End If
                 End If
               End If
+              dataValues(2, attCnt, 2) = myStatistic.GetLabelID(attribAbbrev)
               dataValues(2, attCnt, 3) = attribAbbrev
               If takeLog(col) Then
                 dataValues(2, attCnt, 4) = CSng(10 ^ parsed(col))
