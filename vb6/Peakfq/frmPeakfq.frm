@@ -83,10 +83,10 @@ Begin VB.Form frmPeakfq
       TabCaption(2)   =   "Results"
       TabPicture(2)   =   "frmPeakfq.frx":0202
       Tab(2).ControlEnabled=   0   'False
-      Tab(2).Control(0)=   "grdGraphs"
-      Tab(2).Control(1)=   "fraOutFileRes(0)"
-      Tab(2).Control(2)=   "fraGraphics"
-      Tab(2).Control(3)=   "fraOutFileRes(1)"
+      Tab(2).Control(0)=   "fraOutFileRes(1)"
+      Tab(2).Control(1)=   "fraGraphics"
+      Tab(2).Control(2)=   "fraOutFileRes(0)"
+      Tab(2).Control(3)=   "grdGraphs"
       Tab(2).ControlCount=   4
       Begin ATCoCtl.ATCoGrid grdGraphs 
          Height          =   2295
@@ -359,6 +359,27 @@ Begin VB.Form frmPeakfq
          TabIndex        =   5
          Top             =   1800
          Width           =   7575
+         Begin VB.OptionButton optAddFormat 
+            Caption         =   "Tab-Separated"
+            Height          =   255
+            Index           =   1
+            Left            =   2880
+            TabIndex        =   42
+            Top             =   480
+            Visible         =   0   'False
+            Width           =   2175
+         End
+         Begin VB.OptionButton optAddFormat 
+            Caption         =   "Watstore"
+            Height          =   255
+            Index           =   0
+            Left            =   2880
+            TabIndex        =   41
+            Top             =   240
+            Value           =   -1  'True
+            Visible         =   0   'False
+            Width           =   2175
+         End
          Begin VB.CheckBox chkAddOut 
             Caption         =   "WDM"
             Height          =   255
@@ -369,7 +390,7 @@ Begin VB.Form frmPeakfq
             Width           =   975
          End
          Begin VB.CheckBox chkAddOut 
-            Caption         =   "Watstore"
+            Caption         =   "Text File"
             Height          =   255
             Index           =   1
             Left            =   1320
@@ -435,7 +456,7 @@ Begin VB.Form frmPeakfq
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   2
+         Rows            =   1
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -541,7 +562,7 @@ Dim CurGraphName As String
 Dim RemoveBMPs As Boolean
 
 Private Sub chkAddOut_Click(Index As Integer)
-  If Index = 1 Then 'watstore additional output
+  If Index = 1 Then 'text file additional output
     If chkAddOut(1).Value = vbChecked Then
       'expand frame to show additional output file and button to edit it
       fraAddOut.Height = 1575
@@ -550,10 +571,14 @@ Private Sub chkAddOut_Click(Index As Integer)
       End If
       lblOutFile(1).Visible = vbTrue
       cmdOpenOut(1).Visible = vbTrue
+      optAddFormat(0).Visible = vbTrue
+      optAddFormat(1).Visible = vbTrue
     Else 'smaller frame is fine
       fraAddOut.Height = 735
       lblOutFile(1).Visible = vbFalse
       cmdOpenOut(1).Visible = vbFalse
+      optAddFormat(0).Visible = vbFalse
+      optAddFormat(1).Visible = vbFalse
     End If
   End If
 End Sub
@@ -724,12 +749,21 @@ Private Sub PopulateOutput()
     lblOutFile(1).Caption = PfqPrj.AddOutFileName
     lblOutFile(1).Visible = vbTrue
     cmdOpenOut(1).Visible = vbTrue
+    optAddFormat(0).Visible = vbTrue
+    optAddFormat(1).Visible = vbTrue
+    If PfqPrj.AdditionalOutput < 4 Then 'watstore format
+      optAddFormat(0).Value = vbTrue
+    Else 'tab-separated format
+      optAddFormat(1).Value = vbTrue
+    End If
     fraAddOut.Height = 1575
   Else
     chkAddOut(1).Value = vbUnchecked
     lblOutFile(1).Caption = "(none)"
     lblOutFile(1).Visible = vbFalse
     cmdOpenOut(1).Visible = vbFalse
+    optAddFormat(0).Visible = vbFalse
+    optAddFormat(1).Visible = vbFalse
     fraAddOut.Height = 735
   End If
   If PfqPrj.IntermediateResults Then
@@ -778,7 +812,11 @@ Private Sub ProcessOutput()
     PfqPrj.AdditionalOutput = 0
   End If
   If chkAddOut(1).Value = vbChecked Then
-    PfqPrj.AdditionalOutput = PfqPrj.AdditionalOutput + 2
+    If optAddFormat(0).Value = vbTrue Then 'watstore format
+      PfqPrj.AdditionalOutput = PfqPrj.AdditionalOutput + 2
+    Else 'tab-separated format
+      PfqPrj.AdditionalOutput = PfqPrj.AdditionalOutput + 4
+    End If
     PfqPrj.AddOutFileName = lblOutFile(1).Caption
     lblOutFileView(1).Caption = PfqPrj.AddOutFileName
   Else
@@ -825,9 +863,16 @@ Private Sub cmdOpenOut_Click(Index As Integer)
     cdlOpen.filename = PfqPrj.OutFile
   Else 'additional output file
     cdlOpen.DialogTitle = "Additional PeakFQ Output File"
-    cdlOpen.Filter = "Watstore Output (*.bcd)|*.bcd|All Files (*.*)|*.*"
-    If Len(PfqPrj.AddOutFileName) = 0 Then 'provide default file name
-      PfqPrj.AddOutFileName = FilenameOnly(PfqPrj.DataFileName) & ".bcd"
+    If optAddFormat(0).Value = vbTrue Then
+      cdlOpen.Filter = "Watstore Output (*.bcd)|*.bcd|All Files (*.*)|*.*"
+      If Len(PfqPrj.AddOutFileName) = 0 Then 'provide default file name
+        PfqPrj.AddOutFileName = FilenameOnly(PfqPrj.DataFileName) & ".bcd"
+      End If
+    Else
+      cdlOpen.Filter = "Tab-separated Output (*.tab)|*.tab|All Files (*.*)|*.*"
+      If Len(PfqPrj.AddOutFileName) = 0 Then 'provide default file name
+        PfqPrj.AddOutFileName = FilenameOnly(PfqPrj.DataFileName) & ".tab"
+      End If
     End If
     cdlOpen.filename = PfqPrj.AddOutFileName
   End If
