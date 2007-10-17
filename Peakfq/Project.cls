@@ -329,8 +329,15 @@ Public Sub ReadSpecFile()
                 pAdditionalOutput = 1
               ElseIf Left(Kwd, 3) = "WAT" Then
                 pAdditionalOutput = 2
+              ElseIf Left(Kwd, 3) = "TAB" Then
+                pAdditionalOutput = 4
               ElseIf Kwd = "BOTH" Then
-                pAdditionalOutput = 3
+                Kwd = UCase(StrRetRem(Rec))
+                If Left(Kwd, 3) = "WAT" Then 'watstore format
+                  pAdditionalOutput = 3
+                Else 'assume tab-separated
+                  pAdditionalOutput = 5
+                End If
               Else
                 pAdditionalOutput = 0
               End If
@@ -471,7 +478,11 @@ Public Function SaveAsString(Optional DefPrj As pfqProject = Nothing) As String
   ElseIf pAdditionalOutput = 2 Then
     s = s & "O Additional Watstore " & pAddOutFileName & vbCrLf
   ElseIf pAdditionalOutput = 3 Then
-    s = s & "O Additional Both " & pAddOutFileName & vbCrLf
+    s = s & "O Additional Both WAT " & pAddOutFileName & vbCrLf
+  ElseIf pAdditionalOutput = 4 Then
+    s = s & "O Additional Tab " & pAddOutFileName & vbCrLf
+  ElseIf pAdditionalOutput = 5 Then
+    s = s & "O Additional Both Tab " & pAddOutFileName & vbCrLf
   End If
   If Len(pCIntermediate) > 0 Then s = s & pCIntermediate & vbCrLf
   If pIntermediateResults Then s = s & "O Debug YES" & vbCrLf
