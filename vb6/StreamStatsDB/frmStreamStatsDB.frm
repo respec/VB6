@@ -1,6 +1,6 @@
 VERSION 5.00
-Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
-Object = "{BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0"; "TABCTL32.OCX"
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "Comdlg32.ocx"
+Object = "{BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0"; "Tabctl32.ocx"
 Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmStreamStatsDB 
    Caption         =   "Stream Stats DB"
@@ -53,8 +53,8 @@ Begin VB.Form frmStreamStatsDB
       TabCaption(1)   =   "Stat&istic Management"
       TabPicture(1)   =   "frmStreamStatsDB.frx":0326
       Tab(1).ControlEnabled=   0   'False
-      Tab(1).Control(0)=   "fraStatType"
-      Tab(1).Control(1)=   "fraStatistics"
+      Tab(1).Control(0)=   "fraStatistics"
+      Tab(1).Control(1)=   "fraStatType"
       Tab(1).ControlCount=   2
       Begin VB.Frame fraStatType 
          Caption         =   "Statistic Type"
@@ -625,7 +625,7 @@ Begin VB.Form frmStreamStatsDB
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   -1  'True
-         Rows            =   2
+         Rows            =   1
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -928,10 +928,7 @@ Private Sub cmdEditStatType_Click()
 End Sub
 
 Private Sub cmdExit_Click()
-  On Error GoTo x
-  If Len(Dir(fileTitle)) > 0 Then SSDB.Db.Close
-x:
-  Unload Me
+  ShutErDown
 End Sub
 
 Private Sub cmdNWIS_Click()
@@ -2192,6 +2189,10 @@ Private Sub mnuDatabase_Click()
   GetDatabaseFilename (True)
 End Sub
 
+Private Sub mnuExit_Click()
+  ShutErDown
+End Sub
+
 Private Sub mnuHelpAbout_Click()
   frmAbout.Show
 End Sub
@@ -2288,5 +2289,13 @@ Private Sub OpenHelp()
   Else
     MsgBox "Help file not available"
   End If
+
+End Sub
+
+Private Sub ShutErDown()
+  On Error GoTo x
+  If Len(Dir(fileTitle)) > 0 Then SSDB.Db.Close
+x:
+  Unload Me
 
 End Sub
