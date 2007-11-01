@@ -318,7 +318,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   
   If RegParms.KeyExists("CONTDA") Then
     str = vbCrLf & "area = " & uRegion.UserParms("Contributing_Drainage_Area").GetValue(False)
-  ElseIf RegParms.KeyExists("DA") Then
+  ElseIf RegParms.KeyExists("DRNAREA") Then
     str = vbCrLf & "area = " & uRegion.UserParms("Drainage_Area").GetValue(False)
   Else
     str = ""
