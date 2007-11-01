@@ -360,7 +360,7 @@ Begin VB.Form frmPeakfq
          Top             =   1800
          Width           =   7575
          Begin VB.OptionButton optAddFormat 
-            Caption         =   "Tab-Separated"
+            Caption         =   "Tab-Delimited"
             Height          =   255
             Index           =   1
             Left            =   2880
@@ -869,7 +869,7 @@ Private Sub cmdOpenOut_Click(Index As Integer)
         PfqPrj.AddOutFileName = FilenameOnly(PfqPrj.DataFileName) & ".bcd"
       End If
     Else
-      cdlOpen.Filter = "Tab-separated Output (*.tab)|*.tab|All Files (*.*)|*.*"
+      cdlOpen.Filter = "Tab-delimited Output (*.tab)|*.tab|All Files (*.*)|*.*"
       If Len(PfqPrj.AddOutFileName) = 0 Then 'provide default file name
         PfqPrj.AddOutFileName = FilenameOnly(PfqPrj.DataFileName) & ".tab"
       End If
