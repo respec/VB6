@@ -1,19 +1,19 @@
 VERSION 5.00
-Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "Comdlg32.ocx"
 Object = "*\A..\..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmLowFlow 
    Caption         =   "Streamflow Equation Editor"
-   ClientHeight    =   8490
+   ClientHeight    =   9075
    ClientLeft      =   45
    ClientTop       =   270
    ClientWidth     =   8985
    Icon            =   "frmLowFlow.frx":0000
    LinkTopic       =   "Form1"
-   ScaleHeight     =   8490
+   ScaleHeight     =   9075
    ScaleWidth      =   8985
    StartUpPosition =   3  'Windows Default
    Begin VB.CommandButton cmdDatabase 
-      Caption         =   "&Database"
+      Caption         =   "Se&lect"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
          Size            =   8.25
@@ -23,11 +23,11 @@ Begin VB.Form frmLowFlow
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   375
-      Left            =   5760
+      Height          =   255
+      Left            =   120
       TabIndex        =   36
       Top             =   120
-      Width           =   975
+      Width           =   735
    End
    Begin VB.CommandButton cmdHelp 
       Caption         =   "&Help"
@@ -43,7 +43,7 @@ Begin VB.Form frmLowFlow
       Height          =   492
       Left            =   8040
       TabIndex        =   32
-      Top             =   6960
+      Top             =   7440
       Width           =   732
    End
    Begin VB.CommandButton cmdImport 
@@ -61,7 +61,7 @@ Begin VB.Form frmLowFlow
       Height          =   372
       Left            =   8040
       TabIndex        =   29
-      Top             =   120
+      Top             =   600
       Width           =   732
    End
    Begin VB.CommandButton cmdExport 
@@ -79,7 +79,7 @@ Begin VB.Form frmLowFlow
       Height          =   372
       Left            =   7080
       TabIndex        =   28
-      Top             =   120
+      Top             =   600
       Width           =   732
    End
    Begin VB.OptionButton rdoMainOpt 
@@ -97,7 +97,7 @@ Begin VB.Form frmLowFlow
       Index           =   1
       Left            =   1560
       TabIndex        =   27
-      Top             =   120
+      Top             =   600
       Width           =   1335
    End
    Begin VB.OptionButton rdoMainOpt 
@@ -115,7 +115,7 @@ Begin VB.Form frmLowFlow
       Index           =   0
       Left            =   120
       TabIndex        =   26
-      Top             =   120
+      Top             =   600
       Width           =   1335
    End
    Begin VB.CommandButton cmdExit 
@@ -132,7 +132,7 @@ Begin VB.Form frmLowFlow
       Height          =   492
       Left            =   8040
       TabIndex        =   25
-      Top             =   7560
+      Top             =   8040
       Width           =   732
    End
    Begin VB.CommandButton cmdDelete 
@@ -149,7 +149,7 @@ Begin VB.Form frmLowFlow
       Height          =   372
       Left            =   8040
       TabIndex        =   21
-      Top             =   3840
+      Top             =   4320
       Width           =   732
    End
    Begin VB.CommandButton cmdAdd 
@@ -166,7 +166,7 @@ Begin VB.Form frmLowFlow
       Height          =   372
       Left            =   8040
       TabIndex        =   20
-      Top             =   3360
+      Top             =   3840
       Width           =   732
    End
    Begin VB.CommandButton cmdSave 
@@ -183,7 +183,7 @@ Begin VB.Form frmLowFlow
       Height          =   372
       Left            =   8040
       TabIndex        =   19
-      Top             =   4320
+      Top             =   4800
       Width           =   732
    End
    Begin VB.CommandButton cmdCancel 
@@ -200,7 +200,7 @@ Begin VB.Form frmLowFlow
       Height          =   372
       Left            =   8040
       TabIndex        =   18
-      Top             =   4800
+      Top             =   5280
       Width           =   732
    End
    Begin VB.Frame fraEdit 
@@ -218,7 +218,7 @@ Begin VB.Form frmLowFlow
       Index           =   2
       Left            =   120
       TabIndex        =   11
-      Top             =   2760
+      Top             =   3240
       Visible         =   0   'False
       Width           =   7815
       Begin ATCoCtl.ATCoGrid grdComps 
@@ -235,7 +235,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -312,7 +312,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   294
+         Rows            =   317
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -353,7 +353,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -403,7 +403,7 @@ Begin VB.Form frmLowFlow
       Index           =   1
       Left            =   120
       TabIndex        =   10
-      Top             =   3480
+      Top             =   3960
       Visible         =   0   'False
       Width           =   7815
       Begin ATCoCtl.ATCoGrid grdParms 
@@ -419,7 +419,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   6
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -461,7 +461,7 @@ Begin VB.Form frmLowFlow
       Height          =   2055
       Left            =   120
       TabIndex        =   2
-      Top             =   600
+      Top             =   1080
       Width           =   8655
       Begin VB.ListBox lstRetPds 
          Height          =   1230
@@ -554,7 +554,7 @@ Begin VB.Form frmLowFlow
       Index           =   0
       Left            =   120
       TabIndex        =   1
-      Top             =   3240
+      Top             =   3720
       Visible         =   0   'False
       Width           =   7815
       Begin VB.Frame fraRegType 
@@ -617,21 +617,38 @@ Begin VB.Form frmLowFlow
       End
    End
    Begin VB.ComboBox cboState 
-      Height          =   288
+      Height          =   315
       ItemData        =   "frmLowFlow.frx":0321
       Left            =   3720
       List            =   "frmLowFlow.frx":0323
       TabIndex        =   0
       Text            =   "cboState"
-      Top             =   120
+      Top             =   600
       Width           =   1452
    End
    Begin MSComDlg.CommonDialog cdlgFileSel 
       Left            =   -120
-      Top             =   -120
+      Top             =   360
       _ExtentX        =   688
       _ExtentY        =   688
       _Version        =   393216
+   End
+   Begin VB.Label lblDatabase 
+      Caption         =   "Database:"
+      BeginProperty Font 
+         Name            =   "MS Sans Serif"
+         Size            =   8.25
+         Charset         =   0
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   255
+      Left            =   960
+      TabIndex        =   37
+      Top             =   120
+      Width           =   7935
    End
    Begin VB.Label lblState 
       Alignment       =   1  'Right Justify
@@ -649,11 +666,11 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       ForeColor       =   &H80000008&
-      Height          =   252
+      Height          =   255
       Left            =   3120
       TabIndex        =   9
-      Top             =   120
-      Width           =   564
+      Top             =   600
+      Width           =   570
    End
 End
 Attribute VB_Name = "frmLowFlow"
@@ -719,7 +736,7 @@ Private Sub cmdCancel_Click()
     If Not MyParm Is Nothing Then MyParm.IsNew = False
   ElseIf fraEdit(2).Visible = True Then
     ChoseReturns = True
-    If MyRegion.DepVars.Count > 0 Then SetGrid "DepVars"
+    If MyRegion.depVars.Count > 0 Then SetGrid "DepVars"
     ChoseReturns = False
     If lstRetPds.ListIndex >= 0 Then
       cmdSave.Enabled = True
@@ -772,7 +789,18 @@ Private Sub cmdComponent_Click(Index As Integer)
 End Sub
 
 Private Sub cmdDatabase_Click()
+  Dim lDBFName As String
+  lDBFName = DB.FileName
+
   SetDB (True)
+  If lDBFName <> DB.FileName Then 'database changed
+    rdoMainOpt(0).Value = False
+    rdoMainOpt(1).Value = False
+    fraEdit(0).Visible = False
+    fraEdit(1).Visible = False
+    fraEdit(2).Visible = False
+  End If
+
 End Sub
 
 Private Sub cmdExit_Click()
@@ -799,12 +827,12 @@ Private Sub cmdHelp_Click()
     With cdlgFileSel
 BadFile:
       .DialogTitle = "Select the help file"
-      .filename = App.path
+      .FileName = App.path
       .Filter = "(*.chm)|*.chm"
       .FilterIndex = 1
       .CancelError = True
       .ShowOpen
-      helpFilePath = .filename
+      helpFilePath = .FileName
       If Len(Dir(helpFilePath)) = 0 Then
         MsgBox "Could not find '" & helpFilePath & "'."
         GoTo BadFile
@@ -821,9 +849,9 @@ x:
 End Sub
 
 Private Sub cmdImport_Click()
-  Dim i&, j&, k&, m&, InFile&, regnCnt&, parmCnt&, depVarCnt&, _
+  Dim i&, j&, k&, m&, inFile&, regnCnt&, parmCnt&, depVarCnt&, _
       compCnt&, flds&, DepVarID&, response&
-  Dim filename$, str$, regnName$, flowFlag$
+  Dim FileName$, str$, regnName$, flowFlag$
   Dim Metric As Boolean, urban As Boolean, isReturn As Boolean, isLowFlow As Boolean
   Dim regnVals() As Integer
   Dim parmVals() As String, depVarVals() As String, compVals() As String
@@ -841,33 +869,33 @@ TryAgain:
   With cdlgFileSel
     .DialogTitle = "Select import file"
     If RDO = 0 Then
-      filename = GetSetting("SEE", "Defaults", "NSSExportFile", filename)
+      FileName = GetSetting("SEE", "Defaults", "NSSExportFile", FileName)
     ElseIf RDO = 1 Then
-      filename = GetSetting("SEE", "Defaults", "LowFlowExportFile", filename)
+      FileName = GetSetting("SEE", "Defaults", "LowFlowExportFile", FileName)
     End If
-    If Len(Dir(filename, vbDirectory)) = 0 Then
-      filename = CurDir & "\Import.txt"
+    If Len(Dir(FileName, vbDirectory)) = 0 Then
+      FileName = CurDir & "\Import.txt"
     Else
-      filename = filename & "\Import.txt"
+      FileName = FileName & "\Import.txt"
     End If
-    .filename = filename
+    .FileName = FileName
     .Filter = "(*.txt)|*.txt"
     .FilterIndex = 1
     .CancelError = True
     .ShowOpen
-    filename = .filename
+    FileName = .FileName
   End With
-  If Len(Dir(filename, vbDirectory)) = 0 Then
+  If Len(Dir(FileName, vbDirectory)) = 0 Then
     MsgBox "The filename you selected does not exist." & vbCrLf & _
            "Try again or cancel out of the dialog box."
     GoTo TryAgain
   End If
 
   Me.MousePointer = vbHourglass
-  InFile = FreeFile
-  Open filename For Input As InFile
+  inFile = FreeFile
+  Open FileName For Input As inFile
   'read in state info
-  Line Input #InFile, str
+  Line Input #inFile, str
   Set DB.State = DB.States(StrRetRem(str))
   While cboState.ItemData(i) <> CLng(DB.State.code)
     i = i + 1
@@ -887,7 +915,7 @@ TryAgain:
   DepVarFlds = 10 'always set to import all possible DepVar fields
   
   'read in number of regions and metric flag
-  Line Input #InFile, str
+  Line Input #inFile, str
   regnCnt = CLng(StrRetRem(str))
   If str = "1" Then Metric = True Else Metric = False
   
@@ -897,7 +925,7 @@ TryAgain:
     'read in region info
     lstParms.Clear
     lstRetPds.Clear
-    Line Input #InFile, str
+    Line Input #inFile, str
     regnName = StrSplit(str, vbTab, "")
     If StrRetRem(str) = "0" Then urban = False Else urban = True
     regnVals(0) = StrRetRem(str)
@@ -908,7 +936,7 @@ TryAgain:
     DB.State.PopulateRegions
     Set MyRegion = DB.State.Regions(regnName)
     'Read in parameters info
-    Line Input #InFile, str
+    Line Input #inFile, str
     parmCnt = StrRetRem(str)  'number or parameters for this region
     ReDim parmVals(parmCnt - 1, ParmFlds)
     depVarCnt = StrSplit(str, vbTab, "")  'number or RetPds/Statistics for this region
@@ -917,7 +945,7 @@ TryAgain:
     For j = 0 To parmCnt - 1
       If parmVals(j, 0) <> "RDA" And parmVals(j, 0) <> "CRD" Then
         If j > 0 Then
-          Line Input #InFile, str
+          Line Input #inFile, str
           str = Mid(str, 2) 'gets rid or initial vbtab
         End If
         str = Trim(str)
@@ -949,7 +977,7 @@ TryAgain:
     'Loop thru Return Periods/Statistics
     For j = 1 To depVarCnt
       'Read in values
-      Line Input #InFile, str
+      Line Input #inFile, str
       str = Mid(str, 2)  'gets rid of initial vbtab
       For k = 0 To DepVarFlds + 1 '+1 is for component count at end of line
         If Len(str) > 0 Then
@@ -969,7 +997,7 @@ TryAgain:
       'Loop thru Components
       For k = 0 To compCnt - 1
         'Read in values
-        Line Input #InFile, str
+        Line Input #inFile, str
         str = Mid(str, 3)  'gets rid of initial 2 tabs
         For m = 0 To CompFlds
           If m = 0 Or m = 4 Then
@@ -990,7 +1018,7 @@ TryAgain:
       If compCnt > 0 And MyRegion.PredInt Then
         ReDim covArray(1 To compCnt + 1, 1 To compCnt + 1)
         For k = 1 To compCnt + 1
-          Line Input #InFile, str
+          Line Input #inFile, str
           While Left(str, 1) = vbTab Or Left(str, 1) = " "
             str = Mid(str, 2)  'gets rid of initial tabs/spaces
           Wend
@@ -1002,7 +1030,7 @@ TryAgain:
       End If
     Next j
   Next i
-  Close InFile
+  Close inFile
 '  ResetRegion
   cboState_Click
   Me.MousePointer = vbDefault
@@ -1018,7 +1046,7 @@ End Sub
 
 Private Sub cmdExport_Click()
   Dim i&, j&, k&, OutFile&, tmpCnt&, compCnt&, row&, col&
-  Dim filename$, str$
+  Dim FileName$, str$
   Dim covArray() As String
   
   On Error GoTo x
@@ -1034,43 +1062,43 @@ Private Sub cmdExport_Click()
   With cdlgFileSel
     .DialogTitle = "Assign name of export file"
     If RDO = 0 Then
-      filename = GetSetting("SEE", "Defaults", "NSSExportFile")
+      FileName = GetSetting("SEE", "Defaults", "NSSExportFile")
     ElseIf RDO = 1 Then
-      filename = GetSetting("SEE", "Defaults", "LowFlowExportFile")
+      FileName = GetSetting("SEE", "Defaults", "LowFlowExportFile")
     End If
-    If Len(Dir(filename, vbDirectory)) <= 1 Then
-      filename = CurDir & "\" & DB.State.Abbrev & "_Export"
+    If Len(Dir(FileName, vbDirectory)) <= 1 Then
+      FileName = CurDir & "\" & DB.State.Abbrev & "_Export"
     Else
-      filename = filename & "\" & DB.State.Abbrev & "_Export"
+      FileName = FileName & "\" & DB.State.Abbrev & "_Export"
     End If
     If RDO = 0 Then
-      filename = filename & "-PeakFlow"
+      FileName = FileName & "-PeakFlow"
     ElseIf RDO = 1 Then
-      filename = filename & "-LowFlow"
+      FileName = FileName & "-LowFlow"
     End If
     'Increment output file name if files already exported for state
-    While Len(Dir(filename & ".txt")) > 0
+    While Len(Dir(FileName & ".txt")) > 0
       i = i + 1
-      If i > 2 Then filename = Left(filename, Len(filename) - 2)
-      filename = filename & "-" & i
+      If i > 2 Then FileName = Left(FileName, Len(FileName) - 2)
+      FileName = FileName & "-" & i
     Wend
-    .filename = filename
+    .FileName = FileName
     .Filter = "(*.txt)|*.txt"
     .FilterIndex = 1
     .CancelError = True
     .ShowSave
-    filename = .filename
+    FileName = .FileName
     If RDO = 0 Then
-      SaveSetting "SEE", "Defaults", "NSSExportFile", PathNameOnly(filename)
+      SaveSetting "SEE", "Defaults", "NSSExportFile", PathNameOnly(FileName)
       j = 0
     ElseIf RDO = 1 Then
-      SaveSetting "SEE", "Defaults", "LowFlowExportFile", PathNameOnly(filename)
+      SaveSetting "SEE", "Defaults", "LowFlowExportFile", PathNameOnly(FileName)
       j = 1
     End If
   End With
   
   OutFile = FreeFile
-  Open filename For Output As OutFile
+  Open FileName For Output As OutFile
   Print #OutFile, DB.State.code & " " & DB.State.Name & " " & j
   If DB.State.Metric Then j = 1 Else j = 0
   Print #OutFile, lstRegions.ListCount & " " & j
@@ -1089,7 +1117,7 @@ Private Sub cmdExport_Click()
     For j = 1 To MyRegion.Parameters.Count
       Set MyParm = MyRegion.Parameters(j)
       If MyParm.Abbrev <> "RDA" And MyParm.Abbrev <> "CRD" Then
-        tmpCnt = MyRegion.DepVars.Count
+        tmpCnt = MyRegion.depVars.Count
         str = ""
         If j = 1 Then
           str = MyRegion.Parameters.Count & " " & tmpCnt
@@ -1101,7 +1129,7 @@ Private Sub cmdExport_Click()
     Next j
     'Loop thru Return Periods/Statistics
     For j = 1 To tmpCnt
-      Set MyDepVar = MyRegion.DepVars(j)
+      Set MyDepVar = MyRegion.depVars(j)
       compCnt = MyDepVar.Components.Count
       Print #OutFile, vbTab & MyDepVar.Name & " " & _
           Round(MyDepVar.StdErr, 1) & " "; Round(MyDepVar.EstErr, 1) & " " _
@@ -1501,9 +1529,9 @@ Private Sub grdComps_RowColChange()
             ExpMod = 0
           End If
           Select Case ExpMod
-            Case Is > 0: ExpStr = "(" & ExpStr & "+" & ExpMod & ")"
-            Case Is < 0: ExpStr = "(" & ExpStr & "-" & ExpMod & ")"
-            Case Else: ExpStr = "(" & ExpStr & ")"
+            Case Is > 0: ExpStr = "^" & "(" & ExpStr & "+" & ExpMod & ")"
+            Case Is < 0: ExpStr = "^" & "(" & ExpStr & "-" & ExpMod & ")"
+            Case Else: ExpStr = "^" & "(" & ExpStr & ")"
           End Select
           If Len(.TextMatrix(i, 6)) > 0 And .TextMatrix(i, 6) <> "1" Then
             ExpStr = ExpStr & "^" & .TextMatrix(i, 6)
@@ -1728,7 +1756,7 @@ Private Sub ResetDB()
   
   Set DB = Nothing
   Set DB = New nssDatabase
-  DB.filename = DBPath
+  DB.FileName = DBPath
   Set DB.State = DB.States.ItemByKey(CStr(cboState.ItemData(cboState.ListIndex)))
   DB.State.Regions.Clear
   Set DB.State.Regions = Nothing
@@ -1745,9 +1773,9 @@ Private Sub ResetRegion()
   fraEdit(0).Visible = True
   fraEdit(1).Visible = False
   fraEdit(2).Visible = False
-  If Not MyRegion.DepVars Is Nothing Then
-    MyRegion.DepVars.Clear
-    Set MyRegion.DepVars = Nothing
+  If Not MyRegion.depVars Is Nothing Then
+    MyRegion.depVars.Clear
+    Set MyRegion.depVars = Nothing
   End If
   If Not MyRegion.Parameters Is Nothing Then
     MyRegion.Parameters.Clear
@@ -1824,7 +1852,7 @@ Private Sub cmdAdd_Click()
     Set MyDepVar = New nssDepVar
     MyDepVar.IsNew = True
     Set MyDepVar.Region = MyRegion
-    If MyRegion.DepVars.IndexFromKey("0") < 0 Then
+    If MyRegion.depVars.IndexFromKey("0") < 0 Then
       lstRetPds.AddItem "New"
     End If
     ChoseParms = True  'workaround to avoid triggering selection event
@@ -1883,8 +1911,8 @@ Private Sub cmdDelete_Click()
           Set MyParm = MyRegion.Parameters(i)
           MyParm.Delete
         Next i
-        For i = 1 To MyRegion.DepVars.Count
-          Set MyDepVar = MyRegion.DepVars(i)
+        For i = 1 To MyRegion.depVars.Count
+          Set MyDepVar = MyRegion.depVars(i)
           For j = 1 To MyDepVar.Components.Count
             Set MyComp = MyDepVar.Components(j)
             MyComp.Delete
@@ -1907,7 +1935,7 @@ Private Sub cmdDelete_Click()
     If response = 1 Then
       CheckRuralInput  'to make sure we don't delete RDA or CRD
       For i = 1 To SelParms.Count
-        For Each tmpDepVar In MyRegion.DepVars
+        For Each tmpDepVar In MyRegion.depVars
           For Each tmpComp In tmpDepVar.Components
             If tmpComp.ParmID = SelParms(i).id Or Abs(tmpComp.expID) = SelParms(i).id Then tmpComp.Delete
           Next tmpComp
@@ -1937,7 +1965,7 @@ Private Sub cmdDelete_Click()
       End If
       If response = 1 Then
         j = lstRetPds.ItemData(lstRetPds.ListIndex)
-        Set MyDepVar = MyRegion.DepVars(CStr(j))
+        Set MyDepVar = MyRegion.depVars(CStr(j))
         For i = 1 To MyDepVar.Components.Count
           Set MyComp = MyDepVar.Components(i)
           MyComp.Delete
@@ -2207,7 +2235,7 @@ Private Sub cmdSave_Click()
             ChoseParms = False
           End If
         Next i
-        Set MyDepVar = MyRegion.DepVars(CStr(lstRetPds.ItemData(lstRetPds.ListIndex)))
+        Set MyDepVar = MyRegion.depVars(CStr(lstRetPds.ItemData(lstRetPds.ListIndex)))
 '      End If
       'Write Return Period/Statistic changes to DetailedLog table
       For k = 0 To UBound(Changes, 2)
@@ -2291,7 +2319,7 @@ Private Sub SetGrid(Table As String)
       i = lstRetPds.ListIndex
       If i >= 0 Then
         If lstRetPds.ItemData(i) > 0 Then
-          Set MyDepVar = MyRegion.DepVars(CStr(lstRetPds.ItemData(i)))
+          Set MyDepVar = MyRegion.depVars(CStr(lstRetPds.ItemData(i)))
           compCnt = MyDepVar.Components.Count
           If MyRegion.PredInt And MyDepVar.Components.Count > 0 Then
             covArray = MyDepVar.PopulateMatrix()
@@ -2362,7 +2390,7 @@ Private Sub SetGrid(Table As String)
           For row = 1 To lstRetPds.SelCount
             .row = row
             .col = col
-            If Not MyRegion.DepVars(row).IsNew Then
+            If Not MyRegion.depVars(row).IsNew Then
               Select Case col
                 Case 0: .Text = MyDepVar.Name
                 Case 1: .Text = MyDepVar.StdErr
@@ -2608,26 +2636,37 @@ End Sub
 Private Sub PopulateDepVars()
   Dim depVarIndex&, cntr&, thisDepVar!, rank&, intCnt
   Dim rankedDepVars() As String
+  Dim lVarNames() As String
 
   If MyRegion.id > 0 Then
     lstRetPds.Clear
-    intCnt = MyRegion.DepVars.Count
+    intCnt = MyRegion.depVars.Count
     If intCnt = 0 Then Exit Sub
     ReDim rankedDepVars(1, intCnt - 1)
+    ReDim lVarNames(intCnt)
+    If RDO = 0 Then 'remove PK from DepVar names so they can be sorted numerically
+      For depVarIndex = 1 To intCnt
+        If Left(MyRegion.depVars(depVarIndex).Name, 2) = "PK" Then
+          lVarNames(depVarIndex) = Mid(MyRegion.depVars(depVarIndex).Name, 3)
+        Else
+          lVarNames(depVarIndex) = MyRegion.depVars(depVarIndex).Name
+        End If
+      Next depVarIndex
+    End If
     For depVarIndex = 1 To intCnt
       If RDO = 0 Then  'peak flow
         rank = 0
-        thisDepVar = CSng(MyRegion.DepVars(depVarIndex).Name)
+        thisDepVar = CSng(lVarNames(depVarIndex))
         For cntr = 1 To intCnt
-          If thisDepVar > CSng(MyRegion.DepVars(cntr).Name) Then
+          If thisDepVar > CSng(lVarNames(cntr)) Then
             rank = rank + 1
           End If
         Next cntr
       ElseIf RDO = 1 Then  'low flow
         If depVarIndex > 1 Then rank = rank + 1
       End If
-      rankedDepVars(0, depVarIndex - 1) = MyRegion.DepVars(rank + 1).Name
-      rankedDepVars(1, depVarIndex - 1) = MyRegion.DepVars(rank + 1).id
+      rankedDepVars(0, depVarIndex - 1) = MyRegion.depVars(rank + 1).Name
+      rankedDepVars(1, depVarIndex - 1) = MyRegion.depVars(rank + 1).id
     Next depVarIndex
     For depVarIndex = 0 To intCnt - 1
       lstRetPds.List(depVarIndex) = rankedDepVars(0, depVarIndex)
@@ -3032,24 +3071,27 @@ FindDB:
   ff.SetRegistryInfo "StreamStatsDB", "Defaults", "NSSDatabaseV4"
   DBPath = ff.GetName(lVerify)
   
-  Set DB = New nssDatabase
-  DB.filename = DBPath
-  If Not DBCheck(DBPath) Then
-    GoTo FindDB
+  If Len(DBPath) > 0 Then
+    Set DB = New nssDatabase
+    DB.FileName = DBPath
+    If Not DBCheck(DBPath) Then
+      GoTo FindDB
+    End If
+    
+    RDO = -1
+    RegionFlds = 5
+    ParmFlds = 5
+    DepVarFlds = 8
+    CompFlds = 6
+    cboState.Clear
+    lstRegions.Clear
+    lstParms.Clear
+    lstRetPds.Clear
+    grdMatrix.Rows = 1
+    grdMatrix.cols = 1
+    lblDatabase.Caption = "Database: " & DB.FileName
+    Me.Show
   End If
-  
-  RDO = -1
-  RegionFlds = 5
-  ParmFlds = 5
-  DepVarFlds = 8
-  CompFlds = 6
-  cboState.Clear
-  lstRegions.Clear
-  lstParms.Clear
-  lstRetPds.Clear
-  grdMatrix.Rows = 1
-  grdMatrix.cols = 1
-  Me.Show
   Exit Sub
 
 NoDB:

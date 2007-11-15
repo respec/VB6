@@ -1,11 +1,11 @@
 Type=Exe
-Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#..\..\..\WINDOWS\system32\stdole2.tlb#OLE Automation
-Reference=*\G{00025E01-0000-0000-C000-000000000046}#5.0#0#..\..\..\Program Files\Common Files\Microsoft Shared\DAO\dao360.dll#Microsoft DAO 3.6 Object Library
+Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#..\..\..\..\WINDOWS\system32\stdole2.tlb#OLE Automation
+Reference=*\G{00025E01-0000-0000-C000-000000000046}#5.0#0#..\..\..\..\Program Files\Common Files\Microsoft Shared\DAO\dao360.dll#Microsoft DAO 3.6 Object Library
 Reference=*\A..\..\libStreamStatsDB\libStreamStatsDB.vbp
-Reference=*\G{18F0904D-D01A-4967-90D6-FB9B55A332EC}#1.0#0#..\..\..\WINDOWS\system32\FColl.dll#Edanmo's FastCollection Class v1
-Object={F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0; COMDLG32.OCX
-Object={831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0; MSCOMCTL.OCX
-Object={BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0; TABCTL32.OCX
+Reference=*\G{18F0904D-D01A-4967-90D6-FB9B55A332EC}#1.0#0#..\..\..\..\WINDOWS\system32\FColl.dll#Edanmo's FastCollection Class v1
+Object={F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0; Comdlg32.ocx
+Object={831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0; Mscomctl.ocx
+Object={BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0; Tabctl32.ocx
 Object=*\A..\..\ATCoCtl\ATCoCtl.vbp
 Form=frmLowFlow.frm
 Form=frmUserInfo.frm
