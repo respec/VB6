@@ -583,6 +583,7 @@ End Function
 Public Function Intervals() As Single()
   Dim retval() As Single
   Dim FirstReturns As FastCollection
+  Dim lReturn As String
   Dim i As Long
   Dim msg As String
   
@@ -596,8 +597,13 @@ Public Function Intervals() As Single()
       Set FirstReturns = pUserRegions(1).Region.DepVars
       ReDim retval(1 To FirstReturns.Count)
       For i = 1 To FirstReturns.Count
-        If IsNumeric(FirstReturns(i).Name) Then
-          retval(i) = CSng(FirstReturns(i).Name)
+        If Left(FirstReturns(i).Name, 2) = "PK" Then
+          lReturn = Mid(FirstReturns(i).Name, 3)
+        Else
+          lReturn = FirstReturns(i).Name
+        End If
+        If IsNumeric(lReturn) Then
+          retval(i) = CSng(lReturn)
         End If
       Next
     End If
@@ -697,7 +703,7 @@ Public Function Discharges() As Double()
           Set CurComponent = CurReturn.Components(ComponentIndex)
           StepName = "Select Case CurComponent.ParmID (" & CurComponent.ParmID & ")"
           Select Case CurComponent.ParmID
-            Case -2: curval = findRuralValue(CSng(FirstReturns(ReturnIndex).Name), StateMetric) 'find computed rural discharge
+            Case -2: curval = findRuralValue(FirstReturns(ReturnIndex).Name, StateMetric) 'find computed rural discharge
                      If curval = -999 Then 'Could not find a rural discharge, so we can't compute this urban one
                        IntervalDischarge(ReturnIndex) = -1
                        GoTo NextInterval
@@ -802,17 +808,23 @@ LastLine:
   Discharges = IntervalDischarge 'Return empty array if there is a problem
 End Function
 
-Private Function findRuralValue(ReturnPeriod As Single, WantMetric As Boolean)
+Private Function findRuralValue(ReturnPeriod As String, WantMetric As Boolean)
   Dim ReturnIndex As Long
   Dim RuralReturns() As Single
+  Dim lReturn As Single
   
   findRuralValue = -999
   If Me.RuralScenario Is Nothing Then
     pErrorDescription = pErrorDescription & "No rural flow value available for urban computation" & vbCrLf ', vbExclamation, "Error computing discharges"
   Else
+    If Left(ReturnPeriod, 2) = "PK" Then
+      lReturn = CSng(Mid(ReturnPeriod, 3))
+    Else
+      lReturn = CSng(ReturnPeriod)
+    End If
     RuralReturns = Me.RuralScenario.Intervals
     For ReturnIndex = LBound(RuralReturns) To UBound(RuralReturns)
-      If Abs(RuralReturns(ReturnIndex) - ReturnPeriod) < 0.001 Then
+      If Abs(RuralReturns(ReturnIndex) - lReturn) < 0.001 Then
         findRuralValue = pProject.DB.FlowUnits.Convert(Me.RuralScenario.Discharge(ReturnIndex), pProject.Metric, WantMetric)
         Exit For
       End If
