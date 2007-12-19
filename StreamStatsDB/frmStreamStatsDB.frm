@@ -4,13 +4,13 @@ Object = "{BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0"; "Tabctl32.ocx"
 Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmStreamStatsDB 
    Caption         =   "Stream Stats DB"
-   ClientHeight    =   8475
+   ClientHeight    =   8625
    ClientLeft      =   165
    ClientTop       =   735
    ClientWidth     =   10800
    Icon            =   "frmStreamStatsDB.frx":0000
    LinkTopic       =   "Form1"
-   ScaleHeight     =   8475
+   ScaleHeight     =   8625
    ScaleWidth      =   10800
    StartUpPosition =   3  'Windows Default
    Begin MSComDlg.CommonDialog cdlgFileSel 
@@ -1153,14 +1153,14 @@ Private Function QACheck() As Boolean
                   response = myMsgBox.Show("The longitude for station " & .TextMatrix(row, 1) & _
                       " on row " & row & " is east of the Virgin Islands." & vbCrLf & _
                       "To denote an area in the U.S., cancel this save" & _
-                      " event then enter a value greater then 64.0.", _
+                      " event then enter a value less than -64.0.", _
                       "Too far east for U.S.", "+&Change Now", "-&Continue")
                   If response = 1 Then GoTo QAproblem
                 ElseIf Abs(CLng(.TextMatrix(row, col))) > 172# Then
                   response = myMsgBox.Show("The longitude for station " & .TextMatrix(row, 1) & _
                       " on row " & row & " is west of Alaska." & vbCrLf & _
                       "To denote an area in the U.S., cancel this save " & _
-                      "event then enter a value less than 172.0.", _
+                      "event then enter a value greater than -172.0.", _
                       "Too far west for U.S.", "+&Change Now", "-&Continue")
                   If response = 1 Then GoTo QAproblem
                 End If
@@ -1313,13 +1313,13 @@ Private Sub Form_Resize()
     lstStations.Width = fraStaSel.Width - 240
   End If
   If Me.height > 6000 Then
-    fraGenInfo.height = Me.height - 4380
-    grdGenInfo.height = fraGenInfo.height - 1325
+    fraGenInfo.height = Me.height - 4680
+    grdGenInfo.height = fraGenInfo.height - 1125
     fraStatButtons.Top = grdGenInfo.height + 245
     fraGridButtons.Top = fraStatButtons.Top
     fraImport.Top = fraStatButtons.Top
-    cmdHelp.Top = fraStatButtons.Top + 60
-    cmdExit.Top = cmdHelp.Top + 400
+    cmdHelp.Top = fraStatButtons.Top + 55
+    cmdExit.Top = cmdHelp.Top + 390
   End If
 End Sub
 
@@ -1489,28 +1489,8 @@ Private Sub Form_Load()
   state = GetSetting("StreamStatsDB", "Defaults", "ssState")
   Initialize tabMain.Tab
 
-  'Populate state listbox on tab 1
-  cboState.Clear
-  For tmpIndex = 1 To SSDB.States.Count
-    cboState.List(tmpIndex - 1) = SSDB.States(tmpIndex).Name
-    cboState.ItemData(tmpIndex - 1) = SSDB.States(tmpIndex).code
-    If SSDB.States(tmpIndex).Name = state Then selState = tmpIndex
-  Next
-  If selState > 0 Then
-    cboState.ListIndex = selState - 1
-  End If
-  rdoStaOpt(0) = True
-  
-  'Populate Statistic Type listbox on tab 2
-  StatType = GetSetting("StreamStatsDB", "Defaults", "ssStatType")
-  For tmpIndex = 1 To SSDB.StatisticTypes.Count
-    cboStatTypes.List(tmpIndex - 1) = SSDB.StatisticTypes(tmpIndex).Name
-    cboStatTypes.ItemData(tmpIndex - 1) = SSDB.StatisticTypes(tmpIndex).id
-    If SSDB.StatisticTypes(tmpIndex).Name = StatType Then selStat = tmpIndex
-  Next tmpIndex
-  If selStat > 0 Then
-    cboStatTypes.ListIndex = selStat - 1
-  End If
+  InitializeFromDatabase (state)
+
 End Sub
 
 Private Sub cboState_Click()
@@ -2108,6 +2088,12 @@ Private Sub Initialize(TabIndex As Long)
         End If
         If .Rows = 0 Then .ColWidth(fldCnt - 1) = Len(.TextMatrix(0, fldCnt - 1)) * 200
       Next fldCnt
+      .ColType(6) = ATCoSng
+      .ColMin(6) = 17.5
+      .ColMax(6) = 72#
+      .ColType(7) = ATCoSng
+      .ColMin(7) = -172#
+      .ColMax(7) = -64#
     End With
   ElseIf TabIndex = 1 Then
     StatFields(1) = "Type"
@@ -2186,7 +2172,10 @@ Private Sub lstStats_Click()
 End Sub
 
 Private Sub mnuDatabase_Click()
+  Dim state$
   GetDatabaseFilename (True)
+  state = GetSetting("StreamStatsDB", "Defaults", "ssState")
+  InitializeFromDatabase (state)
 End Sub
 
 Private Sub mnuExit_Click()
@@ -2297,5 +2286,34 @@ Private Sub ShutErDown()
   If Len(Dir(fileTitle)) > 0 Then SSDB.Db.Close
 x:
   Unload Me
+
+End Sub
+
+Private Sub InitializeFromDatabase(aState$)
+  Dim tmpIndex&, selState&, selStat&
+  Dim StatType$
+
+  'Populate state listbox on tab 1
+  cboState.Clear
+  For tmpIndex = 1 To SSDB.States.Count
+    cboState.List(tmpIndex - 1) = SSDB.States(tmpIndex).Name
+    cboState.ItemData(tmpIndex - 1) = SSDB.States(tmpIndex).code
+    If SSDB.States(tmpIndex).Name = aState Then selState = tmpIndex
+  Next
+  If selState > 0 Then
+    cboState.ListIndex = selState - 1
+  End If
+  rdoStaOpt(0) = True
+  
+  'Populate Statistic Type listbox on tab 2
+  StatType = GetSetting("StreamStatsDB", "Defaults", "ssStatType")
+  For tmpIndex = 1 To SSDB.StatisticTypes.Count
+    cboStatTypes.List(tmpIndex - 1) = SSDB.StatisticTypes(tmpIndex).Name
+    cboStatTypes.ItemData(tmpIndex - 1) = SSDB.StatisticTypes(tmpIndex).id
+    If SSDB.StatisticTypes(tmpIndex).Name = StatType Then selStat = tmpIndex
+  Next tmpIndex
+  If selStat > 0 Then
+    cboStatTypes.ListIndex = selStat - 1
+  End If
 
 End Sub
