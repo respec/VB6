@@ -132,14 +132,14 @@ Private Sub cmdOK_Click()
 End Sub
 
 Private Sub cmdTestAll_Click()
-  Dim pathname As String
+  Dim PathName As String
   On Error GoTo NeverMind
   With frmNSS.cdlg
     .DialogTitle = "Open the directory results should be saved in"
-    .Filename = "(Save here)"
+    .FileName = "(Save here)"
     .ShowSave
     Me.Hide
-    frmNSS.TestAllEquations PathNameOnly(.Filename)
+    frmNSS.TestAllEquations PathNameOnly(.FileName)
     Unload Me
   End With
 NeverMind:
@@ -149,7 +149,7 @@ Private Sub Form_Load()
     Me.Caption = "About " & App.Title
     lblTitle.Caption = App.Title & " " & App.Major & "." & App.Minor '& "." & App.Revision
     If Not Project Is Nothing Then
-      lblVersion.Caption = "Database " & Project.DB.Filename & vbCr _
+      lblVersion.Caption = "Database " & Project.DB.FileName & vbCr _
                          & "Updated by " & Project.DB.LastEdited
     End If
 End Sub
@@ -240,4 +240,11 @@ GetKeyError:      ' Cleanup After An Error Has Occured...
     GetKeyValue = False                                     ' Return Failure
     rc = RegCloseKey(hKey)                                  ' Close Registry Key
 End Function
+
+Private Sub Form_Resize()
+  If Me.Width > 6000 Then
+    lblTitle.Width = Me.Width - 1100
+    lblVersion.Width = Me.Width - 1100
+  End If
+End Sub
 
