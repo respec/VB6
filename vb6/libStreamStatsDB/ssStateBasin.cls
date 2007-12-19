@@ -100,6 +100,8 @@ Public Sub PopulateStations()
         If Not IsNull(stationRec("MCDCode")) Then .MCDCode = stationRec("MCDCode")
         If Not IsNull(stationRec("Directions")) Then .Directions = stationRec("Directions")
         If Not IsNull(stationRec("HasData")) Then .HasData = stationRec("HasData")
+        If Not IsNull(stationRec("StateCode")) Then .StateCode = stationRec("StateCode")
+        If Not IsNull(stationRec("DistrictCode")) Then .DistrictCode = stationRec("DistrictCode")
         Set .State = Me.State
         .IsNew = False
       End With

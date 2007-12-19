@@ -279,6 +279,8 @@ Public Sub PopulateDepVars()
   Dim DepVarID As Integer, i As Integer, ipos As Integer
   Dim vComponent As Variant
   Dim vDepVar As Variant
+  Dim lName As String
+  Dim lCurName As String
   
   AllNumeric = True 'assume all depvars for region are numbers and may be sorted
   Set pDepVars = Nothing
@@ -317,12 +319,22 @@ Public Sub PopulateDepVars()
       End With
       newDepVar.Components.Clear
       Set newDepVar.Components = Nothing
-      If Not IsNumeric(newDepVar.Name) Then AllNumeric = False
+      If Left(newDepVar.Name, 2) = "PK" Then
+        lName = Mid(newDepVar.Name, 3)
+      Else
+        lName = newDepVar.Name
+      End If
+      If Not IsNumeric(lName) Then AllNumeric = False
       If AllNumeric Then 'sort depvars for region
         ipos = 0
         i = 1
         While ipos = 0 And i <= pDepVars.Count
-          If CSng(newDepVar.Name) > CSng(pDepVars.ItemByIndex(i).Name) Then
+          If Left(pDepVars.ItemByIndex(i).Name, 2) = "PK" Then
+            lCurName = Mid(pDepVars.ItemByIndex(i).Name, 3)
+          Else
+            lCurName = pDepVars.ItemByIndex(i).Name
+          End If
+          If CSng(lName) > CSng(lCurName) Then
             i = i + 1
           Else
             ipos = i
