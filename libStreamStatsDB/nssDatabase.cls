@@ -65,10 +65,10 @@ Public Property Get LastEdited() As String
   End If
 End Property
 
-Public Property Get FileName() As String
-  FileName = pFileName
+Public Property Get Filename() As String
+  Filename = pFileName
 End Property
-Public Property Let FileName(ByVal newValue As String)
+Public Property Let Filename(ByVal newValue As String)
   pFileName = newValue
   Set pnssDB = OpenDatabase(pFileName, False, False, "MS Access; pwd=" & DatabasePassword)
 End Property
@@ -259,7 +259,7 @@ Private Sub PopulateParameters()
       .Abbrev = myRec("StatLabel")
       .ConvFlag = myRec("ID")
     End With
-    Parameters.Add newParm, newParm.Abbrev
+    pParameters.Add newParm, newParm.Abbrev
     myRec.MoveNext
   Wend
   myRec.Close

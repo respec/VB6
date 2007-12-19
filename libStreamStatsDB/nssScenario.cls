@@ -516,16 +516,22 @@ Public Function PredInts() As Double()
                 j = j + 1
               Wend
             End If
-            If CurComponent.ExpID = 0 Then
+            If CurComponent.ExpID = 0 Then 'base term, take log if possible
               lv = CurComponent.BaseCoeff * (CurComponent.BaseMod + lParm)
-            Else
+              If lv > 0 Then
+                lv = Log10(lv)
+              Else
+                lv = 0
+              End If
+            Else 'exponent term, don't take log
               lv = CurComponent.ExpMod + lParm
             End If
-            If lv > 0 Then
-              X(i, 1) = Log10(lv)
-            Else
-              X(i, 1) = 0
-            End If
+            X(i, 1) = lv
+'            If lv > 0 Then
+'              X(i, 1) = Log10(lv)
+'            Else
+'              X(i, 1) = 0
+'            End If
             Xt(1, i) = X(i, 1)
           Next i
           Uv = CurStat.PopulateMatrix
@@ -1017,20 +1023,55 @@ Public Function EstimateString() As String
   Dim YearsText() As String
   Dim nIntervals As Integer
   Dim txt As String, lab1 As String, lab2 As String
-  Dim llen As Integer
+  Dim lLen As Integer
   Dim labUnits As String
   Dim UsePredErr As Boolean, UseEstErr As Boolean
   Dim useMetric As Boolean, YearsOn As Boolean
+  Dim lDepVarName As String
+  Dim lUnitCode As Integer
+  Dim lUnitStr As String
+  
   useMetric = Me.Project.Metric
   
   txt = MismatchedRegions
+  
+  'the following code will become simpler when database mods are made
+  'to reference the StatLabel from the DepVars table
+  'for starters, assume cfs
+  If useMetric Then
+    lUnitStr = "    m3/s "
+  Else
+    lUnitStr = "    cfs  "
+  End If
+  lDepVarName = Me.UserRegions(1).Region.DepVars(1).Name
+  If Me.Project.DB.Parameters.KeyExists(lDepVarName) Then
+    lUnitCode = Me.Project.DB.Parameters(lDepVarName).ConvFlag
+    If lUnitCode <> 13 Then 'something besides flow (cfs or m3/s)
+      If Me.Project.DB.Units.KeyExists(CStr(lUnitCode)) Then
+        If useMetric Then
+          lUnitStr = Me.Project.DB.Units(CStr(lUnitCode)).MetricLabel
+        Else
+          lUnitStr = Me.Project.DB.Units(CStr(lUnitCode)).EnglishLabel
+        End If
+      End If
+      lLen = Len(lUnitStr)
+      If lLen > 9 Then 'too long, need to truncate
+        lUnitStr = Left(lUnitStr, 9)
+      ElseIf lLen < 9 Then
+        lUnitStr = Space(8 - lLen) & lUnitStr & " "
+      End If
+    End If
+  End If
+  
   If Len(txt) > 0 Then
     EstimateString = txt
   ElseIf Me.Urban Then
     Flows = Me.Discharges
     StdError = Me.StdError
-    txt = "Recurrence     Peak,  Standard  " & vbCrLf _
-        & "Interval, yrs   cfs   Error, %  "
+'    txt = "Recurrence     Peak,  Standard  " & vbCrLf _
+'        & "Interval, yrs   cfs   Error, %  "
+    txt = "              Value,  Standard  " & vbCrLf _
+        & "Statistic  " & lUnitStr & "  Error, %  "
     If useMetric Then txt = ReplaceString(txt, " cfs", "m3/s")
     nIntervals = UBound(Flows)
     ReDim IntervalText(nIntervals)
@@ -1039,6 +1080,11 @@ Public Function EstimateString() As String
     For Index = 1 To nIntervals
       If Flows(Index) > -1 Then 'check for no urban estimate due to no rural at this interval
         IntervalText(Index) = Me.UserRegions(1).Region.DepVars(Index).Name
+        If IsNumeric(IntervalText(Index)) Then
+          IntervalText(Index) = SignificantDigits(Me.UserRegions(1).Region.DepVars(Index).Name, 3)
+        ElseIf Len(IntervalText(Index)) < 7 Then
+          IntervalText(Index) = IntervalText(Index) & Space(7 - Len(IntervalText(Index)))
+        End If
         If IsNumeric(IntervalText(Index)) Then IntervalText(Index) = SignificantDigits(Me.UserRegions(1).Region.DepVars(Index).Name, 3)
         FlowText(Index) = SignificantDigits(Flows(Index), 3)
         If StdError(Index) > 0 Then
@@ -1046,7 +1092,7 @@ Public Function EstimateString() As String
         End If
       End If
     Next
-    DecimalAlign IntervalText, True, True, 7
+    'DecimalAlign IntervalText, True, True, 7
     DecimalAlign FlowText, True, True, 11
     DecimalAlign StdErrText, True, True, 8
     For Index = 1 To nIntervals
@@ -1062,7 +1108,7 @@ Public Function EstimateString() As String
 '      txt = "Recurrence     Peak,   Pred. Intervals   Standard Error    Equivalent" & vbCrLf _
 '          & "Interval, yrs   cfs       Low     High     (-%)    (+%)    Years"
       txt = "              Value,   Pred. Intervals   Standard Error    Equivalent" & vbCrLf _
-          & "Statistic      cfs        Low     High     (-%)    (+%)    Years"
+          & "Statistic  " & lUnitStr & "      Low     High     (-%)    (+%)    Years"
       Flows = Me.Discharges
       StdErrorPlus = Me.StdErrorPlus
       StdError = Me.StdError
@@ -1085,7 +1131,7 @@ Public Function EstimateString() As String
       
       'use generic labels to handle different kinds of stats
       lab1 = "             Value,"
-      lab2 = "Statistic     cfs  "
+      lab2 = "Statistic " & lUnitStr
       'use the following 3 lines when DepVars Units in place
 '      lab2 = "Statistic"
 '      labUnits = Me.UserRegions(1).DepVars(1).Units.Abbrev(useMetric)
@@ -1189,7 +1235,7 @@ Public Function EstimateString() As String
       txt = ReplaceString(txt, "Equivalent", "")
       txt = ReplaceString(txt, "Years", "")
     End If
-    DecimalAlign IntervalText, True, True, 7
+    'DecimalAlign IntervalText, True, True, 7
     If Me.LowFlow Then
       DecimalAlign FlowText, True, True, 9
     Else
@@ -1197,8 +1243,8 @@ Public Function EstimateString() As String
     End If
     
     If pExtrapolated Then 'add "*" to extrapolated 500-year value
-      llen = Len(FlowText(nIntervals)) - 1
-      FlowText(nIntervals) = Left(FlowText(nIntervals), llen) & "*"
+      lLen = Len(FlowText(nIntervals)) - 1
+      FlowText(nIntervals) = Left(FlowText(nIntervals), lLen) & "*"
     End If
     
     DecimalAlign YearsText, True, True, 10
