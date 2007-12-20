@@ -235,7 +235,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   2
+         Rows            =   1
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -312,7 +312,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   317
+         Rows            =   318
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -353,7 +353,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   2
+         Rows            =   1
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -419,7 +419,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   2
+         Rows            =   1
          Cols            =   6
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -1361,7 +1361,7 @@ Private Sub rdoMainOpt_Click(Index As Integer)
   'Populate state listbox
   State = GetSetting("SEE", "Defaults", "StateName")
   cboState.Clear
-  For stIndex = 0 To DB.States.Count - 2
+  For stIndex = 0 To DB.States.Count - 1
     cboState.List(stIndex) = DB.States(stIndex + 1).Name
     cboState.ItemData(stIndex) = DB.States(stIndex + 1).code
     If DB.States(stIndex + 1).Name = State Then selState = stIndex
