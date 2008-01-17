@@ -1027,6 +1027,7 @@ Public Function EstimateString() As String
   Dim labUnits As String
   Dim UsePredErr As Boolean, UseEstErr As Boolean
   Dim useMetric As Boolean, YearsOn As Boolean
+  Dim AllNumeric As Boolean
   Dim lDepVarName As String
   Dim lUnitCode As Integer
   Dim lUnitStr As String
@@ -1063,6 +1064,7 @@ Public Function EstimateString() As String
     End If
   End If
   
+  AllNumeric = True
   If Len(txt) > 0 Then
     EstimateString = txt
   ElseIf Me.Urban Then
@@ -1085,14 +1087,18 @@ Public Function EstimateString() As String
         ElseIf Len(IntervalText(Index)) < 7 Then
           IntervalText(Index) = IntervalText(Index) & Space(7 - Len(IntervalText(Index)))
         End If
-        If IsNumeric(IntervalText(Index)) Then IntervalText(Index) = SignificantDigits(Me.UserRegions(1).Region.DepVars(Index).Name, 3)
+        If IsNumeric(IntervalText(Index)) Then
+          IntervalText(Index) = SignificantDigits(Me.UserRegions(1).Region.DepVars(Index).Name, 3)
+        Else
+          AllNumeric = False
+        End If
         FlowText(Index) = SignificantDigits(Flows(Index), 3)
         If StdError(Index) > 0 Then
           StdErrText(Index) = SignificantDigits(StdError(Index), 2)
         End If
       End If
     Next
-    'DecimalAlign IntervalText, True, True, 7
+    If AllNumeric Then DecimalAlign IntervalText, True, True, 7
     DecimalAlign FlowText, True, True, 11
     DecimalAlign StdErrText, True, True, 8
     For Index = 1 To nIntervals
@@ -1190,6 +1196,7 @@ Public Function EstimateString() As String
       ElseIf Len(IntervalText(Index)) < 7 Then
         IntervalText(Index) = IntervalText(Index) & Space(7 - Len(IntervalText(Index)))
       End If
+      If Not IsNumeric(IntervalText(Index)) Then AllNumeric = False
               
       FlowText(Index) = SignificantDigits(Flows(Index), 3)
       
@@ -1235,7 +1242,7 @@ Public Function EstimateString() As String
       txt = ReplaceString(txt, "Equivalent", "")
       txt = ReplaceString(txt, "Years", "")
     End If
-    'DecimalAlign IntervalText, True, True, 7
+    If AllNumeric Then DecimalAlign IntervalText, True, True, 7
     If Me.LowFlow Then
       DecimalAlign FlowText, True, True, 9
     Else
