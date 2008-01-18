@@ -40,12 +40,12 @@ FindDB:
   On Error GoTo NoDB
   Project.LoadNSSdatabase dbPath
   
-  Project.filename = DefaultSaveFile
-  If Len(Dir(Project.filename)) > 0 Then
-    progress = progress & vbCr & "Loading " & Project.filename
-    Project.XML = WholeFileString(Project.filename)
+  Project.FileName = DefaultSaveFile
+  If Len(Dir(Project.FileName)) > 0 Then
+    progress = progress & vbCr & "Loading " & Project.FileName
+    Project.XML = WholeFileString(Project.FileName)
   Else
-    progress = progress & vbCr & "Not Loading " & Project.filename & " (not found)"
+    progress = progress & vbCr & "Not Loading " & Project.FileName & " (not found)"
     Project.XML = "<NSSproject name=""Unnamed"" username="""" state=""01"" metric=""False"" currentrural=""0"" currenturban=""0""></NSSproject>"
   End If
   
@@ -147,7 +147,11 @@ Public Sub AllIntervals(nAllInt As Long, allint() As Single)
 
 InsertSort:
   For Each vReturn In Scenario.UserRegions(1).region.DepVars
-    IntervalValue = CSng(vReturn.Name)
+    If Left(vReturn.Name, 2) = "PK" Then
+      IntervalValue = CSng(Mid(vReturn.Name, 3))
+    Else
+      IntervalValue = CSng(vReturn.Name)
+    End If
     IntervalIndex = 0
     While IntervalIndex < nAllInt And allint(IntervalIndex) <= IntervalValue
       If allint(IntervalIndex) = IntervalValue Then Return 'Already have this interval
