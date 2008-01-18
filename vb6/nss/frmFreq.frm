@@ -99,6 +99,7 @@ Private Sub PlotFreq(agr As ATCoGraph) ', lst As ATCoGrid)
   Dim clab$(20)  'curve label
   Dim ctype&(20), ltype&(20), stype&(20), lthick&(20), lcolor&(20)
   Dim eqnMetric As Boolean
+  Dim IntervalName As String
   
   Dim chkIndex As Long
   Dim Scenario As nssScenario
@@ -142,7 +143,12 @@ Private Sub PlotFreq(agr As ATCoGraph) ', lst As ATCoGrid)
       ivar = ivar + 1
       'set x-axis values (probabilities)
       For i = 1 To lNumIntervals
-        t(i) = gausex(1 / CDbl(Scenario.UserRegions(1).region.DepVars(i).Name))
+        If Left(Scenario.UserRegions(1).region.DepVars(i).Name, 2) = "PK" Then
+          IntervalName = Mid(Scenario.UserRegions(1).region.DepVars(i).Name, 3)
+        Else
+          IntervalName = Scenario.UserRegions(1).region.DepVars(i).Name
+        End If
+        t(i) = gausex(1 / CDbl(IntervalName))
 '        If Not graphing Then
 '          lst.TextMatrix(i, 0) = Scenario.UserRegions(1).region.DepVars(i).Name 't(i)
 '          lst.TextMatrix(i, lst.col) = q(i)

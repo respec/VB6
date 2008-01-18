@@ -238,6 +238,7 @@ Private Sub CalcHyd(useGraph As Boolean)
   Dim IntervalIndex As Long
   Dim StepName As String
   Dim ScenarioIndex As Long
+  Dim IntervalName As String
 
   On Error GoTo ErrHand
   
@@ -289,8 +290,13 @@ Private Sub CalcHyd(useGraph As Boolean)
       lt = txtLagtime(j).Value
       curDischarges = Scenario.WeightedDischarges
       For IntervalIndex = 1 To Scenario.UserRegions(1).region.DepVars.Count
-        StepName = "CSng(" & Scenario.UserRegions(1).region.DepVars(IntervalIndex).Name & ")"
-        If CSng(Scenario.UserRegions(1).region.DepVars(IntervalIndex).Name) = lint Then
+        If Left(Scenario.UserRegions(1).region.DepVars(IntervalIndex).Name, 2) = "PK" Then
+          IntervalName = Mid(Scenario.UserRegions(1).region.DepVars(IntervalIndex).Name, 3)
+        Else
+          IntervalName = Scenario.UserRegions(1).region.DepVars(IntervalIndex).Name
+        End If
+        StepName = "CSng(" & IntervalName & ")"
+        If CSng(IntervalName) = lint Then
           'interval available for this Estimate
           peak = curDischarges(IntervalIndex)
           Exit For
