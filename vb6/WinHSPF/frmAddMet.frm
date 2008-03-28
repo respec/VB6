@@ -504,7 +504,7 @@ Private Sub Form_Load()
       Next i
       If Not lmetseg Is Nothing Then
         For r = 1 To 7
-          If Len(lmetseg.MetSegRec(r).Source.volname) = 3 Then
+          If Len(lmetseg.MetSegRec(r).Source.volname) < 4 Then
             lId = 1
           Else
             lId = CInt(Mid(lmetseg.MetSegRec(r).Source.volname, 4, 1))

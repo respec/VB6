@@ -154,6 +154,7 @@ Public Sub modPollutantsBuild(myUci As Object, myMsg As Object)
                   End If
                 Next lTableDef
                 If Len(tPoll.Name) = 0 Then
+                  'todo: make sure table exists before doing this
                   tPoll.Name = tPoll.Operations(ctype & newOpn.Id).Tables("QUAL-PROPS").Parms("QUALID").Value
                   tPoll.Index = piconn
                 End If
@@ -193,6 +194,7 @@ Public Sub modPollutantsBuild(myUci As Object, myMsg As Object)
                 End If
               Next lTableDef
               If Len(tPoll.Name) = 0 Then
+                'todo: make sure table exists before doing this
                 tPoll.Name = tPoll.Operations(ctype & newOpn.Id).Tables("GQ-QALDATA").Parms("GQID").Value
                 tPoll.Index = k
               End If
@@ -310,9 +312,9 @@ Public Sub modPollutantsUnBuild(myUci As Object, myMsg As Object)
   Dim s As String
 
   If myUci.Edited = False Then
-    Changed = False
+    changed = False
   Else
-    Changed = True
+    changed = True
   End If
   
   'find total number of each type
@@ -664,7 +666,7 @@ Public Sub modPollutantsUnBuild(myUci As Object, myMsg As Object)
     End If
   Next vOpn
   
-  If Changed Then
+  If changed Then
     myUci.Edited = True
   Else
     myUci.Edited = False
