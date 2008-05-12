@@ -1205,38 +1205,41 @@ Public Sub GetMetSegNames(fun&, numMetSeg&, arrayMetSegs$(), lMetDetails$(), lMe
   numMetSeg = 0
     
   'look for matching WDM datasets
-  Call findtimser("OBSERVED", "", "PREC", lts)
+  Call findtimser("", "", "PREC", lts)
   'return the names of the data sets from this wdm file
   For i = 1 To lts.Count
     loc = lts(i).Header.loc
-    If Len(loc) > 0 And lts(i).File.Label = "WDM" And lts(i).File.FileUnit = fun Then
-      'first get the common dates from prec and pevt at this location
-      Call findtimser("OBSERVED", loc, "PREC", llocts)
-      Set ldate = llocts(1).Dates
-      sj = ldate.Summary.SJDay
-      ej = ldate.Summary.EJDay
-      Call findtimser("", loc, "PEVT", llocts)
-      For j = 1 To llocts.Count
-        Set ldate = llocts(j).Dates
-        tempsj = ldate.Summary.SJDay
-        tempej = ldate.Summary.EJDay
-        If tempsj > sj Then sj = tempsj
-        If tempej < ej Then ej = tempej
-      Next j
-      'now save info about this met station
-      numMetSeg = numMetSeg + 1
-      ReDim Preserve arrayMetSegs(numMetSeg)
-      arrayMetSegs(numMetSeg - 1) = loc
-      ReDim Preserve lMetDetails(numMetSeg)
-      dsn = lts(i).Header.Id
-      Call J2Date(sj, sdat)
-      Call J2Date(ej, edat)
-      Call timcnv(edat)
-      lMetDetails(numMetSeg - 1) = CStr(dsn) & "," & _
-        CStr(sdat(0)) & "," & CStr(sdat(1)) & "," & CStr(sdat(2)) & "," & CStr(sdat(3)) & "," & CStr(sdat(4)) & "," & CStr(sdat(5)) & "," & _
-        CStr(edat(0)) & "," & CStr(edat(1)) & "," & CStr(edat(2)) & "," & CStr(edat(3)) & "," & CStr(edat(4)) & "," & CStr(edat(5))
-      ReDim Preserve lMetDescs(numMetSeg)
-      lMetDescs(numMetSeg - 1) = lts(i).Header.Desc
+    sen = lts(i).Header.sen
+    If sen = "OBSERVED" Or sen = "COMPUTED" Then
+      If Len(loc) > 0 And lts(i).File.Label = "WDM" And lts(i).File.FileUnit = fun Then
+        'first get the common dates from prec and pevt at this location
+        Call findtimser(sen, loc, "PREC", llocts)
+        Set ldate = llocts(1).Dates
+        sj = ldate.Summary.SJDay
+        ej = ldate.Summary.EJDay
+        Call findtimser("", loc, "PEVT", llocts)
+        For j = 1 To llocts.Count
+          Set ldate = llocts(j).Dates
+          tempsj = ldate.Summary.SJDay
+          tempej = ldate.Summary.EJDay
+          If tempsj > sj Then sj = tempsj
+          If tempej < ej Then ej = tempej
+        Next j
+        'now save info about this met station
+        numMetSeg = numMetSeg + 1
+        ReDim Preserve arrayMetSegs(numMetSeg)
+        arrayMetSegs(numMetSeg - 1) = loc
+        ReDim Preserve lMetDetails(numMetSeg)
+        dsn = lts(i).Header.Id
+        Call J2Date(sj, sdat)
+        Call J2Date(ej, edat)
+        Call timcnv(edat)
+        lMetDetails(numMetSeg - 1) = CStr(dsn) & "," & _
+          CStr(sdat(0)) & "," & CStr(sdat(1)) & "," & CStr(sdat(2)) & "," & CStr(sdat(3)) & "," & CStr(sdat(4)) & "," & CStr(sdat(5)) & "," & _
+          CStr(edat(0)) & "," & CStr(edat(1)) & "," & CStr(edat(2)) & "," & CStr(edat(3)) & "," & CStr(edat(4)) & "," & CStr(edat(5))
+        ReDim Preserve lMetDescs(numMetSeg)
+        lMetDescs(numMetSeg - 1) = lts(i).Header.Desc
+      End If
     End If
   Next i
 
