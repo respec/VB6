@@ -1210,6 +1210,13 @@ Public Sub GetMetSegNames(fun&, numMetSeg&, arrayMetSegs$(), lMetDetails$(), lMe
   For i = 1 To lts.Count
     loc = lts(i).Header.loc
     sen = lts(i).Header.sen
+    If sen = "COMPUTED" Then
+      'see if there is also observed at this location, skip this if there is
+      Call findtimser("OBSERVED", loc, "PREC", llocts)
+      If llocts.Count > 0 Then
+        sen = "SKIP"
+      End If
+    End If
     If sen = "OBSERVED" Or sen = "COMPUTED" Then
       If Len(loc) > 0 And lts(i).File.Label = "WDM" And lts(i).File.FileUnit = fun Then
         'first get the common dates from prec and pevt at this location

@@ -416,6 +416,7 @@ Private Sub cmdOkayCancel_Click(Index As Integer)
                 If ejday2 < ejday Then ejday = ejday2
                 Call J2Date(sjday, sdat)
                 Call J2Date(ejday, edat)
+                Call timcnv(edat)
                 lmetdetail = CStr(-1 * lPrecDsn) & "," & _
                    CStr(sdat(0)) & "," & CStr(sdat(1)) & "," & CStr(sdat(2)) & "," & CStr(sdat(3)) & "," & CStr(sdat(4)) & "," & CStr(sdat(5)) & "," & _
                    CStr(edat(0)) & "," & CStr(edat(1)) & "," & CStr(edat(2)) & "," & CStr(edat(3)) & "," & CStr(edat(4)) & "," & CStr(edat(5)) & "," & _
