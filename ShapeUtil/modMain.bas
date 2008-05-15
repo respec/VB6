@@ -111,6 +111,9 @@ Public Sub Main()
         End If
       ElseIf Len(projectionDest) > 0 Then
         shpFileNames(0) = newBaseFilename
+        If Not FileExists(newBaseFilename) Then
+          TryShapePointsFromDBF FilenameNoExt(newBaseFilename) & ".dbf"
+        End If
         'frmShapeUtil.lblStatus.Caption = "Projecting..."
         ShapeProject projectionDest, projectionSource, shpFileNames
       Else
