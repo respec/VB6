@@ -81,8 +81,8 @@ Public Sub ShapeProject(projectionDest As String, projectionSource As String, sh
       shpOut.CreateNewShape tmpSHPname, shpIn.getShapeHeader.ShapeType
 
       Select Case shpIn.getShapeHeader.ShapeType
-        Case typePoint:      ProjectPoints shpIn, shpOut
-        'TODO: typePointZ, typePointM
+        Case typePoint:  ProjectPoints shpIn, shpOut
+        Case typePointZ: ProjectPointsZ shpIn, shpOut
         Case typePolyline, typePolygon, typeMultipoint, _
              typePolyLineZ, typePolygonZ, typeMultiPointZ, _
              typePolyLineM, typePolygonM, typeMultiPointM, typeMultiPatch
@@ -122,29 +122,33 @@ ErrHand:
   If FileExists(tmpSHXname) Then Kill tmpSHXname
 End Sub
 
-Private Function projInitFromFile(Filename As String) As String
-  Dim init As String
-  Dim startpos As Long
-  Dim EOLpos As Long
-  If FileExists(Filename) Then
-    init = WholeFileString(Filename)
-    startpos = InStr(init, "#")
-    While startpos > 0
-      EOLpos = InStr(startpos + 1, init, vbLf)
-      If EOLpos = 0 Then EOLpos = Len(init)
-      init = Left(init, startpos - 1) & Mid(init, EOLpos + 1)
+Private Function projInitFromFile(FileName As String) As String
+  If Left(FileName, 5) = "+proj" Then 'Already have a projection string, not a file name
+    projInitFromFile = FileName
+  Else                                'Read projection string from file and convert format
+    Dim init As String
+    Dim startpos As Long
+    Dim EOLpos As Long
+    If FileExists(FileName) Then
+      init = WholeFileString(FileName)
       startpos = InStr(init, "#")
-    Wend
-    'Get rid of "proj" at the start of the file, but not "+proj=" later
-    startpos = InStr(init, "proj")
-    If Mid(init, startpos + 4, 1) <> "=" Then init = Left(init, startpos - 1) & Mid(init, startpos + 4)
-    init = ReplaceString(init, vbCrLf, " ")
-    init = ReplaceString(init, vbCr, " ")
-    init = ReplaceString(init, vbLf, " ")
-    init = ReplaceString(init, " end", "")
-    projInitFromFile = Trim(init)
-  Else
-    projInitFromFile = "+proj=dd +ellps=clrk66"
+      While startpos > 0
+        EOLpos = InStr(startpos + 1, init, vbLf)
+        If EOLpos = 0 Then EOLpos = Len(init)
+        init = Left(init, startpos - 1) & Mid(init, EOLpos + 1)
+        startpos = InStr(init, "#")
+      Wend
+      'Get rid of "proj" at the start of the file, but not "+proj=" later
+      startpos = InStr(init, "proj")
+      If Mid(init, startpos + 4, 1) <> "=" Then init = Left(init, startpos - 1) & Mid(init, startpos + 4)
+      init = ReplaceString(init, vbCrLf, " ")
+      init = ReplaceString(init, vbCr, " ")
+      init = ReplaceString(init, vbLf, " ")
+      init = ReplaceString(init, " end", "")
+      projInitFromFile = Trim(init)
+    Else
+      projInitFromFile = "+proj=dd +ellps=clrk66"
+    End If
   End If
 End Function
 
@@ -221,6 +225,18 @@ Private Sub ProjectPoints(shpIn As CShape_IO, shpOut As CShape_IO)
     aXYPoint = shpIn.getXYPoint(record)
     ConvertPoint aXYPoint.thePoint.x, aXYPoint.thePoint.y
     shpOut.putXYPoint 0, aXYPoint
+  Next
+End Sub
+
+Private Sub ProjectPointsZ(shpIn As CShape_IO, shpOut As CShape_IO)
+  Dim record As Long, nRecords As Long
+  Dim aXYPoint As ShapeDefines.T_shpPointZ
+  
+  nRecords = shpIn.getRecordCount
+  For record = 1 To nRecords
+    aXYPoint = shpIn.getPointZ(record)
+    ConvertPoint aXYPoint.thePoint.x, aXYPoint.thePoint.y
+    shpOut.PutPointZ 0, aXYPoint
   Next
 End Sub
 

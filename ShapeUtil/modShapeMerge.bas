@@ -151,7 +151,7 @@ CopyOverNew:
         starttime = Timer
         With dbfIn(curInput)
           If .NumRecords < 1 Then
-            LogDbg "No records available in " & FilenameNoExt(dbfIn(curInput).Filename)
+            LogDbg "No records available in " & FilenameNoExt(dbfIn(curInput).FileName)
           ElseIf .NumRecords <> shpIn(curInput).getRecordCount Then
               baseFileName = FilenameNoExt(shpFileNames(curInput))
               LogMsg "Cannot merge - unequal number of records in " & vbCr _
@@ -159,7 +159,7 @@ CopyOverNew:
                     & baseFileName & ".dbf (" & .NumRecords & ")"
           Else
             mergeRecordCount = 0
-            LogDbg "Merging " & FilenameNoExt(dbfIn(curInput).Filename) & " into " & newBaseFilename
+            LogDbg "Merging " & FilenameNoExt(dbfIn(curInput).FileName) & " into " & newBaseFilename
             outRecsBeforeThisInput = dbfOut.NumRecords
             If UBound(.record) = UBound(dbfOut.record) Then
               canCopyRecords = True
@@ -248,7 +248,9 @@ Private Sub CopyShape(ShapeType As Long, FromIndex As Long, _
   Select Case ShapeType 'ShapeType: 0=null, 1=Point, 3=PolyLine, 5=Polygon, 8=MultiPoint
     Case typePoint:
       ToShp.putXYPoint 0, FromShp.getXYPoint(FromIndex)
-    'TODO: typePointZ, typePointM
+    Case typePointZ:
+      ToShp.PutPointZ 0, FromShp.getPointZ(FromIndex)
+    'TODO: typePointM
     Case typePolyline, typePolygon, typeMultipoint, _
          typePolyLineZ, typePolygonZ, typeMultiPointZ, _
          typePolyLineM, typePolygonM, typeMultiPointM, typeMultiPatch
