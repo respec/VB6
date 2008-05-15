@@ -47,7 +47,7 @@ Public Sub Main()
     tmpLogFilename = tmpLogFilename & "ShapeUtil.log"
     
     Set gLogger = New clsATCoLogger
-    'gLogger.SetFileName tmpLogFilename
+    gLogger.SetFileName tmpLogFilename
     gLogger.Log2Debug = False
     gLogger.DateTime = True
   
@@ -61,23 +61,31 @@ Public Sub Main()
       ElseIf InStr(curFilename, "key=") = 1 Then
         keyField = Mid(curFilename, 5)
       Else
-        If Not FileExists(curFilename) Then
-          TryShapePointsFromDBF FilenameNoExt(curFilename) & ".dbf"
-        End If
-        If FileExists(curFilename) Then
-          If LCase(FileExt(curFilename)) = "proj" Then
+        If Left(curFilename, 5) = "+proj" Then
             If Len(projectionDest) = 0 Then
               projectionDest = curFilename
             Else
               projectionSource = curFilename
             End If
-          Else
-            nFileNames = nFileNames + 1
-            ReDim Preserve shpFileNames(nFileNames)
-            shpFileNames(nFileNames) = curFilename
+        Else
+          If Not FileExists(curFilename) Then
+            TryShapePointsFromDBF FilenameNoExt(curFilename) & ".dbf"
           End If
-        ElseIf Len(cmd) > 0 Then
-          gLogger.Log "File not found: " & curFilename
+          If FileExists(curFilename) Then
+            If LCase(FileExt(curFilename)) = "proj" Then
+              If Len(projectionDest) = 0 Then
+                projectionDest = curFilename
+              Else
+                projectionSource = curFilename
+              End If
+            Else
+              nFileNames = nFileNames + 1
+              ReDim Preserve shpFileNames(nFileNames)
+              shpFileNames(nFileNames) = curFilename
+            End If
+          ElseIf Len(cmd) > 0 Then
+            gLogger.Log "File not found: " & curFilename
+          End If
         End If
       End If
       curFilename = StrSplit(cmd, " ", """")
@@ -114,7 +122,7 @@ CloseLog:
     AppendFileString GetLogFilename(PathNameOnly(newBaseFilename), "shape"), gLogger.CurrentLog
     Set gLogger = Nothing
     On Error Resume Next
-    Kill tmpLogFilename
+    'Kill tmpLogFilename
   End If
   
   Exit Sub
