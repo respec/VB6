@@ -54,6 +54,10 @@ Public Sub Main()
     gLogger.Log "ShapeUtil CommandLine '" & Command & "'"
     
     newBaseFilename = StrSplit(cmd, " ", """")
+    If Not FileExists(newBaseFilename) Then
+      TryShapePointsFromDBF FilenameNoExt(newBaseFilename) & ".dbf"
+    End If
+    
     curFilename = StrSplit(cmd, " ", """")
     While Len(curFilename) > 0
       If curFilename = "dump" Then
@@ -111,9 +115,6 @@ Public Sub Main()
         End If
       ElseIf Len(projectionDest) > 0 Then
         shpFileNames(0) = newBaseFilename
-        If Not FileExists(newBaseFilename) Then
-          TryShapePointsFromDBF FilenameNoExt(newBaseFilename) & ".dbf"
-        End If
         'frmShapeUtil.lblStatus.Caption = "Projecting..."
         ShapeProject projectionDest, projectionSource, shpFileNames
       Else
