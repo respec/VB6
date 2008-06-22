@@ -126,20 +126,20 @@ Public Sub PopulateParameters()
   If pDB Is Nothing Then
     ssMessageBox "Cannot read parameters" & vbCr & "DB not set."
   Else
-    sql = "SELECT Parameters.ID, Parameters.Min, Parameters.Max, Parameters.ConvFlag, " & _
+    sql = "SELECT Parameters.ParmID, Parameters.Min, Parameters.Max, Parameters.ConvFlag, " & _
              "Parameters.Parameter, STATLABEL.StatLabel, STATLABEL.StatisticLabel, " & _
              "STATLABEL.StatisticLabelCode, STATTYPE.StatisticTypeCode, STATTYPE.StatisticType " & _
           "FROM STATTYPE INNER JOIN (STATLABEL INNER JOIN [Parameters] " & _
           "ON STATLABEL.StatisticLabelCode = Parameters.StatisticLabelCode) " & _
           "ON STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode " & _
           "WHERE Parameters.RegionID=" & pID & " " & _
-          "ORDER BY Parameters.ID;"
+          "ORDER BY Parameters.ParmID;"
     Set parmRec = pDB.DB.OpenRecordset(sql)
     While Not parmRec.EOF
       Set newParm = New nssParameter
       With newParm
         Set .Region = Me
-        .ID = parmRec.Fields("ID")
+        .ID = parmRec.Fields("ParmID")
         If Not IsNull(parmRec.Fields("StatisticLabelCode")) Then .LabelCode = parmRec.Fields("StatisticLabelCode")
         If Not IsNull(parmRec.Fields("StatisticLabel")) Then .Name = parmRec.Fields("StatisticLabel")
         If Not IsNull(parmRec.Fields("StatLabel")) Then .Abbrev = parmRec.Fields("StatLabel")
@@ -228,7 +228,7 @@ Public Sub PopulateROIParameters()
     sql = "SELECT STATLABEL.StatisticLabelCode, STATLABEL.StatLabel, STATLABEL.StatisticLabel, " & _
         "STATTYPE.StatisticTypeCode, STATTYPE.StatisticType, " & _
         "ROIUserParms.PosNegCorrelation, ROIUserParms.SimVar, ROIUserParms.RegVar, " & _
-        "Parameters.ID, Parameters.Min, Parameters.Max, Parameters.ConvFlag " & _
+        "Parameters.ParmID, Parameters.Min, Parameters.Max, Parameters.ConvFlag " & _
         "FROM (ROIUserParms INNER JOIN " & _
         "(STATTYPE INNER JOIN STATLABEL ON STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode) " & _
         "ON ROIUserParms.ParmID = STATLABEL.StatisticLabelCode) " & _
@@ -239,7 +239,7 @@ Public Sub PopulateROIParameters()
       Set newParm = New nssParameter
       With newParm
         Set .Region = Me
-        .ID = parmRec("ID")
+        .ID = parmRec("ParmID")
         If Not IsNull(parmRec("StatisticLabelCode")) Then .LabelCode = parmRec("StatisticLabelCode")
         If Not IsNull(parmRec("StatisticLabel")) Then
           .Name = parmRec("StatisticLabel")
@@ -298,7 +298,7 @@ Public Sub PopulateDepVars()
 '          " ORDER BY Len(DepVars.Name), DepVars.Name;"
     Set depVarRec = pDB.DB.OpenRecordset(sql)
     While Not depVarRec.EOF
-      DepVarID = depVarRec.Fields("ID")
+      DepVarID = depVarRec.Fields("DepVarID")
       Set newDepVar = New nssDepVar
       With newDepVar
         Set .DB = pDB
@@ -396,11 +396,11 @@ Public Function Add(IsReturn As Boolean, ByVal RegName As String, ByVal Urban As
     If .NoMatch Or .RecordCount = 0 Then
       'find an unused ID
       .MoveLast
-      ID = !ID
-      .FindFirst "ID=" & ID
+      ID = !RegionID
+      .FindFirst "RegionID=" & ID
       While Not .NoMatch
-        ID = !ID + 1
-        .FindFirst "ID=" & ID
+        ID = !RegionID + 1
+        .FindFirst "RegionID=" & ID
       Wend
     Else
       If Not NoWarnFlg Then
@@ -432,8 +432,8 @@ Public Function Add(IsReturn As Boolean, ByVal RegName As String, ByVal Urban As
     End If
     .AddNew
     !StateCode = DB.State.Code
-    !ID = ID
-    !Name = RegName
+    !RegionID = ID
+    !RegionName = RegName
     !Urban = Urban
     !UrbanNeedsRural = -RuralInput
     !ROI = ROIRegnID
@@ -451,7 +451,7 @@ Public Function Delete() As Boolean
   sql = "SELECT * FROM Regions WHERE StateCode='" & DB.State.Code & "'"
   Set myRec = DB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
-    .FindFirst "ID=" & Me.ID
+    .FindFirst "RegionID=" & Me.ID
     If Not .NoMatch Then
       .Delete
       Delete = True
@@ -471,10 +471,10 @@ Public Sub Edit(ByVal NewName As String, ByVal Urban As Boolean, _
   Set myRec = DB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     .MoveLast
-    .FindFirst "ID=" & Me.ID
+    .FindFirst "RegionID=" & Me.ID
     If Not .NoMatch Then
       .Edit
-      !Name = NewName
+      !RegionName = NewName
       !Urban = Urban
       !UrbanNeedsRural = -RuralInput
       !PredInt = -PredInt

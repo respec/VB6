@@ -208,12 +208,12 @@ Private Sub PopulateComponents()
         If Not IsNull(comprec.Fields("BaseMod")) Then .BaseMod = comprec.Fields("BaseMod")
         If Not IsNull(comprec.Fields("BaseCoeff")) Then .BaseCoeff = comprec.Fields("BaseCoeff")
         If Not IsNull(comprec.Fields("BaseExp")) Then .BaseExp = comprec.Fields("BaseExp")
-        If Not IsNull(comprec.Fields("ExpIndex")) Then .ExpID = comprec.Fields("ExpIndex")
+        If Not IsNull(comprec.Fields("ExponentParmID")) Then .ExpID = comprec.Fields("ExponentParmID")
         If Not IsNull(comprec.Fields("ExpMod")) Then .ExpMod = comprec.Fields("ExpMod")
         If Not IsNull(comprec.Fields("ExpExp")) Then .ExpExp = comprec.Fields("ExpExp")
       End With
       pComponents.Add newComp, CStr(comprec("DepVarID") & " " & _
-                               comprec("ParmID") & " " & comprec("ExpIndex"))
+                               comprec("ParmID") & " " & comprec("ExponentParmID"))
       Set newComp = Nothing
       comprec.MoveNext
     Wend
@@ -244,7 +244,7 @@ Public Function Add(IsReturn As Boolean, ByVal Region As nssRegion, _
   Set myRec = Region.DB.DB.OpenRecordset("DepVars", dbOpenDynaset)
   With myRec
     'check to see if parameter with this name already exists for this region
-    .FindFirst "RegionID=" & Region.ID & " AND Name='" & Name & "'"
+    .FindFirst "RegionID=" & Region.ID & " AND StatLabelCode='" & Name & "'"
     If .NoMatch Then  'OK to add
       'find an unused ID
       If IsReturn Then
@@ -252,13 +252,13 @@ Public Function Add(IsReturn As Boolean, ByVal Region As nssRegion, _
       Else
         ID = 10001
       End If
-      .FindFirst "ID=" & ID
+      .FindFirst "DepVarID=" & ID
       While Not .NoMatch
-        ID = !ID + 1
-        .FindFirst "ID=" & ID
+        ID = !DepVarID + 1
+        .FindFirst "DepVarID=" & ID
       Wend
       .AddNew
-      !ID = ID
+      !DepVarID = ID
       !RegionID = Region.ID
       !Name = Name
       If IsNumeric(StdErr) Then !StdErr = StdErr
@@ -288,7 +288,7 @@ Public Sub Delete()
   
   Set myRec = Me.Region.DB.DB.OpenRecordset("DepVars", dbOpenDynaset)
   With myRec
-    .FindFirst "ID=" & Me.ID
+    .FindFirst "DepVarID=" & Me.ID
     If Not .NoMatch Then
       .Delete
     End If
@@ -307,7 +307,7 @@ Public Sub Edit(ByVal Name As String, _
   Set myRec = pDB.DB.OpenRecordset("DepVars", dbOpenDynaset)
   With myRec
     .MoveLast
-    .FindFirst "ID=" & Me.ID
+    .FindFirst "DepVarID=" & Me.ID
     If Not .NoMatch Then
       .Edit
       !Name = Name

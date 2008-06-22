@@ -96,7 +96,7 @@ Public Sub Add(Code As String, Name As String)
   Dim flds&
   Dim sql$
   
-  sql = "SELECT * FROM STATTYPE ORDER BY ID"
+  sql = "SELECT * FROM STATTYPE ORDER BY StatisticTypeID"
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     If .RecordCount > 0 Then 'check to see if Stat Type with this Code or Name already exists
@@ -116,9 +116,9 @@ Public Sub Add(Code As String, Name As String)
       End If
     End If
     .MoveLast
-    flds = !ID + 1
+    flds = !StatisticTypeID + 1
     .AddNew
-    !ID = flds
+    !StatisticTypeID = flds
     !StatisticTypeCode = Code
     !StatisticType = Name
     .Update
@@ -133,7 +133,7 @@ Public Sub Edit(Code As String, Name As String)
     If .RecordCount = 0 Then
       Exit Sub
     Else
-      .FindFirst "ID=" & Me.ID
+      .FindFirst "StatisticTypeID=" & Me.StatisticTypeID
       .Edit
       !StatisticTypeCode = Code
       !StatisticType = Name
@@ -147,7 +147,7 @@ Public Sub Delete()
   
   Set myRec = pDB.DB.OpenRecordset("STATTYPE", dbOpenDynaset)
   With myRec
-    .FindFirst "ID=" & Me.ID
+    .FindFirst "ID=" & Me.StatisticTypeID
     If Not .NoMatch Then
       .Delete
     End If
