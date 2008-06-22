@@ -186,6 +186,6 @@ Private Function GetUnitCode(UnitName As String) As Integer
   Set myRec = pDB.DB.OpenRecordset("UNITS", dbOpenSnapshot)
   With myRec
     .FindFirst "English='" & UnitName & "'"
-    If Not .NoMatch Then GetUnitCode = .Fields("ID")
+    If Not .NoMatch Then GetUnitCode = .Fields("UnitID")
   End With
 End Function

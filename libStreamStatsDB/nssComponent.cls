@@ -134,7 +134,7 @@ Public Sub Add(ByVal Region As nssRegion, ByVal DepVarID As Long, ByVal ParmID A
     If IsNumeric(BaseMod) Then !BaseMod = BaseMod
     If IsNumeric(BaseCoeff) Then !BaseCoeff = BaseCoeff
     If IsNumeric(BaseExp) Then !BaseExp = BaseExp
-    If IsNumeric(ExpID) Then !ExpIndex = ExpID
+    If IsNumeric(ExpID) Then !ExponentParmID = ExpID
     If IsNumeric(ExpMod) Then !ExpMod = ExpMod
     If IsNumeric(ExpExp) Then !ExpExp = ExpExp
     .Update
@@ -147,7 +147,7 @@ Public Sub Delete()
   Set myRec = pDB.DB.OpenRecordset("Components", dbOpenDynaset)
   With myRec
     .FindFirst "DepVarID=" & Me.DepVarID & " AND ParmID=" & Me.ParmID & _
-              " AND ExpIndex=" & Me.ExpID
+              " AND ExponentParmID=" & Me.ExpID
     If Not .NoMatch Then
       .Delete
     End If

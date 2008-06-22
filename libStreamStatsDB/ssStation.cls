@@ -287,7 +287,7 @@ Public Sub Add(ByRef NewValues() As String, StaIndex As Long, Optional ImportFlg
           Case 3:  NewValues(2, StaIndex, fld) = GetStationTypeCode(NewValues(2, StaIndex, fld))
                   .Fields("StationTypeCode") = Trim(NewValues(2, StaIndex, fld))
           Case 4: .Fields("IsRegulated") = Trim(NewValues(2, StaIndex, fld))
-          Case 5: .Fields("Period-of-Record") = Trim(NewValues(2, StaIndex, fld))
+          Case 5: .Fields("PeriodOfRecord") = Trim(NewValues(2, StaIndex, fld))
           Case 6: .Fields("StationRemarks") = Trim(NewValues(2, StaIndex, fld))
           Case 7: .Fields("Latitude") = Trim(NewValues(2, StaIndex, fld))
           Case 8: .Fields("Longitude") = Trim(NewValues(2, StaIndex, fld))
@@ -427,14 +427,14 @@ Public Sub PopulateStatistics()
   Else
     sql = "SELECT STATISTIC.StatisticValue, STATISTIC.Date, STATLABEL.StatLabel, " & _
         "STATLABEL.StatisticLabelCode, STATLABEL.StatisticLabel, STATLABEL.Units, " & _
-        "STATTYPE.StatisticTypeCode, STATTYPE.ID, STATTYPE.StatisticType, " & _
+        "STATTYPE.StatisticTypeCode, STATTYPE.StatisticTypeID, STATTYPE.StatisticType, " & _
         "DATASOURCE.DataSourceID, DATASOURCE.Citation " & _
         "FROM DATASOURCE RIGHT JOIN (STATTYPE INNER JOIN (STATLABEL INNER JOIN STATISTIC ON " & _
         "STATLABEL.StatisticLabelCode = STATISTIC.StatisticLabelCode) ON " & _
         "STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode) ON " & _
         "DATASOURCE.DataSourceID = STATISTIC.DataSourceID " & _
         "WHERE STATISTIC.StaID='" & pID & "' " & _
-        "ORDER BY STATTYPE.ID, STATISTIC.StatisticLabelCode;"
+        "ORDER BY STATTYPE.StatisticTypeID, STATISTIC.StatisticLabelCode;"
     Set statRec = pDB.DB.OpenRecordset(sql)
     While Not statRec.EOF
       Set newStatistic = New ssStatistic
@@ -451,7 +451,7 @@ Public Sub PopulateStatistics()
             Set .Units = pDB.Units(CStr(statRec("Units")))
         If Not IsNull(statRec.Fields("Date")) Then _
             .RecDate = statRec.Fields("Date")
-        .StatTypeID = statRec.Fields("ID")
+        .StatTypeID = statRec.Fields("StatisticTypeID")
         .StatTypeCode = statRec.Fields("StatisticTypeCode")
         .StatType = statRec.Fields("StatisticType")
         If Not IsNull(statRec.Fields("DataSourceID")) Then _

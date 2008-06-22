@@ -144,16 +144,16 @@ Private Sub PopulateHUCs()
     ssMessageBox "Cannot read HUCs" & vbCr & "DB not set."
   Else
     'builds collection of HUCs
-    sql = "SELECT * FROM [HUC] WHERE state_cd='" & pCode & _
-          "' ORDER BY huc_cd;"
+    sql = "SELECT * FROM [HUC] WHERE StateCode='" & pCode & _
+          "' ORDER BY HUC;"
     Set hucRec = pDB.DB.OpenRecordset(sql, dbOpenForwardOnly)
     While Not hucRec.EOF
       Set newHUC = New ssHUC
       With newHUC
         Set .DB = pDB
         Set .State = Me
-        .Name = Trim(hucRec.Fields("huc_nm"))
-        .Code = Trim(hucRec.Fields("huc_cd"))
+        .Name = Trim(hucRec.Fields("HUCName"))
+        .Code = Trim(hucRec.Fields("HUC"))
       End With
       pHUCs.Add newHUC, newHUC.Code
       Set newHUC = Nothing
@@ -328,7 +328,7 @@ Private Sub PopulateStations()
         End If
         If Not IsNull(stationRec("StationTypeCode")) Then Set .StationType = GetStationType(stationRec("StationTypeCode"))
         If Not IsNull(stationRec("IsRegulated")) Then .IsRegulated = stationRec("IsRegulated")
-        If Not IsNull(stationRec("Period-of-Record")) Then .Period = stationRec("Period-of-Record")
+        If Not IsNull(stationRec("PeriodOfRecord")) Then .Period = stationRec("PeriodOfRecord")
         If Not IsNull(stationRec("StationRemarks")) Then .Remarks = stationRec("StationRemarks")
         If Not IsNull(stationRec("Latitude")) Then .Latitude = stationRec("Latitude")
         If Not IsNull(stationRec("Longitude")) Then .Longitude = stationRec("Longitude")
@@ -505,16 +505,16 @@ Public Sub PopulateRegions()
     ssMessageBox "Cannot read regions" & vbCr & "DB not set."
   Else
     sql = "SELECT * From Regions WHERE StateCode='" & pCode & _
-          "' ORDER BY Name;"
+          "' ORDER BY RegionName;"
     Set rgnRec = pDB.DB.OpenRecordset(sql)
     While Not rgnRec.EOF
-      regnID = rgnRec.Fields("ID")
+      regnID = rgnRec.Fields("RegionID")
       Set newRegion = New nssRegion
       With newRegion
         Set .DB = pDB
         Set .State = Me
         .ID = regnID
-        .Name = rgnRec.Fields("Name")
+        .Name = rgnRec.Fields("RegionName")
         .Urban = rgnRec.Fields("Urban")
         .UrbanNeedsRural = rgnRec.Fields("UrbanNeedsRural")
         .PredInt = rgnRec.Fields("PredInt")
@@ -568,7 +568,7 @@ Public Sub ClearState(DVTable As String)
   While regRec.RecordCount > 0
     i = i + 1
     regRec.MoveLast
-    sql = "SELECT Parameters.* From [Parameters] WHERE RegionID=" & regRec("ID")
+    sql = "SELECT Parameters.* From [Parameters] WHERE RegionID=" & regRec("RegionID")
     Set parmRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
     If parmRec.RecordCount > 0 Then
       While parmRec.RecordCount > 0
@@ -577,14 +577,14 @@ Public Sub ClearState(DVTable As String)
       Wend
       parmRec.Close
     End If
-    sql = "SELECT * From [DepVars] WHERE RegionID=" & regRec("ID")
+    sql = "SELECT * From [DepVars] WHERE RegionID=" & regRec("RegionID")
     Set dvRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
     If dvRec.RecordCount > 0 Then
       j = 0
       While dvRec.RecordCount > 0
         j = j + 1
         dvRec.MoveLast
-        sql = "SELECT * From [Components] WHERE DepVarID=" & dvRec("ID")
+        sql = "SELECT * From [Components] WHERE DepVarID=" & dvRec("DepVarID")
         Set comprec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
         If comprec.RecordCount > 0 Then
           While comprec.RecordCount > 0
@@ -593,7 +593,7 @@ Public Sub ClearState(DVTable As String)
           Wend
         End If
         comprec.Close
-        sql = "SELECT * From [Covariance] WHERE DepVarID=" & dvRec("ID")
+        sql = "SELECT * From [Covariance] WHERE DepVarID=" & dvRec("DepVarID")
         Set matrixRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
         If matrixRec.RecordCount > 0 Then
           While matrixRec.RecordCount > 0
@@ -646,7 +646,7 @@ Public Sub PopulateROIStations()
         If Not IsNull(stationRec("StationName")) Then .Label = stationRec("StationName")
         If Not IsNull(stationRec("StationTypeCode")) Then Set .StationType = GetStationType(stationRec("StationTypeCode"))
         If Not IsNull(stationRec("IsRegulated")) Then .IsRegulated = stationRec("IsRegulated")
-        If Not IsNull(stationRec("Period-of-Record")) Then .Period = stationRec("Period-of-Record")
+        If Not IsNull(stationRec("PeriodOfRecord")) Then .Period = stationRec("PeriodOfRecord")
         If Not IsNull(stationRec("StationRemarks")) Then .Remarks = stationRec("StationRemarks")
         If Not IsNull(stationRec("Latitude")) Then .Latitude = stationRec("Latitude")
         If Not IsNull(stationRec("Longitude")) Then .Longitude = stationRec("Longitude")

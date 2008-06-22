@@ -170,19 +170,19 @@ Public Function Add(ByVal Region As nssRegion, ByVal StatLabel As String, _
         'find an unused ID
         If .RecordCount > 0 Then
           .MoveLast
-          ID = !ID
+          ID = !ParmID
         Else
           ID = 1
         End If
         .FindFirst "ID=" & ID
         While Not .NoMatch
-          ID = !ID + 1
+          ID = !ParmID + 1
           .FindFirst "ID=" & ID
         Wend
         Me.ID = ID
         .AddNew
         !RegionID = Region.ID
-        !ID = ID
+        !ParmID = ID
         !StatisticLabelCode = statLabelCode
         'get long label name from STATLABEL table and assign to Parameter field
         Set myRec2 = Region.DB.DB.OpenRecordset("STATLABEL", dbOpenDynaset)
@@ -259,7 +259,7 @@ Public Sub Edit(ByVal StatLabel As String, ByVal Min As String, _
   With myRec
     If .RecordCount = 0 Then Exit Sub
     .MoveLast
-    .FindFirst "ID=" & Me.ID
+    .FindFirst "ParmID=" & Me.ID
     If Not .NoMatch Then
       .Edit
       !StatisticLabelCode = GetLabelID(StatLabel, Me.Region.DB)

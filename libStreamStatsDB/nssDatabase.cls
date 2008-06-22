@@ -130,12 +130,12 @@ Private Sub PopulateUnits()
   
   Set pUnits = New FastCollection
   
-  sql = "SELECT * FROM [Units] ORDER BY ID;"
+  sql = "SELECT * FROM [Units] ORDER BY UnitID;"
   Set myRec = pnssDB.OpenRecordset(sql, dbOpenForwardOnly)
   While Not myRec.EOF
     Set newUnits = New nssUnits
     With newUnits
-      .ID = myRec.Fields("ID")
+      .ID = myRec.Fields("UnitID")
       .MetricLabel = myRec.Fields("Metric")
       .EnglishLabel = myRec.Fields("English")
       .Factor = myRec.Fields("EnglishMetricFactor")
@@ -213,13 +213,13 @@ Private Sub PopulateStatisticTypes()
   Set pStatisticTypes = New FastCollection
 
   'builds collection of StatisticTypes
-  sql = "SELECT * FROM STATTYPE ORDER BY ID;"
+  sql = "SELECT * FROM STATTYPE ORDER BY StatisticTypeID;"
   Set myRec = pnssDB.OpenRecordset(sql, dbOpenForwardOnly)
   While Not myRec.EOF
     Set newStatType = New ssStatType
     With newStatType
       Set .DB = Me
-      .ID = myRec("ID")
+      .StatisticTypeID = myRec("StatisticTypeID")
       .Code = myRec("StatisticTypeCode")
       .Name = myRec("StatisticType")
     End With
@@ -248,8 +248,8 @@ Private Sub PopulateParameters()
   Set pParameters = New FastCollection
 
   'builds collection of Parameters
-  sql = "SELECT [STATLABEL].[StatLabel], [STATLABEL].[StatisticLabel], [UNITS].[ID]" & _
-        "FROM STATLABEL INNER JOIN UNITS ON [STATLABEL].[Units]=[UNITS].[ID] " & _
+  sql = "SELECT [STATLABEL].[StatLabel], [STATLABEL].[StatisticLabel], [UNITS].[UnitID]" & _
+        "FROM STATLABEL INNER JOIN UNITS ON [STATLABEL].[Units]=[UNITS].[UnitID] " & _
         "ORDER BY [STATLABEL].[StatisticTypeCode], [STATLABEL].[StatisticLabelCode];"
   Set myRec = pnssDB.OpenRecordset(sql, dbOpenForwardOnly)
   While Not myRec.EOF
@@ -257,7 +257,7 @@ Private Sub PopulateParameters()
     With newParm
       .Name = myRec("StatisticLabel")
       .Abbrev = myRec("StatLabel")
-      .ConvFlag = myRec("ID")
+      .ConvFlag = myRec("UnitID")
     End With
     pParameters.Add newParm, newParm.Abbrev
     myRec.MoveNext
