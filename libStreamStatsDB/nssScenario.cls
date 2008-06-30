@@ -20,6 +20,7 @@ Private pRegCrippenBue As Long
 Private pUrban As Boolean
 Private pROI As Boolean
 Private pLowFlow As Boolean
+Private pRevEqtn As Boolean
 Private pUsePredInts As Boolean
 Private pProject As nssProject
 Private pUserRegions As FastCollection 'of userRegions
@@ -113,6 +114,13 @@ Public Property Get LowFlow() As Boolean
 End Property
 Public Property Let LowFlow(ByVal newValue As Boolean)
   pLowFlow = newValue
+End Property
+
+Public Property Get RevEqtn() As Boolean
+  RevEqtn = pRevEqtn
+End Property
+Public Property Let RevEqtn(ByVal newValue As Boolean)
+  pRevEqtn = newValue
 End Property
 
 Public Property Get UsePredInts() As Boolean
@@ -657,6 +665,8 @@ Public Function Discharges() As Double()
   
   If ROI Then
     IntervalDischarge = ComputeROIdischarge(Me, pSaveEquivYears, pSaveStdError, pSaveStdErrorPlus, pSavePredInts)
+  ElseIf RevEqtn Then
+    IntervalDischarge = ComputeRevEqtn(Me, pSavePredInts)
   Else
   
     If pUserRegions.Count = 0 Then
@@ -1347,3 +1357,6 @@ Private Sub GetMatrixBinary(MatType As Integer, MatVar As Variant)
   End If
 End Sub
 
+Private Function ComputeRevEqtn(aScen As nssScenario, aPredInts() As Double) As Double()
+
+End Function
