@@ -28,6 +28,7 @@ Private pStatTypeCode As String
 Private pStatType As String
 Private pSourceID As Long
 Private pSource As String
+Private pYearsRec As String
 
 Public Property Get DB() As nssDatabase
   Set DB = pDB
@@ -134,6 +135,13 @@ Public Property Let Source(ByVal newValue As String)
   pSource = newValue
 End Property
 
+Public Property Get YearsRec() As String
+  YearsRec = pYearsRec
+End Property
+Public Property Let YearsRec(ByVal newValue As String)
+  pYearsRec = newValue
+End Property
+
 Public Sub Add(ByRef NewValues() As String, StatIndex As Long, Optional NoWarnFlg As Long)
   Dim myRec As Recordset, stationRec As Recordset
   Dim sql$
@@ -159,6 +167,7 @@ Public Sub Add(ByRef NewValues() As String, StatIndex As Long, Optional NoWarnFl
       !StatisticLabelCode = NewValues(2, StatIndex, 2)
       !StatisticValue = NewValues(2, StatIndex, 4)
       '!Date = NewValues(2, StatIndex, 6)
+      !YearsRec = NewValues(2, StatIndex, 6)
       If !StatisticLabelCode = 0 Then
         NewValues(2, StatIndex, 2) = "bad"
       Else
@@ -256,6 +265,7 @@ Public Sub Edit(ByRef NewValues() As String, StatIndex As Long)
       !StatisticLabelCode = NewValues(2, StatIndex, 2)
       !StatisticValue = NewValues(2, StatIndex, 4)
       '!Date = NewValues(2, StatIndex, 6)
+      !YearsRec = NewValues(2, StatIndex, 6)
       .Update
     Else
       ssMessageBox "There is no " & Me.Name & " Statistic for " & Me.Station.Name & _
