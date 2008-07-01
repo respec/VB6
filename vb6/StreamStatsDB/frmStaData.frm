@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "*\A..\..\VBEXPE~1\ATCoCtl\ATCoCtl.vbp"
+Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmStaData 
    Caption         =   "Station Data"
    ClientHeight    =   4455
@@ -348,7 +348,7 @@ Private Sub cmdSave_Click()
               Case 6: fldID = 5
               Case 7: fldID = 2
             End Select
-            SSDB.RecordChanges TransID, "STATISTIC", fldID, CStr(station.ID), _
+            SSDB.RecordChanges TransID, "STATISTIC", fldID, CStr(station.id), _
                 Changes(1, row, col), Changes(2, row, col)
           End If
         End If
@@ -489,7 +489,7 @@ Private Sub grdStaData_RowColChange()
         If Len(Trim(.TextMatrix(.row, 0))) > 0 Then
           statTypeCode = GetStatTypeCode(.TextMatrix(.row, 0))
           For i = 1 To SSDB.StatisticTypes(statTypeCode).StatLabels.Count
-            If SSDB.StatisticTypes(statTypeCode).StatLabels(i).ID > 14 Then
+            If SSDB.StatisticTypes(statTypeCode).StatLabels(i).id > 14 Then
               .addValue SSDB.StatisticTypes(statTypeCode).StatLabels(i).Name
             End If
           Next i
@@ -590,14 +590,14 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
           End If
         Next i
       End With
-    Case 5:
-      With grdStaData
-        If Len(.TextMatrix(ChangeFromRow, ChangeFromCol)) > 20 Then
-          .TextMatrix(ChangeFromRow, ChangeFromCol) = Left(.TextMatrix(ChangeFromRow, ChangeFromCol), 20)
-          MsgBox "The Date field for the " & .TextMatrix(ChangeFromRow, 2) & " statistic" & vbCrLf & _
-              "has been truncated to 20 characters, its maximum allowable length."
-        End If
-      End With
+'    Case 5:
+'      With grdStaData
+'        If Len(.TextMatrix(ChangeFromRow, ChangeFromCol)) > 20 Then
+'          .TextMatrix(ChangeFromRow, ChangeFromCol) = Left(.TextMatrix(ChangeFromRow, ChangeFromCol), 20)
+'          MsgBox "The Date field for the " & .TextMatrix(ChangeFromRow, 2) & " statistic" & vbCrLf & _
+'              "has been truncated to 20 characters, its maximum allowable length."
+'        End If
+'      End With
   End Select
 End Sub
 
@@ -612,8 +612,8 @@ Private Sub ChangesMade(madeChanges As Boolean)
       OldVals(row, 2) = SelStats(row).Name
       OldVals(row, 3) = SelStats(row).Abbrev
       OldVals(row, 4) = SelStats(row).value
-      OldVals(row, 5) = SelStats(row).Units.ID
-      OldVals(row, 6) = SelStats(row).RecDate
+      OldVals(row, 5) = SelStats(row).Units.id
+      OldVals(row, 6) = SelStats(row).YearsRec
       OldVals(row, 7) = SelStats(row).Source
     End If
   Next row
@@ -662,8 +662,8 @@ Private Sub SetGrid()
       .TextMatrix(statNumber, 1) = SelStats(statNumber).Name
       .TextMatrix(statNumber, 2) = SelStats(statNumber).Abbrev
       .TextMatrix(statNumber, 3) = SelStats(statNumber).value
-      .TextMatrix(statNumber, 4) = SelStats(statNumber).Units.ID
-      .TextMatrix(statNumber, 5) = SelStats(statNumber).RecDate
+      .TextMatrix(statNumber, 4) = SelStats(statNumber).Units.id
+      .TextMatrix(statNumber, 5) = SelStats(statNumber).YearsRec
       .TextMatrix(statNumber, 6) = SelStats(statNumber).Source
       newStat(statNumber) = False
     Next statNumber
@@ -689,7 +689,7 @@ Private Sub SizeGrid()
     .ColWidth(3) = 600
     .TextMatrix(0, 4) = "Conv Flg"
     .ColWidth(4) = 740
-    .TextMatrix(0, 5) = "Date"
+    .TextMatrix(0, 5) = "YearsRec"
     .ColWidth(5) = 750
     .TextMatrix(0, 6) = "Source"
     .ColWidth(6) = 3000
