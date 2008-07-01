@@ -22,7 +22,7 @@ Private pROI As Boolean
 Private pValue As String
 'Private pUnits As String
 Private pUnits As nssUnits
-Private pRecDate As String
+'Private pRecDate As String
 Private pStatTypeID As Long
 Private pStatTypeCode As String
 Private pStatType As String
@@ -92,13 +92,13 @@ End Property
 '  pUnits = newValue
 'End Property
 
-Public Property Get RecDate() As String
-  RecDate = pRecDate
-End Property
-Public Property Let RecDate(ByVal newValue As String)
-  pRecDate = newValue
-End Property
-
+'Public Property Get RecDate() As String
+'  RecDate = pRecDate
+'End Property
+'Public Property Let RecDate(ByVal newValue As String)
+'  pRecDate = newValue
+'End Property
+'
 Public Property Get StatTypeID() As Long
   StatTypeID = pStatTypeID
 End Property
