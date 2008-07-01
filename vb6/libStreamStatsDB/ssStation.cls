@@ -426,7 +426,7 @@ Public Sub PopulateStatistics()
     ssMessageBox "Cannot read Statistics" & vbCr & "DB not set."
   Else
     'sql = "SELECT STATISTIC.StatisticValue, STATISTIC.Date, STATLABEL.StatLabel, " &
-    sql = "SELECT STATISTIC.StatisticValue, STATLABEL.StatLabel, " & _
+    sql = "SELECT STATISTIC.StatisticValue, STATISTIC.YearsRec, STATLABEL.StatLabel, " & _
         "STATLABEL.StatisticLabelCode, STATLABEL.StatisticLabel, STATLABEL.Units, " & _
         "STATTYPE.StatisticTypeCode, STATTYPE.StatisticTypeID, STATTYPE.StatisticType, " & _
         "DATASOURCE.DataSourceID, DATASOURCE.Citation " & _
@@ -452,6 +452,7 @@ Public Sub PopulateStatistics()
             Set .Units = pDB.Units(CStr(statRec("Units")))
 '        If Not IsNull(statRec.Fields("Date")) Then _
 '            .RecDate = statRec.Fields("Date")
+        .YearsRec = statRec.Fields("YearsRec")
         .StatTypeID = statRec.Fields("StatisticTypeID")
         .StatTypeCode = statRec.Fields("StatisticTypeCode")
         .StatType = statRec.Fields("StatisticType")
