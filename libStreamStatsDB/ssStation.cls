@@ -425,7 +425,8 @@ Public Sub PopulateStatistics()
   If pDB Is Nothing Then
     ssMessageBox "Cannot read Statistics" & vbCr & "DB not set."
   Else
-    sql = "SELECT STATISTIC.StatisticValue, STATISTIC.Date, STATLABEL.StatLabel, " & _
+    'sql = "SELECT STATISTIC.StatisticValue, STATISTIC.Date, STATLABEL.StatLabel, " &
+    sql = "SELECT STATISTIC.StatisticValue, STATLABEL.StatLabel, " & _
         "STATLABEL.StatisticLabelCode, STATLABEL.StatisticLabel, STATLABEL.Units, " & _
         "STATTYPE.StatisticTypeCode, STATTYPE.StatisticTypeID, STATTYPE.StatisticType, " & _
         "DATASOURCE.DataSourceID, DATASOURCE.Citation " & _
