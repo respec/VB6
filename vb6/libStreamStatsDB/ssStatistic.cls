@@ -158,7 +158,7 @@ Public Sub Add(ByRef NewValues() As String, StatIndex As Long, Optional NoWarnFl
       !DataSourceID = GetSourceID(NewValues(2, StatIndex, 7))
       !StatisticLabelCode = NewValues(2, StatIndex, 2)
       !StatisticValue = NewValues(2, StatIndex, 4)
-      !Date = NewValues(2, StatIndex, 6)
+      '!Date = NewValues(2, StatIndex, 6)
       If !StatisticLabelCode = 0 Then
         NewValues(2, StatIndex, 2) = "bad"
       Else
@@ -255,7 +255,7 @@ Public Sub Edit(ByRef NewValues() As String, StatIndex As Long)
       !DataSourceID = GetSourceID(NewValues(2, StatIndex, 7))
       !StatisticLabelCode = NewValues(2, StatIndex, 2)
       !StatisticValue = NewValues(2, StatIndex, 4)
-      !Date = NewValues(2, StatIndex, 6)
+      '!Date = NewValues(2, StatIndex, 6)
       .Update
     Else
       ssMessageBox "There is no " & Me.Name & " Statistic for " & Me.Station.Name & _
