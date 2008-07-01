@@ -449,8 +449,8 @@ Public Sub PopulateStatistics()
         '.Units = statRec.Fields("Units")
         If Not IsNull(statRec("Units")) Then _
             Set .Units = pDB.Units(CStr(statRec("Units")))
-        If Not IsNull(statRec.Fields("Date")) Then _
-            .RecDate = statRec.Fields("Date")
+'        If Not IsNull(statRec.Fields("Date")) Then _
+'            .RecDate = statRec.Fields("Date")
         .StatTypeID = statRec.Fields("StatisticTypeID")
         .StatTypeCode = statRec.Fields("StatisticTypeCode")
         .StatType = statRec.Fields("StatisticType")
