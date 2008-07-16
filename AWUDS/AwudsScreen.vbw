@@ -1,0 +1,15 @@
+modAwuds = 18, 87, 782, 534, C
+modAwudsArray = 44, 0, 824, 541, C
+ImpExp = 3, 46, 821, 568, C
+AtcoValidateUser = 103, 2, 800, 608, C
+AwudsParms = 25, 101, 805, 703, C
+frmDialog = 88, 88, 570, 496, C, 66, 66, 663, 474, C
+frmAwuds2 = -6, 2, 831, 597, , 145, 62, 821, 563, C
+ATCoSelectListSortByProp = 176, 176, 721, 566, C, 198, 198, 713, 601, C
+ATCoSelectListSorted = 0, 0, 768, 493, C, 0, 0, 515, 403, C
+UTILITY = 0, 0, 0, 0, C
+modWin32Api = 0, 0, 0, 0, C
+modShell = 0, 0, 0, 0, C
+frmAbout = 0, 0, 0, 0, C, 0, 0, 0, 0, C
+modRound = 0, 0, 0, 0, C
+CGetDcNameUSGS = 0, 0, 0, 0, C
