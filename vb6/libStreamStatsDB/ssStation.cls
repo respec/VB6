@@ -251,8 +251,8 @@ Public Sub Add(ByRef NewValues() As String, StaIndex As Long, Optional ImportFlg
 '  sql = "SELECT * FROM STATION WHERE StateCode='" & Me.State.code & "'"
 
   sql = "SELECT STATION.* " & _
-        "FROM [Station State] INNER JOIN STATION ON [Station State].[StaID]=[STATION].[StaID] " & _
-        "WHERE [Station State].[StateCode]='" & Me.State.Code & "';"
+        "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
+        "WHERE [StationState].[StateCode]='" & Me.State.Code & "';"
   
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
@@ -306,13 +306,13 @@ Public Sub Add(ByRef NewValues() As String, StaIndex As Long, Optional ImportFlg
     Else
       .Fields("HasData") = 0
     End If
-'this is now stored on Station State table
+'this is now stored on StationState table
 '    .Fields("StateCode") = Me.State.code
     .Update
   End With
 
 AddStateStationReference:
-  sql = "SELECT * FROM [Station State] WHERE StateCode='" & Me.State.Code & "'"
+  sql = "SELECT * FROM [StationState] WHERE StateCode='" & Me.State.Code & "'"
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     If .RecordCount > 0 Then 'check to see if station with this ID or name already exists
@@ -342,8 +342,8 @@ Public Sub Delete()
 
 '  sql = "SELECT * FROM STATION WHERE StateCode='" & pDB.State.code & "'"
   sql = "SELECT STATION.* " & _
-        "FROM [Station State] INNER JOIN STATION ON [Station State].[StaID]=[STATION].[StaID] " & _
-        "WHERE [Station State].[StateCode]='" & pDB.State.Code & "';"
+        "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
+        "WHERE [StationState].[StateCode]='" & pDB.State.Code & "';"
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     .FindFirst "StaID='" & Me.ID & "'"
@@ -352,7 +352,7 @@ Public Sub Delete()
     End If
   End With
 ' now delete from State Station table
-  sql = "SELECT * FROM [Station State] WHERE StateCode='" & pDB.State.Code & "'"
+  sql = "SELECT * FROM [StationState] WHERE StateCode='" & pDB.State.Code & "'"
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     .FindFirst "StaID='" & Me.ID & "'"
@@ -370,8 +370,8 @@ Public Sub Edit(ByRef NewValues() As String, StaIndex As Long)
   
 '  sql = "SELECT * FROM STATION WHERE StateCode='" & pDB.State.code & "'"
   sql = "SELECT STATION.* " & _
-        "FROM [Station State] INNER JOIN STATION ON [Station State].[StaID]=[STATION].[StaID] " & _
-        "WHERE [Station State].[StateCode]='" & pDB.State.Code & "';"
+        "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
+        "WHERE [StationState].[StateCode]='" & pDB.State.Code & "';"
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     .FindFirst "StaID='" & Me.ID & "'"
@@ -427,9 +427,9 @@ Public Sub PopulateStatistics()
   Else
     'sql = "SELECT STATISTIC.StatisticValue, STATISTIC.Date, STATLABEL.StatLabel, " &
     sql = "SELECT STATISTIC.StatisticValue, STATISTIC.YearsRec, STATLABEL.StatLabel, " & _
-        "STATLABEL.StatisticLabelCode, STATLABEL.StatisticLabel, STATLABEL.Units, " & _
+        "STATLABEL.StatisticLabelCode, STATLABEL.StatisticLabel, STATLABEL.Unitid, " & _
         "STATTYPE.StatisticTypeCode, STATTYPE.StatisticTypeID, STATTYPE.StatisticType, " & _
-        "DATASOURCE.DataSourceID, DATASOURCE.Citation " & _
+        "DATASOURCE.DataSourceID, DATASOURCE.Citation, DATASOURCE.CitationURL " & _
         "FROM DATASOURCE RIGHT JOIN (STATTYPE INNER JOIN (STATLABEL INNER JOIN STATISTIC ON " & _
         "STATLABEL.StatisticLabelCode = STATISTIC.StatisticLabelCode) ON " & _
         "STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode) ON " & _
@@ -447,12 +447,12 @@ Public Sub PopulateStatistics()
         .Name = statRec.Fields("StatisticLabel")
         If Not IsNull(statRec.Fields("StatisticValue")) Then _
             .Value = statRec.Fields("StatisticValue")
-        '.Units = statRec.Fields("Units")
-        If Not IsNull(statRec("Units")) Then _
-            Set .Units = pDB.Units(CStr(statRec("Units")))
+        If Not IsNull(statRec("UnitID")) Then _
+            Set .Units = pDB.Units(CStr(statRec("UnitID")))
 '        If Not IsNull(statRec.Fields("Date")) Then _
 '            .RecDate = statRec.Fields("Date")
-        .YearsRec = statRec.Fields("YearsRec")
+        If Not IsNull(statRec.Fields("YearsRec")) Then _
+          .YearsRec = statRec.Fields("YearsRec")
         .StatTypeID = statRec.Fields("StatisticTypeID")
         .StatTypeCode = statRec.Fields("StatisticTypeCode")
         .StatType = statRec.Fields("StatisticType")
@@ -460,6 +460,8 @@ Public Sub PopulateStatistics()
             .SourceID = statRec.Fields("DataSourceID")
         If Not IsNull(statRec.Fields("Citation")) Then _
             .Source = statRec.Fields("Citation")
+        If Not IsNull(statRec.Fields("CitationURL")) Then _
+            .SourceURL = statRec.Fields("CitationURL")
       End With
       pStatistics.Add newStatistic, CStr(newStatistic.Code)
       Set newStatistic = Nothing

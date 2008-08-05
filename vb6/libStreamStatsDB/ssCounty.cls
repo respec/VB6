@@ -77,8 +77,8 @@ Public Sub PopulateStations()
 '          "CountyCode='" & pCode & "' AND StateCode='" & pDB.State.Code & _
 '          "' ORDER BY StaID;"
     sql = "SELECT STATION.* FROM " & _
-          "[Station State] INNER JOIN STATION ON [Station State].[StaID]=[STATION].[StaID] " & _
-          "WHERE CountyCode='" & pCode & "' AND [Station State].[StateCode]='" & pDB.State.Code & _
+          "[StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
+          "WHERE CountyCode='" & pCode & "' AND [StationState].[StateCode]='" & pDB.State.Code & _
           "' ORDER BY STATION.StaID;"
     Set stationRec = pDB.DB.OpenRecordset(sql, dbOpenForwardOnly)
     While Not stationRec.EOF

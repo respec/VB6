@@ -126,7 +126,7 @@ Public Sub PopulateParameters()
   If pDB Is Nothing Then
     ssMessageBox "Cannot read parameters" & vbCr & "DB not set."
   Else
-    sql = "SELECT Parameters.ParmID, Parameters.Min, Parameters.Max, Parameters.ConvFlag, " & _
+    sql = "SELECT Parameters.ParmID, Parameters.Min, Parameters.Max, Parameters.UnitID, " & _
              "Parameters.Parameter, STATLABEL.StatLabel, STATLABEL.StatisticLabel, " & _
              "STATLABEL.StatisticLabelCode, STATTYPE.StatisticTypeCode, STATTYPE.StatisticType " & _
           "FROM STATTYPE INNER JOIN (STATLABEL INNER JOIN [Parameters] " & _
@@ -144,7 +144,7 @@ Public Sub PopulateParameters()
         If Not IsNull(parmRec.Fields("StatisticLabel")) Then .Name = parmRec.Fields("StatisticLabel")
         If Not IsNull(parmRec.Fields("StatLabel")) Then .Abbrev = parmRec.Fields("StatLabel")
         If Not IsNull(parmRec.Fields("Parameter")) Then .NSSName = parmRec.Fields("Parameter")
-        If Not IsNull(parmRec.Fields("ConvFlag")) Then Set .Units = pDB.Units(CStr(parmRec.Fields("ConvFlag")))
+        If Not IsNull(parmRec.Fields("UnitID")) Then Set .Units = pDB.Units(CStr(parmRec.Fields("UnitID")))
         If Not IsNull(parmRec.Fields("Min")) Then .SetMin parmRec.Fields("Min"), pState.Metric
         If Not IsNull(parmRec.Fields("Max")) Then .SetMax parmRec.Fields("Max"), pState.Metric
         If Not IsNull(parmRec.Fields("StatisticTypeCode")) Then .StatTypeCode = parmRec.Fields("StatisticTypeCode")
@@ -228,7 +228,7 @@ Public Sub PopulateROIParameters()
     sql = "SELECT STATLABEL.StatisticLabelCode, STATLABEL.StatLabel, STATLABEL.StatisticLabel, " & _
         "STATTYPE.StatisticTypeCode, STATTYPE.StatisticType, " & _
         "ROIUserParms.PosNegCorrelation, ROIUserParms.SimVar, ROIUserParms.RegVar, " & _
-        "Parameters.ParmID, Parameters.Min, Parameters.Max, Parameters.ConvFlag " & _
+        "Parameters.ParmID, Parameters.Min, Parameters.Max, Parameters.UnitID " & _
         "FROM (ROIUserParms INNER JOIN " & _
         "(STATTYPE INNER JOIN STATLABEL ON STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode) " & _
         "ON ROIUserParms.ParmID = STATLABEL.StatisticLabelCode) " & _
@@ -246,7 +246,7 @@ Public Sub PopulateROIParameters()
           .NSSName = .Name
         End If
         If Not IsNull(parmRec("StatLabel")) Then .Abbrev = parmRec("StatLabel")
-        If Not IsNull(parmRec("ConvFlag")) Then Set .Units = pDB.Units(CStr(parmRec("ConvFlag")))
+        If Not IsNull(parmRec("UnitID")) Then Set .Units = pDB.Units(CStr(parmRec("UnitID")))
         If Not IsNull(parmRec("Min")) Then .SetMin parmRec("Min"), pState.Metric
         If Not IsNull(parmRec("Max")) Then .SetMax parmRec("Max"), pState.Metric
         If Not IsNull(parmRec("StatisticTypeCode")) Then .StatTypeCode = parmRec("StatisticTypeCode")
@@ -290,7 +290,7 @@ Public Sub PopulateDepVars()
   Else
     sql = "SELECT DepVars.* FROM [DepVars] WHERE " & _
           "DepVars.RegionID=" & pID & _
-          " ORDER BY Len(Name), Name;"
+          " ORDER BY Len(StatLabelCode), StatLabelCode;"
     'below will be the new query to pull Units from StatLabel table
 '    sql = "SELECT DepVars.*, StatLabel.Units " & _
 '          "FROM Regions INNER JOIN DepVars ON StatLabel.StatisticLableCode = DepVars.StatisticLabelCode " & _
@@ -304,7 +304,7 @@ Public Sub PopulateDepVars()
         Set .DB = pDB
         Set .Region = Me
         .ID = DepVarID
-        If Not IsNull(depVarRec.Fields("Name")) Then .Name = depVarRec.Fields("Name")
+        If Not IsNull(depVarRec.Fields("StatLabelCode")) Then .Name = depVarRec.Fields("StatLabelCode")
         If Not IsNull(depVarRec.Fields("StdErr")) Then .StdErr = depVarRec.Fields("StdErr")
         If Not IsNull(depVarRec.Fields("EstErr")) Then .EstErr = depVarRec.Fields("EstErr")
         If Not IsNull(depVarRec.Fields("PreErr")) Then .PreErr = depVarRec.Fields("PreErr")
@@ -391,7 +391,7 @@ Public Function Add(IsReturn As Boolean, ByVal RegName As String, ByVal Urban As
   With myRec
     'check to see if region with this name already exists
     If .RecordCount > 0 Then
-      .FindFirst "Name='" & RegName & "' AND StateCode='" & DB.State.Code & "'"
+      .FindFirst "RegionName='" & RegName & "' AND StateCode='" & DB.State.Code & "'"
     End If
     If .NoMatch Or .RecordCount = 0 Then
       'find an unused ID

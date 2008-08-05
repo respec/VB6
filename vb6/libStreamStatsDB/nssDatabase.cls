@@ -219,7 +219,7 @@ Private Sub PopulateStatisticTypes()
     Set newStatType = New ssStatType
     With newStatType
       Set .DB = Me
-      .StatisticTypeID = myRec("StatisticTypeID")
+      .ID = myRec("StatisticTypeID")
       .Code = myRec("StatisticTypeCode")
       .Name = myRec("StatisticType")
     End With
@@ -249,7 +249,7 @@ Private Sub PopulateParameters()
 
   'builds collection of Parameters
   sql = "SELECT [STATLABEL].[StatLabel], [STATLABEL].[StatisticLabel], [UNITS].[UnitID]" & _
-        "FROM STATLABEL INNER JOIN UNITS ON [STATLABEL].[Units]=[UNITS].[UnitID] " & _
+        "FROM STATLABEL INNER JOIN UNITS ON [STATLABEL].[UnitID]=[UNITS].[UnitID] " & _
         "ORDER BY [STATLABEL].[StatisticTypeCode], [STATLABEL].[StatisticLabelCode];"
   Set myRec = pnssDB.OpenRecordset(sql, dbOpenForwardOnly)
   While Not myRec.EOF
@@ -349,6 +349,7 @@ Private Sub PopulateSources()
         Set .DB = Me
         .ID = myRec("DataSourceID")
         .Name = myRec("Citation")
+        If Not IsNull(myRec("CitationURL")) Then .URL = myRec("CitationURL")
       End With
       Sources.Add newSource, newSource.ID
       .MoveNext

@@ -28,6 +28,7 @@ Private pStatTypeCode As String
 Private pStatType As String
 Private pSourceID As Long
 Private pSource As String
+Private pSourceURL As String
 Private pYearsRec As String
 
 Public Property Get DB() As nssDatabase
@@ -135,6 +136,13 @@ Public Property Let Source(ByVal newValue As String)
   pSource = newValue
 End Property
 
+Public Property Get SourceURL() As String
+  SourceURL = pSourceURL
+End Property
+Public Property Let SourceURL(ByVal newValue As String)
+  pSourceURL = newValue
+End Property
+
 Public Property Get YearsRec() As String
   YearsRec = pYearsRec
 End Property
@@ -182,9 +190,9 @@ Public Sub Add(ByRef NewValues() As String, StatIndex As Long, Optional NoWarnFl
 '              "WHERE StaID='" & Me.Station.ID & "' " & _
 '              "AND StateCode='" & Me.Station.State.code & "';"
         sql = "SELECT STATION.* " & _
-              "FROM [Station State] INNER JOIN STATION ON [Station State].[StaID]=[STATION].[StaID] " & _
+              "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
               "WHERE STATION.StaID='" & Me.Station.ID & "' " & _
-              "AND [Station State].[StateCode]='" & Me.Station.State.Code & "';"
+              "AND [StationState].[StateCode]='" & Me.Station.State.Code & "';"
         Set stationRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
         With stationRec
           If Not .EOF Then
@@ -232,9 +240,9 @@ Public Sub Delete()
 '          "WHERE StaID='" & Me.Station.ID & "' " & _
 '          "AND StateCode='" & Me.Station.State.code & "';"
     sql = "SELECT STATION.* " & _
-          "FROM [Station State] INNER JOIN STATION ON [Station State].[StaID]=[STATION].[StaID] " & _
+          "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
           "WHERE STATION.StaID='" & Me.Station.ID & "' " & _
-          "AND [Station State].[StateCode]='" & Me.Station.State.Code & "';"
+          "AND [StationState].[StateCode]='" & Me.Station.State.Code & "';"
     Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
     With myRec
       .Edit
@@ -274,7 +282,7 @@ Public Sub Edit(ByRef NewValues() As String, StatIndex As Long)
   End With
 End Sub
 
-Private Function GetSourceID(Citation As String) As String
+Public Function GetSourceID(Citation As String) As String
   Dim myRec As Recordset
   Dim sql As String
   

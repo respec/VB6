@@ -16,6 +16,7 @@ Option Explicit
 Private pDB As nssDatabase
 Private pID As String
 Private pName As String
+Private pURL As String
 
 Public Property Get DB() As nssDatabase
   Set DB = pDB
@@ -38,7 +39,14 @@ Public Property Let Name(ByVal newValue As String)
   pName = newValue
 End Property
 
-Public Sub Add(ByVal Citation As String)
+Public Property Get URL() As String
+  URL = pURL
+End Property
+Public Property Let URL(ByVal newValue As String)
+  pURL = newValue
+End Property
+
+Public Sub Add(ByVal Citation As String, ByVal CitationURL As String)
   Dim myRec As Recordset
   Dim i$, sql$
   Dim j&
@@ -67,11 +75,12 @@ Public Sub Add(ByVal Citation As String)
     .AddNew
     !DataSourceID = i
     !Citation = Citation
+    !CitationURL = CitationURL
     .Update
   End With
 End Sub
 
-Public Sub Edit(ByVal Citation As String)
+Public Sub Edit(ByVal Citation As String, ByVal CitationURL As String)
   Dim myRec As Recordset
   
   Set myRec = pDB.DB.OpenRecordset("DATASOURCE", dbOpenDynaset)
@@ -80,9 +89,9 @@ Public Sub Edit(ByVal Citation As String)
     If Not .NoMatch Then
       .Edit
       !Citation = Citation
+      !CitationURL = CitationURL
       .Update
     End If
   End With
 End Sub
-
 
