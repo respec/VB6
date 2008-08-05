@@ -1,12 +1,12 @@
 VERSION 5.00
-Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "Comdlg32.ocx"
-Object = "{BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0"; "Tabctl32.ocx"
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
+Object = "{BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0"; "TABCTL32.OCX"
 Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmStreamStatsDB 
    Caption         =   "Stream Stats DB"
    ClientHeight    =   8625
    ClientLeft      =   165
-   ClientTop       =   735
+   ClientTop       =   780
    ClientWidth     =   10800
    Icon            =   "frmStreamStatsDB.frx":0000
    LinkTopic       =   "Form1"
@@ -53,8 +53,8 @@ Begin VB.Form frmStreamStatsDB
       TabCaption(1)   =   "Stat&istic Management"
       TabPicture(1)   =   "frmStreamStatsDB.frx":0326
       Tab(1).ControlEnabled=   0   'False
-      Tab(1).Control(0)=   "fraStatistics"
-      Tab(1).Control(1)=   "fraStatType"
+      Tab(1).Control(0)=   "fraStatType"
+      Tab(1).Control(1)=   "fraStatistics"
       Tab(1).ControlCount=   2
       Begin VB.Frame fraStatType 
          Caption         =   "Statistic Type"
@@ -625,7 +625,7 @@ Begin VB.Form frmStreamStatsDB
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   -1  'True
-         Rows            =   1
+         Rows            =   2
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -940,16 +940,16 @@ Private Sub cmdNWIS_Click()
   PathName = GetSetting("StreamStatsDB", "Defaults", "NWISImportPath")
   With frmCDLG.CDLG
     .DialogTitle = "Select a file for import"
-    If Len(PathName) > 0 Then .Filename = PathName & "*.xls"
+    If Len(PathName) > 0 Then .filename = PathName & "*.xls"
     .Filter = "(*.xls)|*.xls"
     .filterIndex = 1
     .CancelError = True
     .ShowOpen
-    If Len(Dir(.Filename, vbDirectory)) > 1 Then
-      PathName = Left(.Filename, Len(.Filename) - Len(.fileTitle))
+    If Len(Dir(.filename, vbDirectory)) > 1 Then
+      PathName = Left(.filename, Len(.filename) - Len(.fileTitle))
       SaveSetting "StreamStatsDB", "Defaults", "NWISImportPath", PathName
       Me.MousePointer = vbHourglass
-      NWISImport .Filename
+      NWISImport .filename
       'Reassign class structure to previous selections
       cboState_Click
     End If
@@ -968,14 +968,14 @@ Private Sub cmdBCF_Click()
   PathName = GetSetting("StreamStatsDB", "Defaults", "BCFImportPath")
   With frmCDLG.CDLG
     .DialogTitle = "Select a file for import"
-    If Len(PathName) > 0 Then .Filename = PathName & "*.txt"
+    If Len(PathName) > 0 Then .filename = PathName & "*.txt"
     .Filter = "(*.txt)|*.txt"
     .filterIndex = 1
     .CancelError = True
     .ShowOpen
-    If Len(Dir(.Filename, vbDirectory)) > 1 Then
-      PathName = PathNameOnly(.Filename)
-      PathName = Left(.Filename, Len(.Filename) - Len(.fileTitle))
+    If Len(Dir(.filename, vbDirectory)) > 1 Then
+      PathName = PathNameOnly(.filename)
+      PathName = Left(.filename, Len(.filename) - Len(.fileTitle))
       SaveSetting "StreamStatsDB", "Defaults", "BCFImportPath", PathName
       Me.MousePointer = vbHourglass
       i = InStr(1, UCase(.fileTitle), "BC")
@@ -999,7 +999,7 @@ Private Sub cmdBCF_Click()
            (stName = LCase(SSDB.States(i).Abbrev)) Then Exit For
       Next i
       cboState.ListIndex = i - 1
-      BCFImport .Filename
+      BCFImport .filename
       cboState.ListIndex = i - 1
       Set SSDB.state.Stations = Nothing
       cboState_Click
@@ -2118,22 +2118,27 @@ End Sub
 Private Sub lstStats_Click()
   Dim row&, col&
   Dim allStatIDs$
+  Dim lKey As String
+  
+  On Error GoTo y
 
   If lstStats.Selected(lstStats.ListIndex) Then   'adding Stat to grid
-    SSDB.SelStats.Add ListedStats(lstStats.ListIndex + 1), _
-        CStr(ListedStats(lstStats.ListIndex + 1).id)
-    ResetGrid
-    If tabMain.Tab = 1 Then cmdDelete.Enabled = True
-    If grdGenInfo.Rows > 0 Then
-      cmdSave.Enabled = True
-      cmdCancel.Enabled = True
-      cmdClear.Enabled = True
-    Else
-      cmdSave.Enabled = False
-      cmdCancel.Enabled = False
-      cmdClear.Enabled = False
+    lKey = CStr(ListedStats(lstStats.ListIndex + 1).id)
+    If Not SSDB.SelStats.KeyExists(lKey) Then
+      SSDB.SelStats.Add ListedStats(lstStats.ListIndex + 1), lKey
+      ResetGrid
+      If tabMain.Tab = 1 Then cmdDelete.Enabled = True
+      If grdGenInfo.Rows > 0 Then
+        cmdSave.Enabled = True
+        cmdCancel.Enabled = True
+        cmdClear.Enabled = True
+      Else
+        cmdSave.Enabled = False
+        cmdCancel.Enabled = False
+        cmdClear.Enabled = False
+      End If
     End If
-  Else  'removing Stat from grid
+  ElseIf SSDB.SelStats.Count > 0 Then 'try removing Stat from grid
     With grdGenInfo
       row = 1
       While SSDB.SelStats(row).id <> ListedStats(lstStats.ListIndex + 1).id
@@ -2169,6 +2174,7 @@ Private Sub lstStats_Click()
     End With
     SaveSetting "StreamStatsDB", "Defaults", cboStatTypes.ListIndex & "StatIDs", allStatIDs
   End If
+y:
 End Sub
 
 Private Sub mnuDatabase_Click()
