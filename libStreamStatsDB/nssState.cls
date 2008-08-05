@@ -310,9 +310,9 @@ Private Sub PopulateStations()
 '          "Station.StateCode='" & pCode & _
 '          "' ORDER BY StaID;"
     
-    sql = "SELECT STATION.*, [Station State].[ROI] " & _
-          "FROM [Station State] INNER JOIN STATION ON [Station State].[StaID]=[STATION].[StaID] " & _
-          "WHERE [Station State].[StateCode]='" & pCode & "' ORDER BY STATION.StaID;"
+    sql = "SELECT STATION.*, [StationState].[ROI] " & _
+          "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
+          "WHERE [StationState].[StateCode]='" & pCode & "' ORDER BY STATION.StaID;"
     Set stationRec = pDB.DB.OpenRecordset(sql, dbOpenForwardOnly)
     While Not stationRec.EOF
       Set newStation = New ssStation
@@ -383,14 +383,14 @@ Public Sub PopulateStatsOnFile()
 '        "ON STATLABEL.StatisticLabelCode = STATISTIC.StatisticLabelCode) " & _
 '        "ON STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode " & _
 '        "WHERE STATION.StateCode='" & Me.Code & "' AND STATION.ROI>0;"
-    sql = "SELECT DISTINCT STATLABEL.StatisticLabelCode, STATLABEL.StatLabel, STATLABEL.Units, " & _
+    sql = "SELECT DISTINCT STATLABEL.StatisticLabelCode, STATLABEL.StatLabel, STATLABEL.UnitID, " & _
         "STATLABEL.StatisticLabel, STATTYPE.StatisticTypeCode, STATTYPE.StatisticType " & _
         "FROM STATTYPE INNER JOIN (STATLABEL INNER JOIN " & _
-        "(([Station State] INNER JOIN STATION ON [Station State].[StaID]=[STATION].[StaID]) " & _
+        "(([StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID]) " & _
         "INNER JOIN STATISTIC ON STATION.StaID = STATISTIC.StaID) " & _
         "ON STATLABEL.StatisticLabelCode = STATISTIC.StatisticLabelCode) " & _
         "ON STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode " & _
-        "WHERE [Station State].[StateCode]='" & Me.Code & "' AND [Station State].[ROI]>0;"
+        "WHERE [StationState].[StateCode]='" & Me.Code & "' AND [StationState].[ROI]>0;"
     Set statRec = pDB.DB.OpenRecordset(sql)
     While Not statRec.EOF
       Set newStat = New ssStatistic
@@ -400,7 +400,7 @@ Public Sub PopulateStatsOnFile()
         If Not IsNull(statRec("StatisticLabelCode")) Then .Code = statRec("StatisticLabelCode")
         If Not IsNull(statRec("StatisticLabel")) Then .Name = statRec("StatisticLabel")
         If Not IsNull(statRec("StatLabel")) Then .Abbrev = statRec("StatLabel")
-        If Not IsNull(statRec("Units")) Then Set .Units = pDB.Units(CStr(statRec("Units")))
+        If Not IsNull(statRec("UnitID")) Then Set .Units = pDB.Units(CStr(statRec("UnitID")))
       End With
       pStatsOnFile.Add newStat, CStr(newStat.Abbrev)
       Set newStat = Nothing
@@ -568,15 +568,6 @@ Public Sub ClearState(DVTable As String)
   While regRec.RecordCount > 0
     i = i + 1
     regRec.MoveLast
-    sql = "SELECT Parameters.* From [Parameters] WHERE RegionID=" & regRec("RegionID")
-    Set parmRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
-    If parmRec.RecordCount > 0 Then
-      While parmRec.RecordCount > 0
-        parmRec.MoveLast
-        parmRec.Delete
-      Wend
-      parmRec.Close
-    End If
     sql = "SELECT * From [DepVars] WHERE RegionID=" & regRec("RegionID")
     Set dvRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
     If dvRec.RecordCount > 0 Then
@@ -606,6 +597,15 @@ Public Sub ClearState(DVTable As String)
       Wend
     End If
     dvRec.Close
+    sql = "SELECT Parameters.* From [Parameters] WHERE RegionID=" & regRec("RegionID")
+    Set parmRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
+    If parmRec.RecordCount > 0 Then
+      While parmRec.RecordCount > 0
+        parmRec.MoveLast
+        parmRec.Delete
+      Wend
+      parmRec.Close
+    End If
     regRec.Delete
   Wend
   Set Me.Regions = Nothing
@@ -632,9 +632,9 @@ Public Sub PopulateROIStations()
 '        "' ORDER BY STATION.ROI;"
     
     sql = "SELECT STATION.* " & _
-          "FROM [Station State] INNER JOIN STATION ON [Station State].[StaID]=[STATION].[StaID] " & _
-          "WHERE [Station State].[StateCode]='" & Me.Code & "' " & _
-          "AND [Station State].[ROI]>0 ORDER BY [Station State].[ROI];"
+          "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
+          "WHERE [StationState].[StateCode]='" & Me.Code & "' " & _
+          "AND [StationState].[ROI]>0 ORDER BY [StationState].[ROI];"
     Set stationRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
     While Not stationRec.EOF
       Set newStation = New ssStation

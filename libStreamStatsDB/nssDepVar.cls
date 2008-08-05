@@ -260,7 +260,7 @@ Public Function Add(IsReturn As Boolean, ByVal Region As nssRegion, _
       .AddNew
       !DepVarID = ID
       !RegionID = Region.ID
-      !Name = Name
+      !statLabelCode = Name
       If IsNumeric(StdErr) Then !StdErr = StdErr
       If IsNumeric(EstErr) Then !EstErr = EstErr
       If IsNumeric(PreErr) Then !PreErr = PreErr

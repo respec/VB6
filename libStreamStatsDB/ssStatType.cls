@@ -79,7 +79,7 @@ Private Sub PopulateStatLabels()
         .TypeName = Me.Name
         .Code = statRec.Fields("StatLabel")
         .Name = statRec.Fields("StatisticLabel")
-        .Units = statRec.Fields("Units")
+        .Units = statRec.Fields("UnitID")
         .IsNew = False
         .Definition = statRec.Fields("Definition")
       End With
@@ -133,7 +133,7 @@ Public Sub Edit(Code As String, Name As String)
     If .RecordCount = 0 Then
       Exit Sub
     Else
-      .FindFirst "StatisticTypeID=" & Me.StatisticTypeID
+      .FindFirst "StatisticTypeID=" & Me.ID
       .Edit
       !StatisticTypeCode = Code
       !StatisticType = Name
@@ -147,7 +147,7 @@ Public Sub Delete()
   
   Set myRec = pDB.DB.OpenRecordset("STATTYPE", dbOpenDynaset)
   With myRec
-    .FindFirst "ID=" & Me.StatisticTypeID
+    .FindFirst "ID=" & Me.ID
     If Not .NoMatch Then
       .Delete
     End If

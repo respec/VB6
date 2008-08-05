@@ -174,10 +174,10 @@ Public Function Add(ByVal Region As nssRegion, ByVal StatLabel As String, _
         Else
           ID = 1
         End If
-        .FindFirst "ID=" & ID
+        .FindFirst "ParmID=" & ID
         While Not .NoMatch
           ID = !ParmID + 1
-          .FindFirst "ID=" & ID
+          .FindFirst "ParmID=" & ID
         Wend
         Me.ID = ID
         .AddNew
@@ -190,7 +190,7 @@ Public Function Add(ByVal Region As nssRegion, ByVal StatLabel As String, _
         !Parameter = myRec2!StatisticLabel
         If IsNumeric(Min) Then !Min = Min
         If IsNumeric(Max) Then !Max = Max
-        If IsNumeric(ConvFlag) Then !ConvFlag = ConvFlag
+        If IsNumeric(ConvFlag) Then !UnitID = ConvFlag
         .Update
         Add = True
       Else
@@ -265,7 +265,7 @@ Public Sub Edit(ByVal StatLabel As String, ByVal Min As String, _
       !StatisticLabelCode = GetLabelID(StatLabel, Me.Region.DB)
       If IsNumeric(Min) Then !Min = Min
       If IsNumeric(Max) Then !Max = Max
-      If IsNumeric(ConvFlag) Then !ConvFlag = ConvFlag
+      If IsNumeric(ConvFlag) Then !UnitID = ConvFlag
       .Update
     End If
   End With
