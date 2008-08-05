@@ -5,10 +5,10 @@ Begin VB.Form frmStaData
    ClientHeight    =   4455
    ClientLeft      =   45
    ClientTop       =   270
-   ClientWidth     =   10575
+   ClientWidth     =   13875
    LinkTopic       =   "Form1"
    ScaleHeight     =   4455
-   ScaleWidth      =   10575
+   ScaleWidth      =   13875
    StartUpPosition =   3  'Windows Default
    Begin VB.Frame fraFilter 
       Caption         =   "Filter by Statistic Type"
@@ -155,19 +155,19 @@ Begin VB.Form frmStaData
          Strikethrough   =   0   'False
       EndProperty
       Height          =   492
-      Left            =   9770
+      Left            =   13080
       TabIndex        =   7
       Top             =   3840
       Width           =   732
    End
    Begin ATCoCtl.ATCoGrid grdStaData 
-      Height          =   3612
+      Height          =   3615
       HelpContextID   =   23
       Left            =   60
       TabIndex        =   0
       Top             =   0
-      Width           =   10452
-      _ExtentX        =   18441
+      Width           =   13815
+      _ExtentX        =   24368
       _ExtentY        =   6376
       SelectionToggle =   0   'False
       AllowBigSelection=   -1  'True
@@ -419,17 +419,19 @@ Private Function QACheck() As Boolean
               If response = 1 Then
                 Set mySource = New ssSource
                 Set mySource.Db = SSDB
-                mySource.Add .TextMatrix(row, col)
+                mySource.Add .TextMatrix(row, col), .TextMatrix(row, col + 1)
                 Set SSDB.Sources = Nothing
                 SaidYes = True
               ElseIf response = 2 And Not newStat(row) Then
                 Set mySource = _
                     SSDB.Sources(CStr(station.Statistics(grdStaData.row).sourceid))
-                mySource.Edit .TextMatrix(row, col)
+                mySource.Edit .TextMatrix(row, col), .TextMatrix(row, col + 1)
                 For i = row + 1 To .Rows
                   'Change Citation of other data in grid with same source
                   If .TextMatrix(i, col) = station.Statistics(row).Source Then
                     .TextMatrix(i, col) = .TextMatrix(row, col)
+                    'also update source url
+                    .TextMatrix(i, col + 1) = .TextMatrix(row, col + 1)
                   End If
                 Next i
                 Set SSDB.Sources = Nothing
@@ -517,6 +519,13 @@ Private Sub grdStaData_RowColChange()
           Next i
           .ComboCheckValidValues = False
         End If
+      Case 7:
+        If Len(Trim(.TextMatrix(.row, 0))) > 0 Then
+          For i = 1 To SSDB.Sources.Count
+            If Len(SSDB.Sources(i).URL) > 0 Then .addValue SSDB.Sources(i).URL
+          Next i
+          .ComboCheckValidValues = False
+        End If
     End Select
   End With
 End Sub
@@ -525,6 +534,7 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
                                     ChangeFromCol As Long, ChangeToCol As Long)
   Dim i&, response&
   Dim statTypeCode$, str$
+  Dim CitationCode$
   
   'Adjust appropriate columns in row when a field is edited
   Select Case ChangeFromCol
@@ -598,6 +608,16 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
 '              "has been truncated to 20 characters, its maximum allowable length."
 '        End If
 '      End With
+    Case 6:
+      'updated Citation, update Citation URL also
+      Dim lStat As New ssStatistic
+      'CitationCode = lStat.GetSourceID(grdStaData.TextMatrix(ChangeFromRow, ChangeFromCol))
+      For i = 1 To SSDB.Sources.Count
+        If grdStaData.TextMatrix(ChangeFromRow, ChangeFromCol) = SSDB.Sources(i).Name Then
+          grdStaData.TextMatrix(ChangeFromRow, ChangeFromCol + 1) = SSDB.Sources(i).URL
+          Exit For
+        End If
+      Next i
   End Select
 End Sub
 
@@ -615,6 +635,7 @@ Private Sub ChangesMade(madeChanges As Boolean)
       OldVals(row, 5) = SelStats(row).Units.id
       OldVals(row, 6) = SelStats(row).YearsRec
       OldVals(row, 7) = SelStats(row).Source
+      OldVals(row, 8) = SelStats(row).SourceURL
     End If
   Next row
   RecordChanges OldVals(), madeChanges
@@ -665,12 +686,14 @@ Private Sub SetGrid()
       .TextMatrix(statNumber, 4) = SelStats(statNumber).Units.id
       .TextMatrix(statNumber, 5) = SelStats(statNumber).YearsRec
       .TextMatrix(statNumber, 6) = SelStats(statNumber).Source
+      .TextMatrix(statNumber, 7) = SelStats(statNumber).SourceURL
       newStat(statNumber) = False
     Next statNumber
     For col = 0 To .Cols - 1
       .ColEditable(col) = True
     Next col
     .ColEditable(4) = False
+    .ColEditable(7) = False
     If .Rows > 0 Then
       lblStatSel(1).Caption = .TextMatrix(1, 1)
     End If
@@ -691,7 +714,9 @@ Private Sub SizeGrid()
     .ColWidth(4) = 740
     .TextMatrix(0, 5) = "YearsRec"
     .ColWidth(5) = 750
-    .TextMatrix(0, 6) = "Source"
+    .TextMatrix(0, 6) = "Citation"
     .ColWidth(6) = 3000
+    .TextMatrix(0, 7) = "Citation URl"
+    .ColWidth(7) = 3000
   End With
 End Sub

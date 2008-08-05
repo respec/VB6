@@ -4,7 +4,7 @@ Option Explicit
 Sub NWISImport(ImpFileName As String)
   Dim XLRange As Excel.Range, XLApp As Excel.Application, _
       XLBook As Excel.Workbook
-  Dim bumSheets$, stationID$, bumFields$, Filename$, stateFIPS$
+  Dim bumSheets$, stationID$, bumFields$, filename$, stateFIPS$
   Dim staCnt&, header&, lastRow&, firstCol&, fldCnt&, h&, i&, response&
   Dim value As String, staName As String
   Dim stationValues() As String, dataValues() As String, impStates() As String
@@ -115,11 +115,13 @@ Sub NWISImport(ImpFileName As String)
               dataValues(2, 1, 3) = "DATUM"
               dataValues(2, 1, 4) = value
               dataValues(2, 1, 7) = "Imported from NWIS file"
+              dataValues(2, 1, 8) = "http://waterdata.usgs.gov/nwis/si"
             Case 7:  'state code
               dataValues(2, 2, 3) = "DISTRICT"
               If Len(value) = 1 Then value = "0" & value
               dataValues(2, 2, 4) = value
               dataValues(2, 2, 7) = "Imported from NWIS file"
+              dataValues(2, 1, 8) = "http://waterdata.usgs.gov/nwis/si"
               stateFIPS = value
               If Len(stateFIPS) = 1 Then stateFIPS = "0" & stateFIPS
               'Keep collection of state codes for all states in import file
@@ -148,6 +150,7 @@ Sub NWISImport(ImpFileName As String)
               dataValues(2, 3, 3) = "AREA"
               dataValues(2, 3, 4) = value
               dataValues(2, 3, 7) = "Imported from NWIS file"
+              dataValues(2, 1, 8) = "http://waterdata.usgs.gov/nwis/si"
             Case 11:
               If Not IsNumeric(value) Then
                 If value <> "" Then bumFields = bumFields & vbCrLf & stationID & _
@@ -160,6 +163,7 @@ Sub NWISImport(ImpFileName As String)
               dataValues(2, 4, 3) = "CONTDA"
               dataValues(2, 4, 4) = value
               dataValues(2, 4, 7) = "Imported from NWIS file"
+              dataValues(2, 1, 8) = "http://waterdata.usgs.gov/nwis/si"
           End Select
         Next fldCnt
         If SSDB.States.IndexFromKey(stateFIPS) > 0 Then
@@ -232,7 +236,7 @@ errTrap:
 End Sub
 
 Sub BCFImport(ImpFileName As String)
-  Dim staCnt&, attCnt&, InFile&, OutFile&, i&, staIndex&, attIndex&, response&
+  Dim staCnt&, attCnt&, inFile&, OutFile&, i&, staIndex&, attIndex&, response&
   Dim textLine$, str$, badFields$, badStats$, OverWriteInfo$
   Dim stationValues() As String, dataValues() As String
   Dim myStation As ssStation
@@ -247,11 +251,11 @@ Sub BCFImport(ImpFileName As String)
   IPC.SendMonitorMessage "(MSG1 Importing BCF file)"
   IPC.SendMonitorMessage "(PROGRESS 0)"
   
-  InFile = FreeFile
-  Open ImpFileName For Input As InFile
+  inFile = FreeFile
+  Open ImpFileName For Input As inFile
   
-  Line Input #InFile, textLine
-  Do Until EOF(InFile)
+  Line Input #inFile, textLine
+  Do Until EOF(inFile)
     'Progress bar
     If SSDB.state.Stations.Count > 0 Then
       IPC.SendMonitorMessage "(PROGRESS " & _
@@ -289,9 +293,9 @@ Sub BCFImport(ImpFileName As String)
         dataValues(2, 1, 4) = Mid(textLine, 17, 2)
       End If
       dataValues(2, 1, 7) = "Imported from Basin Characteristics file"
-      Line Input #InFile, textLine
+      Line Input #inFile, textLine
       'Loop thru Statistic data cards
-      While Left(textLine, 1) = 2 And Not EOF(InFile)
+      While Left(textLine, 1) = 2 And Not EOF(inFile)
         textLine = Mid(textLine, 17)
         While Len(Trim(textLine)) > 2
           attCnt = attCnt + 1
@@ -308,7 +312,7 @@ Sub BCFImport(ImpFileName As String)
           End If
           textLine = Mid(textLine, 11)
         Wend
-        Line Input #InFile, textLine
+        Line Input #inFile, textLine
       Wend
     End If
     'Station and its statistics have been read in
@@ -370,8 +374,8 @@ Sub BCFImport(ImpFileName As String)
       Next i
     End If
     'check for empty lines/end of file
-    While textLine = "" And Not EOF(InFile)
-      Line Input #InFile, textLine
+    While textLine = "" And Not EOF(inFile)
+      Line Input #inFile, textLine
     Wend
   Loop
 errTrap:
@@ -381,7 +385,7 @@ errTrap:
     MsgBox "Problem importing:  " & Err.Description, , "BCF Import Problem"
   End If
   IPC.SendMonitorMessage "(CLOSE)"
-  Close InFile
+  Close inFile
   If Len(Trim(OverWriteInfo)) > 0 Or Len(Trim(badStats)) > 0 Or Len(Trim(badFields)) > 0 Then
     OutFile = FreeFile
     Open FilenameNoExt(ImpFileName) & "_Import.txt" For Output As OutFile
@@ -785,10 +789,10 @@ End Function
 '  End Select
 'End Function
 
-Sub XLSImport(ImpFileName As String, DataSource As String)
+Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
   Dim XLRange As Excel.Range, XLApp As Excel.Application, _
       XLBook As Excel.Workbook
-  Dim bumSheets$, stationID$, Filename$, stateFIPS$
+  Dim bumSheets$, stationID$, filename$, stateFIPS$
   Dim staCnt&, header&, lastRow&, firstCol&, fldCnt&, h&, i&, response&, lastCol&
   Dim value As String, staName As String
   Dim badFields As String, OverWriteInfo As String, badStats As String
@@ -799,6 +803,8 @@ Sub XLSImport(ImpFileName As String, DataSource As String)
   Dim ImportCol() As Long, nAtts As Long, attCnt As Long, StaAttCnt As Long
   Dim staIndex As Long, attIndex As Long
   Dim Src As New ssSource
+  Dim YrsRecCol As Long
+  Dim YearsOfRecord As Double
   
   On Error GoTo errTrapXLS
   
@@ -811,7 +817,7 @@ Sub XLSImport(ImpFileName As String, DataSource As String)
 
   'add user-entered Datasource
   Set Src.Db = SSDB
-  Src.Add DataSource
+  Src.Add DataSource, SourceURL
 
   Set XLApp = New Excel.Application
   Set XLBook = Excel.Workbooks.Open(ImpFileName, 0, True)
@@ -843,6 +849,7 @@ Sub XLSImport(ImpFileName As String, DataSource As String)
       lastCol = XLRange.Column
       'check column headers for valid attributes
       nAtts = 0
+      YrsRecCol = 0
       ReDim ImportCol(lastCol)
       Set myStatistic = New ssStatistic
       For fldCnt = firstCol + 1 To lastCol
@@ -850,6 +857,10 @@ Sub XLSImport(ImpFileName As String, DataSource As String)
         ImportCol(fldCnt) = myStatistic.GetLabelID(Cells(header, fldCnt))
         If ImportCol(fldCnt) > 0 Then
           nAtts = nAtts + 1
+        ElseIf UCase(Cells(header, fldCnt)) = "YEARS" Or _
+               UCase(Cells(header, fldCnt)) = "YEARSREC" Then
+          'apply years of record value from this column to all other stats
+          YrsRecCol = fldCnt
         Else 'note fields that can't be imported
           badFields = badFields & Cells(header, fldCnt) & vbCrLf
         End If
@@ -871,6 +882,10 @@ Sub XLSImport(ImpFileName As String, DataSource As String)
         End Select
         ReDim stationValues(2 To 2, 1 To 1, 1 To UBound(StationFields))
         ReDim dataValues(2 To 2, 1 To nAtts, 1 To UBound(DataFields))
+        YearsOfRecord = 0
+        If YrsRecCol > 0 Then 'read years of record for this station
+          YearsOfRecord = Cells(staCnt, YrsRecCol)
+        End If
         'Loop thru column fields in spreadsheet
         StaAttCnt = 0
         attCnt = 0
@@ -897,8 +912,11 @@ Sub XLSImport(ImpFileName As String, DataSource As String)
               attCnt = attCnt + 1
               dataValues(2, attCnt, 2) = CStr(ImportCol(fldCnt))
               dataValues(2, attCnt, 4) = value
-'              dataValues(2, attCnt, 7) = "Imported from User-Developed Spreadsheet file"
+              If YearsOfRecord > 0 Then
+                dataValues(2, attCnt, 6) = YearsOfRecord
+              End If
               dataValues(2, attCnt, 7) = DataSource
+              dataValues(2, attCnt, 8) = SourceURL
             End If
           End If
         Next fldCnt

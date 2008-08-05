@@ -8,7 +8,7 @@ Global SSDB As nssDatabase
 'It is made up of 'StatisticLabelCode' values 1 - 14 and 24 ('DISTRICT') on the StatLabel table
 Global StationFields(1 To 15) As String
 Global StatFields(1 To 5) As String
-Global DataFields(1 To 7) As String
+Global DataFields(1 To 8) As String
 Global ROIImportRegnIDs() As Long
 Global ROIImportRegnNames() As String
 Global UserInfoOK As Boolean
@@ -22,7 +22,7 @@ Private Sub Main()
   Dim ExeName As String 'name of executable
   Dim s As String * 80
   Dim hdle&, binpos&, i&
-  Dim Filename As String
+  Dim filename As String
 
   On Error GoTo MiscError
   
@@ -54,10 +54,10 @@ Private Sub Main()
   Set SSDB = New nssDatabase
   
   StepName = "GetDatabaseFilename"
-  Filename = GetDatabaseFilename
+  filename = GetDatabaseFilename
   
-  StepName = "SSDB.Filename = " & Filename
-  SSDB.Filename = Filename
+  StepName = "SSDB.Filename = " & filename
+  SSDB.filename = filename
   
   StepName = "Set IPC = New ATCoIPC"
   Set IPC = New ATCoIPC

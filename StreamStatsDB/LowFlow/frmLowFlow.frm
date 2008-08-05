@@ -12,6 +12,59 @@ Begin VB.Form frmLowFlow
    ScaleHeight     =   9075
    ScaleWidth      =   8985
    StartUpPosition =   3  'Windows Default
+   Begin VB.Frame Frame1 
+      Caption         =   "Units"
+      BeginProperty Font 
+         Name            =   "MS Sans Serif"
+         Size            =   8.25
+         Charset         =   0
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   615
+      Left            =   5130
+      TabIndex        =   38
+      Top             =   480
+      Width           =   2175
+      Begin VB.OptionButton UnitsOpt 
+         Caption         =   "English"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   255
+         Index           =   0
+         Left            =   105
+         TabIndex        =   40
+         Top             =   240
+         Width           =   975
+      End
+      Begin VB.OptionButton UnitsOpt 
+         Caption         =   "Metric"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   255
+         Index           =   1
+         Left            =   1170
+         TabIndex        =   39
+         Top             =   240
+         Width           =   975
+      End
+   End
    Begin VB.CommandButton cmdDatabase 
       Caption         =   "Se&lect"
       BeginProperty Font 
@@ -41,7 +94,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   492
-      Left            =   8040
+      Left            =   8160
       TabIndex        =   32
       Top             =   7440
       Width           =   732
@@ -59,7 +112,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   8040
+      Left            =   8160
       TabIndex        =   29
       Top             =   600
       Width           =   732
@@ -77,7 +130,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   7080
+      Left            =   7320
       TabIndex        =   28
       Top             =   600
       Width           =   732
@@ -130,7 +183,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   492
-      Left            =   8040
+      Left            =   8160
       TabIndex        =   25
       Top             =   8040
       Width           =   732
@@ -147,7 +200,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   8040
+      Left            =   8160
       TabIndex        =   21
       Top             =   4320
       Width           =   732
@@ -164,7 +217,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   8040
+      Left            =   8160
       TabIndex        =   20
       Top             =   3840
       Width           =   732
@@ -181,7 +234,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   8040
+      Left            =   8160
       TabIndex        =   19
       Top             =   4800
       Width           =   732
@@ -198,7 +251,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   8040
+      Left            =   8160
       TabIndex        =   18
       Top             =   5280
       Width           =   732
@@ -220,15 +273,15 @@ Begin VB.Form frmLowFlow
       TabIndex        =   11
       Top             =   3240
       Visible         =   0   'False
-      Width           =   7815
+      Width           =   7935
       Begin ATCoCtl.ATCoGrid grdComps 
          CausesValidation=   0   'False
          Height          =   1515
          Left            =   120
          TabIndex        =   24
          Top             =   1560
-         Width           =   7575
-         _ExtentX        =   13361
+         Width           =   7695
+         _ExtentX        =   13573
          _ExtentY        =   2672
          SelectionToggle =   0   'False
          AllowBigSelection=   -1  'True
@@ -304,15 +357,15 @@ Begin VB.Form frmLowFlow
          Left            =   120
          TabIndex        =   31
          Top             =   3960
-         Width           =   7575
-         _ExtentX        =   13361
+         Width           =   7695
+         _ExtentX        =   13573
          _ExtentY        =   2884
          SelectionToggle =   0   'False
          AllowBigSelection=   -1  'True
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   318
+         Rows            =   332
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -345,8 +398,8 @@ Begin VB.Form frmLowFlow
          Left            =   120
          TabIndex        =   23
          Top             =   240
-         Width           =   7575
-         _ExtentX        =   13361
+         Width           =   7695
+         _ExtentX        =   13573
          _ExtentY        =   2090
          SelectionToggle =   0   'False
          AllowBigSelection=   -1  'True
@@ -462,14 +515,14 @@ Begin VB.Form frmLowFlow
       Left            =   120
       TabIndex        =   2
       Top             =   1080
-      Width           =   8655
+      Width           =   8775
       Begin VB.ListBox lstRetPds 
          Height          =   1230
          Left            =   7440
          Sorted          =   -1  'True
          TabIndex        =   8
          Top             =   600
-         Width           =   1095
+         Width           =   1215
       End
       Begin VB.ListBox lstParms 
          Height          =   1230
@@ -619,7 +672,7 @@ Begin VB.Form frmLowFlow
    Begin VB.ComboBox cboState 
       Height          =   315
       ItemData        =   "frmLowFlow.frx":0321
-      Left            =   3720
+      Left            =   3600
       List            =   "frmLowFlow.frx":0323
       TabIndex        =   0
       Text            =   "cboState"
@@ -667,7 +720,7 @@ Begin VB.Form frmLowFlow
       EndProperty
       ForeColor       =   &H80000008&
       Height          =   255
-      Left            =   3120
+      Left            =   3000
       TabIndex        =   9
       Top             =   600
       Width           =   570
@@ -689,6 +742,7 @@ Dim NotNew As Boolean, Skip As Boolean, _
 Dim Changes() As String, CompChanges() As String, _
     MatrixChanges() As String, OldMatrix() As String
 Dim SelParms As FastCollection  'of NSSParameter
+Dim Metric As Boolean
 
 Private Sub cmdCancel_Click()
   Dim row&, col&, i&
@@ -852,7 +906,7 @@ Private Sub cmdImport_Click()
   Dim i&, j&, k&, m&, inFile&, regnCnt&, parmCnt&, depVarCnt&, _
       compCnt&, flds&, DepVarID&, response&
   Dim FileName$, str$, regnName$, flowFlag$
-  Dim Metric As Boolean, urban As Boolean, isReturn As Boolean, isLowFlow As Boolean
+  Dim urban As Boolean, isReturn As Boolean, isLowFlow As Boolean
   Dim regnVals() As Integer
   Dim parmVals() As String, depVarVals() As String, compVals() As String
   Dim covArray() As String
@@ -943,20 +997,20 @@ TryAgain:
     If depVarCnt > 0 Then ReDim depVarVals(depVarCnt - 1, DepVarFlds + 1)
     'Loop thru parameters
     For j = 0 To parmCnt - 1
-      If parmVals(j, 0) <> "RDA" And parmVals(j, 0) <> "CRD" Then
-        If j > 0 Then
-          Line Input #inFile, str
-          str = Mid(str, 2) 'gets rid or initial vbtab
+      If j > 0 Then
+        Line Input #inFile, str
+        str = Mid(str, 2) 'gets rid or initial vbtab
+      End If
+      str = Trim(str)
+      'Read in fields for each parm
+      For k = 0 To ParmFlds
+        If k < 2 Then
+          parmVals(j, k) = StrSplit(str, vbTab, "")
+        Else
+          parmVals(j, k) = StrRetRem(str)
         End If
-        str = Trim(str)
-        'Read in fields for each parm
-        For k = 0 To ParmFlds
-          If k < 2 Then
-            parmVals(j, k) = StrSplit(str, vbTab, "")
-          Else
-            parmVals(j, k) = StrRetRem(str)
-          End If
-        Next k
+      Next k
+      If parmVals(j, 0) <> "RDA" And parmVals(j, 0) <> "CRD" Then
         'Write values to DB
         Set MyParm = New nssParameter
         MyParm.Add MyRegion, parmVals(j, 0), parmVals(j, 2), _
@@ -1281,7 +1335,11 @@ Private Sub grdParms_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, _
           .TextMatrix(ChangeFromRow, 2) = DB.Parameters(i).Abbrev
           '.TextMatrix(ChangeFromRow, 5) = DB.Parameters(i).ConvFlag
           'use real unit names
-          .TextMatrix(ChangeFromRow, 5) = DB.Units.ItemByKey(DB.Parameters(i).ConvFlag).EnglishLabel
+          If Metric Then
+            .TextMatrix(ChangeFromRow, 5) = DB.Units.ItemByKey(DB.Parameters(i).ConvFlag).MetricLabel
+          Else
+            .TextMatrix(ChangeFromRow, 5) = DB.Units.ItemByKey(DB.Parameters(i).ConvFlag).EnglishLabel
+          End If
           Exit Sub
         End If
       Next i
@@ -1291,7 +1349,11 @@ Private Sub grdParms_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, _
           .TextMatrix(ChangeFromRow, 1) = DB.Parameters(i).Name
           '.TextMatrix(ChangeFromRow, 5) = DB.Parameters(i).ConvFlag
           'use real unit names
-          .TextMatrix(ChangeFromRow, 5) = DB.Units.ItemByKey(DB.Parameters(i).ConvFlag).EnglishLabel
+          If Metric Then
+            .TextMatrix(ChangeFromRow, 5) = DB.Units.ItemByKey(DB.Parameters(i).ConvFlag).MetricLabel
+          Else
+            .TextMatrix(ChangeFromRow, 5) = DB.Units.ItemByKey(DB.Parameters(i).ConvFlag).EnglishLabel
+          End If
           Exit Sub
         End If
       Next i
@@ -1335,10 +1397,17 @@ Private Sub grdParms_RowColChange()
           Next i
           .ComboCheckValidValues = True
         End If
-      Case 5: For i = 1 To DB.Units.Count
-                .addValue DB.Units(i).EnglishLabel
-              Next i
-              .ComboCheckValidValues = True
+      Case 5:
+        If Metric Then
+          For i = 1 To DB.Units.Count
+            .addValue DB.Units(i).MetricLabel
+          Next i
+        Else
+          For i = 1 To DB.Units.Count
+            .addValue DB.Units(i).EnglishLabel
+          Next i
+        End If
+        .ComboCheckValidValues = True
     End Select
   End With
 End Sub
@@ -1450,6 +1519,12 @@ Private Sub cboState_Click()
         i = i + 1
       End If
     Next regnIndex
+    'set metric button
+    If DB.State.Metric Then
+      UnitsOpt(1).Value = True
+    Else
+      UnitsOpt(0).Value = True
+    End If
     'Populate Regions list box
     regnCount = DB.State.Regions.Count
     i = 0
@@ -2309,7 +2384,12 @@ Private Sub SetGrid(Table As String)
                 Case 3: .Text = SelParms(row).GetMin(False)
                 Case 4: .Text = SelParms(row).GetMax(False)
                 'Case 5: .Text = CInt(SelParms(row).Units.id)
-                Case 5: .Text = DB.Units.ItemByKey(SelParms(row).Units.id).EnglishLabel
+                Case 5:
+                  If rdoUnits(0).Value Then
+                    .Text = DB.Units.ItemByKey(SelParms(row).Units.id).EnglishLabel
+                  Else
+                    .Text = DB.Units.ItemByKey(SelParms(row).Units.id).MetricLabel
+                  End If
               End Select
             End If
           Next col
@@ -2955,6 +3035,14 @@ Private Function ChangesMade() As Boolean
   End If
 End Function
 
+Private Sub rdoUnits_Click(Index As Integer)
+  If Index = 0 Then
+    Metric = False
+  Else
+    Metric = True
+  End If
+End Sub
+
 Private Sub txtRegName_Change()
   If Not MyRegion Is Nothing Then
     If MyRegion.IsNew Then
@@ -3044,10 +3132,16 @@ End Function
 Public Function UnitIDFromLabel(UnitLabel As String, Units As FastCollection) As Long
   Dim k As Long
   Dim id As Long
+  Dim lUnitLabel As String
 
   id = -1
   For k = 1 To Units.Count
-    If UnitLabel = Units.ItemByIndex(k).EnglishLabel Then
+    If Metric Then
+      lUnitLabel = Units.ItemByIndex(k).MetricLabel
+    Else
+      lUnitLabel = Units.ItemByIndex(k).EnglishLabel
+    End If
+    If UnitLabel = lUnitLabel Then
       id = Units.ItemByIndex(k).id
       Exit For
     End If
