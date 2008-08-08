@@ -128,9 +128,9 @@ Public Sub PopulateParameters()
   Else
     sql = "SELECT Parameters.ParmID, Parameters.Min, Parameters.Max, Parameters.UnitID, " & _
              "Parameters.Parameter, STATLABEL.StatLabel, STATLABEL.StatisticLabel, " & _
-             "STATLABEL.StatisticLabelCode, STATTYPE.StatisticTypeCode, STATTYPE.StatisticType " & _
+             "STATLABEL.StatisticLabelID, STATTYPE.StatisticTypeCode, STATTYPE.StatisticType " & _
           "FROM STATTYPE INNER JOIN (STATLABEL INNER JOIN [Parameters] " & _
-          "ON STATLABEL.StatisticLabelCode = Parameters.StatisticLabelCode) " & _
+          "ON STATLABEL.StatisticLabelID = Parameters.StatisticLabelID) " & _
           "ON STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode " & _
           "WHERE Parameters.RegionID=" & pID & " " & _
           "ORDER BY Parameters.ParmID;"
@@ -140,7 +140,7 @@ Public Sub PopulateParameters()
       With newParm
         Set .Region = Me
         .ID = parmRec.Fields("ParmID")
-        If Not IsNull(parmRec.Fields("StatisticLabelCode")) Then .LabelCode = parmRec.Fields("StatisticLabelCode")
+        If Not IsNull(parmRec.Fields("StatisticLabelID")) Then .LabelCode = parmRec.Fields("StatisticLabelID")
         If Not IsNull(parmRec.Fields("StatisticLabel")) Then .Name = parmRec.Fields("StatisticLabel")
         If Not IsNull(parmRec.Fields("StatLabel")) Then .Abbrev = parmRec.Fields("StatLabel")
         If Not IsNull(parmRec.Fields("Parameter")) Then .NSSName = parmRec.Fields("Parameter")
@@ -225,14 +225,14 @@ Public Sub PopulateROIParameters()
   If pDB Is Nothing Then
     ssMessageBox "Cannot read parameters" & vbCr & "DB not set."
   Else
-    sql = "SELECT STATLABEL.StatisticLabelCode, STATLABEL.StatLabel, STATLABEL.StatisticLabel, " & _
+    sql = "SELECT STATLABEL.StatisticLabelID, STATLABEL.StatLabel, STATLABEL.StatisticLabel, " & _
         "STATTYPE.StatisticTypeCode, STATTYPE.StatisticType, " & _
         "ROIUserParms.PosNegCorrelation, ROIUserParms.SimVar, ROIUserParms.RegVar, " & _
         "Parameters.ParmID, Parameters.Min, Parameters.Max, Parameters.UnitID " & _
         "FROM (ROIUserParms INNER JOIN " & _
         "(STATTYPE INNER JOIN STATLABEL ON STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode) " & _
-        "ON ROIUserParms.ParmID = STATLABEL.StatisticLabelCode) " & _
-        "INNER JOIN [Parameters] ON STATLABEL.StatisticLabelCode = Parameters.StatisticLabelCode " & _
+        "ON ROIUserParms.ParmID = STATLABEL.StatisticLabelID) " & _
+        "INNER JOIN [Parameters] ON STATLABEL.StatisticLabelID = Parameters.StatisticLabelID " & _
         "WHERE Parameters.RegionID=" & pID & " AND ROIUserParms.RegionID=" & pID & ";"
     Set parmRec = pDB.DB.OpenRecordset(sql)
     While Not parmRec.EOF
@@ -288,14 +288,15 @@ Public Sub PopulateDepVars()
   If pDB Is Nothing Then
     ssMessageBox "Cannot read DepVars" & vbCr & "DB not set."
   Else
-    sql = "SELECT DepVars.* FROM [DepVars] WHERE " & _
-          "DepVars.RegionID=" & pID & _
-          " ORDER BY Len(StatLabelCode), StatLabelCode;"
-    'below will be the new query to pull Units from StatLabel table
-'    sql = "SELECT DepVars.*, StatLabel.Units " & _
-'          "FROM Regions INNER JOIN DepVars ON StatLabel.StatisticLableCode = DepVars.StatisticLabelCode " & _
-'          "WHERE DepVars.RegionID=" & pID & _
-'          " ORDER BY Len(DepVars.Name), DepVars.Name;"
+    'SQL for pre-2008 version of the databasee
+'    sql = "SELECT DepVars.* FROM [DepVars] WHERE " & _
+'          "DepVars.RegionID=" & pID & _
+'          " ORDER BY Len(StatLabelCode), StatLabelCode;"
+    'below will be the new query to pull Units from StatLabel table (8/2008, prh)
+    sql = "SELECT DepVars.*, StatLabel.StatLabel, StatLabel.UnitID " & _
+          "FROM StatLabel INNER JOIN DepVars ON StatLabel.StatisticLabelID = DepVars.StatisticLabelID " & _
+          "WHERE DepVars.RegionID=" & pID & _
+          " ORDER BY Len(DepVars.Name), DepVars.Name;"
     Set depVarRec = pDB.DB.OpenRecordset(sql)
     While Not depVarRec.EOF
       DepVarID = depVarRec.Fields("DepVarID")
@@ -304,7 +305,8 @@ Public Sub PopulateDepVars()
         Set .DB = pDB
         Set .Region = Me
         .ID = DepVarID
-        If Not IsNull(depVarRec.Fields("StatLabelCode")) Then .Name = depVarRec.Fields("StatLabelCode")
+        'If Not IsNull(depVarRec.Fields("StatLabelCode")) Then .Name = depVarRec.Fields("StatLabelCode")
+        If Not IsNull(depVarRec.Fields("StatLabel")) Then .Name = depVarRec.Fields("StatLabel")
         If Not IsNull(depVarRec.Fields("StdErr")) Then .StdErr = depVarRec.Fields("StdErr")
         If Not IsNull(depVarRec.Fields("EstErr")) Then .EstErr = depVarRec.Fields("EstErr")
         If Not IsNull(depVarRec.Fields("PreErr")) Then .PreErr = depVarRec.Fields("PreErr")
@@ -315,7 +317,7 @@ Public Sub PopulateDepVars()
         If Not IsNull(depVarRec.Fields("Variance")) Then .Variance = depVarRec.Fields("Variance")
         If Not IsNull(depVarRec.Fields("ExpDA")) Then .ExpDA = depVarRec.Fields("ExpDA")
         'add the following line when database updated to link DepVars and StatLabel tables
-'        If Not IsNull(depVarRec.Fields("Units")) Then Set .Units = pDB.Units(CStr(depVarRec.Fields("Units")))
+        If Not IsNull(depVarRec.Fields("UnitID")) Then Set .Units = pDB.Units(CStr(depVarRec.Fields("UnitID")))
       End With
       newDepVar.Components.Clear
       Set newDepVar.Components = Nothing
