@@ -296,7 +296,7 @@ Public Sub PopulateDepVars()
     sql = "SELECT DepVars.*, StatLabel.StatLabel, StatLabel.UnitID " & _
           "FROM StatLabel INNER JOIN DepVars ON StatLabel.StatisticLabelID = DepVars.StatisticLabelID " & _
           "WHERE DepVars.RegionID=" & pID & _
-          " ORDER BY Len(DepVars.Name), DepVars.Name;"
+          " ORDER BY Len(StatLabel.StatLabel), StatLabel.StatLabel;"
     Set depVarRec = pDB.DB.OpenRecordset(sql)
     While Not depVarRec.EOF
       DepVarID = depVarRec.Fields("DepVarID")
