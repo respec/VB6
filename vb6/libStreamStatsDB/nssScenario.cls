@@ -1048,31 +1048,38 @@ Public Function EstimateString() As String
   
   'the following code will become simpler when database mods are made
   'to reference the StatLabel from the DepVars table
-  'for starters, assume cfs
-  If useMetric Then
-    lUnitStr = "    m3/s "
-  Else
-    lUnitStr = "    cfs  "
-  End If
-  lDepVarName = Me.UserRegions(1).Region.DepVars(1).Name
-  If Me.Project.DB.Parameters.KeyExists(lDepVarName) Then
-    lUnitCode = Me.Project.DB.Parameters(lDepVarName).ConvFlag
-    If lUnitCode <> 13 Then 'something besides flow (cfs or m3/s)
-      If Me.Project.DB.Units.KeyExists(CStr(lUnitCode)) Then
-        If useMetric Then
-          lUnitStr = Me.Project.DB.Units(CStr(lUnitCode)).MetricLabel
-        Else
-          lUnitStr = Me.Project.DB.Units(CStr(lUnitCode)).EnglishLabel
-        End If
-      End If
+      lUnitStr = Me.UserRegions(1).DepVars(1).Units.Abbrev(useMetric)
       lLen = Len(lUnitStr)
       If lLen > 9 Then 'too long, need to truncate
         lUnitStr = Left(lUnitStr, 9)
       ElseIf lLen < 9 Then
         lUnitStr = Space(8 - lLen) & lUnitStr & " "
       End If
-    End If
-  End If
+'  'for starters, assume cfs
+'  If useMetric Then
+'    lUnitStr = "    m3/s "
+'  Else
+'    lUnitStr = "    cfs  "
+'  End If
+'  lDepVarName = Me.UserRegions(1).Region.DepVars(1).Name
+'  If Me.Project.DB.Parameters.KeyExists(lDepVarName) Then
+'    lUnitCode = Me.Project.DB.Parameters(lDepVarName).ConvFlag
+'    If lUnitCode <> 13 Then 'something besides flow (cfs or m3/s)
+'      If Me.Project.DB.Units.KeyExists(CStr(lUnitCode)) Then
+'        If useMetric Then
+'          lUnitStr = Me.Project.DB.Units(CStr(lUnitCode)).MetricLabel
+'        Else
+'          lUnitStr = Me.Project.DB.Units(CStr(lUnitCode)).EnglishLabel
+'        End If
+'      End If
+'      lLen = Len(lUnitStr)
+'      If lLen > 9 Then 'too long, need to truncate
+'        lUnitStr = Left(lUnitStr, 9)
+'      ElseIf lLen < 9 Then
+'        lUnitStr = Space(8 - lLen) & lUnitStr & " "
+'      End If
+'    End If
+'  End If
   
   AllNumeric = True
   If Len(txt) > 0 Then
@@ -1147,11 +1154,11 @@ Public Function EstimateString() As String
       
       'use generic labels to handle different kinds of stats
       lab1 = "             Value,"
-      lab2 = "Statistic " & lUnitStr
+'      lab2 = "Statistic " & lUnitStr
       'use the following 3 lines when DepVars Units in place
-'      lab2 = "Statistic"
-'      labUnits = Me.UserRegions(1).DepVars(1).Units.Abbrev(useMetric)
-'      lab2 = lab2 & Space((14 - Len(labUnits)) / 2) & labUnits
+      lab2 = "Statistic"
+      labUnits = Me.UserRegions(1).DepVars(1).Units.Abbrev(useMetric)
+      lab2 = lab2 & Space((14 - Len(labUnits)) / 2) & labUnits
 
       If Me.LowFlow Then
         Flows = Me.Discharges
@@ -1302,7 +1309,7 @@ End Function
 Private Sub GetMatrixBinary(MatType As Integer, MatVar As Variant)
   Dim i As Long, j As Long, Fun As Long, Fnv As Long, nv As Long
   Dim FileType As Integer '1 - RHO, 2 - REC
-  Dim Filename As String
+  Dim FileName As String
   Dim iVal As Integer
   Dim rval As Single
   Dim FTotVal As Single, TotVal As Single
@@ -1312,15 +1319,15 @@ Private Sub GetMatrixBinary(MatType As Integer, MatVar As Variant)
 '    Filename = GetSetting("StreamStatsDB", "Defaults", Me.Project.State.Abbrev & "_RHOImportFile")
     ff.SetDialogProperties "Please locate ROI RHO binary file", Me.Project.State.Abbrev & ".rho.bin"
     ff.SetRegistryInfo "StreamStatsDB", "Defaults", Me.Project.State.Abbrev & "RHOBinary"
-    Filename = ff.GetName
+    FileName = ff.GetName
   Else 'REC
 '    Filename = GetSetting("StreamStatsDB", "Defaults", Me.Project.State.Abbrev & "_MConImportFile")
     ff.SetDialogProperties "Please locate ROI REC binary file", Me.Project.State.Abbrev & ".rec.bin"
     ff.SetRegistryInfo "StreamStatsDB", "Defaults", Me.Project.State.Abbrev & "RECBinary"
-    Filename = ff.GetName
+    FileName = ff.GetName
   End If
   Fun = FreeFile(0)
-  Open Filename For Binary As #Fun
+  Open FileName For Binary As #Fun
   Get #Fun, , FileType
   Get #Fun, , Fnv
   Get #Fun, , FTotVal

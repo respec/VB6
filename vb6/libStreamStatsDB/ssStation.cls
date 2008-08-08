@@ -427,15 +427,15 @@ Public Sub PopulateStatistics()
   Else
     'sql = "SELECT STATISTIC.StatisticValue, STATISTIC.Date, STATLABEL.StatLabel, " &
     sql = "SELECT STATISTIC.StatisticValue, STATISTIC.YearsRec, STATLABEL.StatLabel, " & _
-        "STATLABEL.StatisticLabelCode, STATLABEL.StatisticLabel, STATLABEL.Unitid, " & _
+        "STATLABEL.StatisticLabelID, STATLABEL.StatisticLabel, STATLABEL.Unitid, " & _
         "STATTYPE.StatisticTypeCode, STATTYPE.StatisticTypeID, STATTYPE.StatisticType, " & _
         "DATASOURCE.DataSourceID, DATASOURCE.Citation, DATASOURCE.CitationURL " & _
         "FROM DATASOURCE RIGHT JOIN (STATTYPE INNER JOIN (STATLABEL INNER JOIN STATISTIC ON " & _
-        "STATLABEL.StatisticLabelCode = STATISTIC.StatisticLabelCode) ON " & _
+        "STATLABEL.StatisticLabelID = STATLABEL.StatisticLabelID) ON " & _
         "STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode) ON " & _
         "DATASOURCE.DataSourceID = STATISTIC.DataSourceID " & _
         "WHERE STATISTIC.StaID='" & pID & "' " & _
-        "ORDER BY STATTYPE.StatisticTypeID, STATISTIC.StatisticLabelCode;"
+        "ORDER BY STATTYPE.StatisticTypeID, STATLABEL.StatisticLabelID;"
     Set statRec = pDB.DB.OpenRecordset(sql)
     While Not statRec.EOF
       Set newStatistic = New ssStatistic

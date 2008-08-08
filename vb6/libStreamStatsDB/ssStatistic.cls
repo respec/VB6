@@ -220,9 +220,9 @@ Public Sub Delete()
   Dim sql$
   
   sql = "SELECT STATISTIC.StaID, STATLABEL.StatLabel FROM STATLABEL INNER JOIN " & _
-      "STATISTIC ON STATLABEL.StatisticLabelCode = STATISTIC.StatisticLabelCode " & _
+      "STATISTIC ON STATLABEL.StatisticLabelID = STATLABEL.StatisticLabelID " & _
       "WHERE STATISTIC.StaID='" & Me.Station.ID & _
-      "' AND STATLABEL.StatisticLabelCode=" & Me.Code
+      "' AND STATLABEL.StatisticLabelID=" & Me.Code
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     If .RecordCount > 0 Then
@@ -260,7 +260,7 @@ Public Sub Edit(ByRef NewValues() As String, StatIndex As Long)
   On Error GoTo 0
 
   sql = "SELECT STATISTIC.* FROM STATLABEL INNER JOIN STATISTIC ON " & _
-      "STATLABEL.StatisticLabelCode = STATISTIC.StatisticLabelCode " & _
+      "STATLABEL.StatisticLabelID = STATLABEL.StatisticLabelID " & _
       "WHERE STATLABEL.StatLabel='" & Me.Abbrev & _
       "' AND STATISTIC.StaID='" & Me.Station.ID & "';"
   'using dbInconsistent to get recordset not read-only,

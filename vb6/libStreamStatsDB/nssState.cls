@@ -383,12 +383,12 @@ Public Sub PopulateStatsOnFile()
 '        "ON STATLABEL.StatisticLabelCode = STATISTIC.StatisticLabelCode) " & _
 '        "ON STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode " & _
 '        "WHERE STATION.StateCode='" & Me.Code & "' AND STATION.ROI>0;"
-    sql = "SELECT DISTINCT STATLABEL.StatisticLabelCode, STATLABEL.StatLabel, STATLABEL.UnitID, " & _
+    sql = "SELECT DISTINCT STATLABEL.StatisticLabelID, STATLABEL.StatLabel, STATLABEL.UnitID, " & _
         "STATLABEL.StatisticLabel, STATTYPE.StatisticTypeCode, STATTYPE.StatisticType " & _
         "FROM STATTYPE INNER JOIN (STATLABEL INNER JOIN " & _
         "(([StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID]) " & _
         "INNER JOIN STATISTIC ON STATION.StaID = STATISTIC.StaID) " & _
-        "ON STATLABEL.StatisticLabelCode = STATISTIC.StatisticLabelCode) " & _
+        "ON STATLABEL.StatisticLabelID = STATLABEL.StatisticLabelID) " & _
         "ON STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode " & _
         "WHERE [StationState].[StateCode]='" & Me.Code & "' AND [StationState].[ROI]>0;"
     Set statRec = pDB.DB.OpenRecordset(sql)
@@ -427,14 +427,14 @@ Private Sub PopulateROIParms()
   If pDB Is Nothing Then
     ssMessageBox "Cannot read ROIParms" & vbCr & "DB not set."
   Else
-    sql = "SELECT STATLABEL.StatisticLabelCode, STATLABEL.StatLabel, " & _
+    sql = "SELECT STATLABEL.StatisticLabelID, STATLABEL.StatLabel, " & _
         "STATLABEL.StatisticLabel, STATTYPE.StatisticTypeCode, STATTYPE.StatisticType, " & _
         "ROIUserParms.PosNegCorrelation, ROIUserParms.SimVar, ROIUserParms.RegVar " & _
         "FROM ROIUserParms " & _
         "INNER JOIN (STATTYPE INNER JOIN STATLABEL ON STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode) " & _
-        "ON ROIUserParms.ParmID = STATLABEL.StatisticLabelCode " & _
+        "ON ROIUserParms.ParmID = STATLABEL.StatisticLabelID " & _
         "Where ROIUserParms.StateID='" & pCode & "' " & _
-        "ORDER BY STATLABEL.StatisticLabelCode;"
+        "ORDER BY STATLABEL.StatisticLabelID;"
     Set parmRec = pDB.DB.OpenRecordset(sql)
     While Not parmRec.EOF
       Set newParm = New nssParameter
