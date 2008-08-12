@@ -1048,13 +1048,21 @@ Public Function EstimateString() As String
   
   'the following code will become simpler when database mods are made
   'to reference the StatLabel from the DepVars table
-      lUnitStr = Me.UserRegions(1).Region.DepVars(1).Units.Abbrev(useMetric)
-      lLen = Len(lUnitStr)
-      If lLen > 9 Then 'too long, need to truncate
-        lUnitStr = Left(lUnitStr, 9)
-      ElseIf lLen < 9 Then
-        lUnitStr = Space(8 - lLen) & lUnitStr & " "
-      End If
+'  'for starters, assume flow
+'  If useMetric Then
+'    lUnitStr = "    m3/s "
+'  Else
+'    lUnitStr = "    cfs  "
+'  End If
+'  If Me.UserRegions(1).Region.DepVars(1).Units.ID <> 13 Then
+    lUnitStr = Me.UserRegions(1).Region.DepVars(1).Units.Abbrev(useMetric)
+    lLen = Len(lUnitStr)
+    If lLen > 9 Then 'too long, need to truncate
+      lUnitStr = Left(lUnitStr, 9)
+    ElseIf lLen < 9 Then
+      lUnitStr = Space(9 - lLen) & lUnitStr & " "
+    End If
+'  End If
 '  'for starters, assume cfs
 '  If useMetric Then
 '    lUnitStr = "    m3/s "
@@ -1179,7 +1187,7 @@ Public Function EstimateString() As String
     End If
     
     'next line goes away when DepVars Units in place
-    If useMetric Then txt = ReplaceString(txt, " cfs", "m3/s")
+    'If useMetric Then txt = ReplaceString(txt, " cfs", "m3/s")
     
     If Me.Weight.WeightType > 0 Then 'Don't show std err for weighted estimates
       txt = ReplaceString(txt, "Standard  ", "")

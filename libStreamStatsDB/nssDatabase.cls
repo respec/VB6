@@ -137,7 +137,9 @@ Private Sub PopulateUnits()
     With newUnits
       .ID = myRec.Fields("UnitID")
       .MetricLabel = myRec.Fields("Metric")
+      .MetricAbbrev = myRec.Fields("MetricAbbrev")
       .EnglishLabel = myRec.Fields("English")
+      .EnglishAbbrev = myRec.Fields("EnglishAbbrev")
       .Factor = myRec.Fields("EnglishMetricFactor")
     End With
     pUnits.Add newUnits, CStr(newUnits.ID)
