@@ -68,13 +68,13 @@ Private Sub PopulateStatLabels()
     sql = "SELECT STATLABEL.* FROM STATTYPE INNER JOIN STATLABEL ON " & _
         "STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode " & _
         "WHERE STATTYPE.StatisticTypeCode='" & Me.Code & _
-        "' AND StatisticLabelCode > 0 ORDER BY StatisticLabelCode;"
+        "' AND StatisticLabelID > 0 ORDER BY StatisticLabelID;"
     Set statRec = pDB.DB.OpenRecordset(sql)
     While Not statRec.EOF
       Set newStatLabel = New ssStatLabel
       With newStatLabel
         Set .DB = pDB
-        .ID = statRec.Fields("StatisticLabelCode")
+        .ID = statRec.Fields("StatisticLabelID")
         .TypeCode = Me.Code
         .TypeName = Me.Name
         .Code = statRec.Fields("StatLabel")
