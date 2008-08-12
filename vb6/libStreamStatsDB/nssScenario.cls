@@ -1157,7 +1157,7 @@ Public Function EstimateString() As String
 '      lab2 = "Statistic " & lUnitStr
       'use the following 3 lines when DepVars Units in place
       lab2 = "Statistic"
-      labUnits = Me.UserRegions(1).DepVars(1).Units.Abbrev(useMetric)
+      labUnits = Me.UserRegions(1).Region.DepVars(1).Units.Abbrev(useMetric)
       lab2 = lab2 & Space((14 - Len(labUnits)) / 2) & labUnits
 
       If Me.LowFlow Then
