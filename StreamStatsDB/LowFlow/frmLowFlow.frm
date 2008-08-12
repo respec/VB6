@@ -12,7 +12,7 @@ Begin VB.Form frmLowFlow
    ScaleHeight     =   9075
    ScaleWidth      =   8985
    StartUpPosition =   3  'Windows Default
-   Begin VB.Frame Frame1 
+   Begin VB.Frame fraUnits 
       Caption         =   "Units"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
@@ -28,7 +28,7 @@ Begin VB.Form frmLowFlow
       TabIndex        =   38
       Top             =   480
       Width           =   2175
-      Begin VB.OptionButton UnitsOpt 
+      Begin VB.OptionButton rdoUnits 
          Caption         =   "English"
          BeginProperty Font 
             Name            =   "MS Sans Serif"
@@ -46,7 +46,7 @@ Begin VB.Form frmLowFlow
          Top             =   240
          Width           =   975
       End
-      Begin VB.OptionButton UnitsOpt 
+      Begin VB.OptionButton rdoUnits 
          Caption         =   "Metric"
          BeginProperty Font 
             Name            =   "MS Sans Serif"
@@ -288,7 +288,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -365,7 +365,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   332
+         Rows            =   335
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -406,7 +406,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -472,7 +472,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   6
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -859,14 +859,14 @@ End Sub
 
 Private Sub cmdExit_Click()
   Dim Resp As Integer
-  On Error GoTo x
+  On Error GoTo X
   Resp = vbYes
   If ChangesMade Then
     Resp = MsgBox("You have unsaved values.  Are you sure you want to exit without saving them?", vbExclamation + vbYesNo, "Exit Confirmation")
   End If
   If Resp = vbYes Then
     If Len(Dir(DBPath)) > 0 Then MyRegion.DB.DB.Close
-x:
+X:
     Unload Me
   End If
 End Sub
@@ -874,7 +874,7 @@ End Sub
 Private Sub cmdHelp_Click()
   Dim helpFilePath As String
   
-  On Error GoTo x
+  On Error GoTo X
   
   helpFilePath = GetSetting("SEE", "Defaults", "HelpPath", App.path & "\SEE.chm")
   If Len(Dir(helpFilePath)) = 0 Then
@@ -894,7 +894,7 @@ BadFile:
     End With
     SaveSetting "SEE", "Defaults", "HelpPath", helpFilePath
   End If
-x:
+X:
   If Len(Dir(helpFilePath)) > 0 Then
     OpenFile helpFilePath, cdlgFileSel
   Else
@@ -911,7 +911,7 @@ Private Sub cmdImport_Click()
   Dim parmVals() As String, depVarVals() As String, compVals() As String
   Dim covArray() As String
 
-  On Error GoTo x
+  On Error GoTo X
   
   response = myMsgBox.Show("Importing peak-flow or low-flow data will replace " & _
         "all such data in the database for that state." & vbCrLf & vbCrLf & _
@@ -1089,7 +1089,7 @@ TryAgain:
   cboState_Click
   Me.MousePointer = vbDefault
   Exit Sub
-x:
+X:
   Me.MousePointer = vbDefault
   If Err.Number = 32755 Then Exit Sub
   MsgBox "The format of the import file is not correct." & vbCrLf & _
@@ -1103,7 +1103,7 @@ Private Sub cmdExport_Click()
   Dim FileName$, str$
   Dim covArray() As String
   
-  On Error GoTo x
+  On Error GoTo X
   
   If cboState.ListIndex < 0 Then
     MsgBox "You must select a state before exporting"
@@ -1217,7 +1217,7 @@ Private Sub cmdExport_Click()
 nextRegion:
   Next i
   Close OutFile
-x:
+X:
   Me.MousePointer = vbDefault
   If lstRegions.SelCount > 0 Then
     Set MyRegion = DB.State.Regions(lstRegions.List(lstRegions.ListIndex))
@@ -1416,7 +1416,7 @@ Private Sub rdoMainOpt_Click(Index As Integer)
   Dim stIndex&, selState&, i&
   
   If NotNew Then Exit Sub
-  On Error GoTo x
+  On Error GoTo X
 
   Set MyRegion = Nothing
   
@@ -1452,7 +1452,7 @@ Private Sub rdoMainOpt_Click(Index As Integer)
   End If
   FocusOnRegions
   Exit Sub
-x:
+X:
   If RDO > -1 Then
     NotNew = True
     rdoMainOpt(RDO) = True
@@ -1521,9 +1521,9 @@ Private Sub cboState_Click()
     Next regnIndex
     'set metric button
     If DB.State.Metric Then
-      UnitsOpt(1).Value = True
+      rdoUnits(1).Value = True
     Else
-      UnitsOpt(0).Value = True
+      rdoUnits(0).Value = True
     End If
     'Populate Regions list box
     regnCount = DB.State.Regions.Count
@@ -2123,7 +2123,7 @@ Private Sub cmdSave_Click()
   
   'Check for changes and write them to an array
   If Not ChangesMade Then
-    GoTo x
+    GoTo X
   End If
   
   'Make sure user wants to overwrite existing values
@@ -2156,13 +2156,13 @@ Private Sub cmdSave_Click()
   If response = 1 Then
   'Overwrite values in DB
     frmUserInfo.Show vbModal, Me
-    If Not UserInfoOK Then GoTo x
+    If Not UserInfoOK Then GoTo X
     Me.MousePointer = vbHourglass
     If fraEdit(0).Visible Then 'editing region
       If MyRegion.IsNew Then
         Set MyRegion.DB = DB
         If Not MyRegion.Add(isReturn, txtRegName.Text, rdoRegOpt(1), _
-            chkRuralInput.Value, chkPredInt.Value, -1) Then GoTo x
+            chkRuralInput.Value, chkPredInt.Value, -1) Then GoTo X
 '?????? add possible 2 parms to DB?
         ResetDB
         lstRegions.ListIndex = lstRegions.ListCount - 1
@@ -2189,7 +2189,7 @@ Private Sub cmdSave_Click()
         If MyParm.IsNew Then
           With grdParms
             If Not MyParm.Add(MyRegion, .TextMatrix(i, 2), _
-                .TextMatrix(i, 3), .TextMatrix(i, 4), UnitID) Then GoTo x
+                .TextMatrix(i, 3), .TextMatrix(i, 4), UnitID) Then GoTo X
           End With
           'Write changes to DetailedLog table
           For k = 0 To UBound(Changes, 3)
@@ -2250,7 +2250,7 @@ Private Sub cmdSave_Click()
             grdInterval.TextMatrix(1, 1), grdInterval.TextMatrix(1, 2), _
             grdInterval.TextMatrix(1, 3), grdInterval.TextMatrix(1, 4), _
             grdInterval.TextMatrix(1, 5), BCF, tdist, Variance, ExpDA)
-        If tmpID = -1 Then GoTo x
+        If tmpID = -1 Then GoTo X
         ResetDB
         lstRetPds.Clear
         PopulateDepVars
@@ -2324,7 +2324,7 @@ Private Sub cmdSave_Click()
       fraEdit(2).Visible = True
     End If
   End If
-x:
+X:
   Me.MousePointer = vbDefault
 End Sub
 
@@ -3058,7 +3058,7 @@ Private Sub SaveChanges()
   If MyRegion Is Nothing Then Exit Sub
 
   If fraEdit(0).Visible Then
-    On Error GoTo x
+    On Error GoTo X
     i = MsgBox("Do you want to save the new information for " & _
         vbCrLf & txtRegName.Text & ", " & State & " to the database?", _
         vbYesNo, "User Action Verification")
@@ -3066,13 +3066,13 @@ Private Sub SaveChanges()
     If i = vbYes Then
       cmdSave_Click
     Else
-x:
+X:
       cmdCancel_Click
     End If
     Skip = False
   ElseIf fraEdit(1).Visible Then
     ChoseParms = True
-      On Error GoTo y
+      On Error GoTo Y
       i = MsgBox("Do you want to save the Parameter changes " & _
           vbCrLf & "to the database for " & MyRegion.Name & "?", _
           vbYesNo, "User Action Verification")
@@ -3080,7 +3080,7 @@ x:
       If i = vbYes Then
         cmdSave_Click
       Else
-y:
+Y:
         cmdCancel_Click
       End If
       Skip = False
