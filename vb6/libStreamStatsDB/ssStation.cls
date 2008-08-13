@@ -442,7 +442,7 @@ Public Sub PopulateStatistics()
       With newStatistic
         Set .DB = pDB
         Set .Station = Me
-        .Code = statRec.Fields("StatisticLabelCode")
+        .Code = statRec.Fields("StatisticLabelID")
         .Abbrev = statRec.Fields("StatLabel")
         .Name = statRec.Fields("StatisticLabel")
         If Not IsNull(statRec.Fields("StatisticValue")) Then _

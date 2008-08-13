@@ -91,7 +91,7 @@ Public Sub Add(ByRef NewValues() As String, StatIndex As Long)
   Dim fld&
   Dim sql$
   
-  sql = "SELECT STATLABEL.* FROM STATLABEL ORDER BY StatisticLabelCode;"
+  sql = "SELECT STATLABEL.* FROM STATLABEL ORDER BY StatisticLabelID;"
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     If .RecordCount > 0 Then 'check to see if Stat with this Abbrev or Name already exists
@@ -112,9 +112,9 @@ Public Sub Add(ByRef NewValues() As String, StatIndex As Long)
       End If
     End If
     .MoveLast
-    fld = !StatisticLabelCode + 1
+    fld = !StatisticLabelID + 1
     .AddNew
-    .Fields("StatisticLabelCode") = fld
+    .Fields("StatisticLabelID") = fld
     .Fields("StatisticTypeCode") = GetTypeCode(Trim(NewValues(2, StatIndex, 1)))
     For fld = 2 To UBound(NewValues, 3)
       If fld = 3 Then 'be sure to use underscores for blanks
@@ -137,7 +137,7 @@ Public Sub Delete()
   
   Set myRec = pDB.DB.OpenRecordset("STATLABEL", dbOpenDynaset)
   With myRec
-    .FindFirst "StatisticLabelCode=" & Me.ID
+    .FindFirst "StatisticLabelID=" & Me.ID
     If Not .NoMatch Then
       .Delete
     End If
@@ -150,7 +150,7 @@ Public Sub Edit(ByRef NewValues() As String, StatIndex As Long)
   
   Set myRec = pDB.DB.OpenRecordset("STATLABEL", dbOpenDynaset)
   With myRec
-    .FindFirst "StatisticLabelCode=" & Me.ID
+    .FindFirst "StatisticLabelID=" & Me.ID
     If Not .NoMatch Then
       .Edit
       .Fields("StatisticTypeCode") = GetTypeCode(Trim(NewValues(2, StatIndex, 1)))

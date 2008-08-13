@@ -515,14 +515,18 @@ Public Function PredInts() As Double()
               Else
                 MsgBox "PROBLEM:  Can't find component name for computing PIs"
               End If
-              j = i - 1
-              While j <= CurRegion.UserParms.Count
-                If lCompName = CurRegion.UserParms(j).Parameter.Name Then
-                  lParm = CurRegion.UserParms(j).GetValue(Me.Project.Metric)
-                  j = CurRegion.UserParms.Count
-                End If
-                j = j + 1
-              Wend
+'              If lCompName = "Drainage_Area" Or lCompName = "Contributing Drainage Area" Then
+'                lParm = Me.GetArea(StateMetric)
+'              Else
+                j = i - 1
+                While j <= CurRegion.UserParms.Count
+                  If lCompName = CurRegion.UserParms(j).Parameter.Name Then
+                    lParm = CurRegion.UserParms(j).GetValue(Me.Project.Metric)
+                    j = CurRegion.UserParms.Count
+                  End If
+                  j = j + 1
+                Wend
+'              End If
             End If
             If CurComponent.ExpID = 0 Then 'base term, take log if possible
               lv = CurComponent.BaseCoeff * (CurComponent.BaseMod + lParm)
@@ -1060,7 +1064,7 @@ Public Function EstimateString() As String
     If lLen > 9 Then 'too long, need to truncate
       lUnitStr = Left(lUnitStr, 9)
     ElseIf lLen < 9 Then
-      lUnitStr = Space(9 - lLen) & lUnitStr & " "
+      lUnitStr = Space(8 - lLen) & lUnitStr & " "
     End If
 '  End If
 '  'for starters, assume cfs
@@ -1165,8 +1169,7 @@ Public Function EstimateString() As String
 '      lab2 = "Statistic " & lUnitStr
       'use the following 3 lines when DepVars Units in place
       lab2 = "Statistic"
-      labUnits = Me.UserRegions(1).Region.DepVars(1).Units.Abbrev(useMetric)
-      lab2 = lab2 & Space((14 - Len(labUnits)) / 2) & labUnits
+      lab2 = lab2 & Space((11 - Len(lUnitStr)) / 2) & lUnitStr
 
       If Me.LowFlow Then
         Flows = Me.Discharges
