@@ -324,25 +324,25 @@ Private Function wilfrt(sku!, zeta!, errflg&) As Single
   'REV 7/86 BY AML TO OSW CODING CONVENTION
   'rev 9/96 by PRH for VB
     
-  Dim ask!, A!, B!, G!, h!, z!, sig!, fmu!
+  Dim ask!, a!, b!, G!, h!, z!, sig!, fmu!
   Const skutol As Single = 0.0003
 
   'first time thru or new sku (skew)
   ask = Abs(sku)
   If ask >= skutol Then
     'nonzero skew
-    Call wilfrs(ask, G, h, A, B, errflg)
+    Call wilfrs(ask, G, h, a, b, errflg)
     sig = G * 0.1666667
     fmu = 1# - sig * sig
     If sku < 0# Then
       sig = -sig
-      A = -A
+      a = -a
     End If
     z = fmu + sig * zeta
     If z < h Then
       z = h
     End If
-    wilfrt = A * (z * z * z - B)
+    wilfrt = a * (z * z * z - b)
   Else
     'zero skew
     wilfrt = zeta
@@ -350,7 +350,7 @@ Private Function wilfrt(sku!, zeta!, errflg&) As Single
 
 End Function
 
-Private Sub wilfrs(sk!, G!, h!, A!, B!, errflg&)
+Private Sub wilfrs(sk!, G!, h!, a!, b!, errflg&)
 
   'COMPUTES PARAMETERS USED BY WILFRT TRANSFORMATIN
   'USES APPROX FORMULA AND CORRECTION TERMS PREPARED FROM
@@ -364,7 +364,7 @@ Private Sub wilfrs(sk!, G!, h!, A!, B!, errflg&)
   Static table!(1 To 40, 1 To 4)
   Dim flag&, i&, k&
   Dim row!(1 To 4)
-  Dim S!, q!, p!, tog!
+  Dim s!, q!, p!, tog!
   
   If table(1, 1) = 0 Then
     table(1, 1) = 0#
@@ -528,14 +528,14 @@ Private Sub wilfrs(sk!, G!, h!, A!, B!, errflg&)
     table(39, 4) = 0.174721
     table(40, 4) = 0.181994
   End If
-  S = sk
+  s = sk
   k = 1
   flag = 0
   errflg = 0
   i = 1
   Do
     i = i + 1
-    If table(i, 1) > S Then flag = 1
+    If table(i, 1) > s Then flag = 1
     k = i - 1
   Loop While i < nroz And flag = 0
 
@@ -550,7 +550,7 @@ Private Sub wilfrs(sk!, G!, h!, A!, B!, errflg&)
 '      p = table(nroz, 3)
 '      tog = table(nroz, 4)
   Else
-    p = (S - table(k, 1)) / (table(k + 1, 1) - table(k, 1))
+    p = (s - table(k, 1)) / (table(k + 1, 1) - table(k, 1))
     q = 1# - p
     For i = 2 To 4
       row(i) = q * table(k, i) + p * table(k + 1, i)
@@ -561,26 +561,26 @@ Private Sub wilfrs(sk!, G!, h!, A!, B!, errflg&)
 '      tog = q * table(k, 4) + p * table(k + 1, 4)
   End If
 
-  G = S + row(2)
+  G = s + row(2)
 '   replace "row" equivalence
 '    g = s + q
-  If S > 1# Then G = G - 0.063 * (S - 1#) ^ 1.85
-  tog = 2# / S
+  If s > 1# Then G = G - 0.063 * (s - 1#) ^ 1.85
+  tog = 2# / s
   q = tog
   If q < 0.4 Then q = 0.4
-  A = q + row(3)
+  a = q + row(3)
 '   replace "row" equivalence
 '    a = q + p
-  q = 0.12 * (S - 2.25)
+  q = 0.12 * (s - 2.25)
   If q < 0# Then q = 0#
-  B = 1# + q * q + row(4)
+  b = 1# + q * q + row(4)
 '   replace "row" equivalence
 '    b = 1# + q * q + tog
-  If (B - tog / A) < 0# Then
+  If (b - tog / a) < 0# Then
     'Stop WILFRS
     ssMessageBox "Very serious problem in routine WILFRS.  Contact software distributor", 16
   End If
-  h = (B - tog / A) ^ 0.3333333
+  h = (b - tog / a) ^ 0.3333333
 
 End Sub
 
@@ -619,5 +619,16 @@ Public Function gausex(exprob!) As Single
       If p > 0.5 Then rtmp = -rtmp
     End If
     gausex = rtmp
+End Function
+
+Public Function GetLabelID(StatLabel As String, DB As nssDatabase) As Long
+  Dim myRec As Recordset
+
+  Set myRec = DB.DB.OpenRecordset("STATLABEL", dbOpenSnapshot)
+  With myRec
+    .FindFirst "StatLabel='" & StatLabel & "'"
+    If .NoMatch Then .FindFirst "StatisticLabel='" & StatLabel & "'"
+    If Not .NoMatch Then GetLabelID = .Fields("StatisticLabelID")
+  End With
 End Function
 

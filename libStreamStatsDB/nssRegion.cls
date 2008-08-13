@@ -240,7 +240,7 @@ Public Sub PopulateROIParameters()
       With newParm
         Set .Region = Me
         .ID = parmRec("ParmID")
-        If Not IsNull(parmRec("StatisticLabelCode")) Then .LabelCode = parmRec("StatisticLabelCode")
+        If Not IsNull(parmRec("StatisticLabelID")) Then .LabelCode = parmRec("StatisticLabelID")
         If Not IsNull(parmRec("StatisticLabel")) Then
           .Name = parmRec("StatisticLabel")
           .NSSName = .Name

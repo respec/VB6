@@ -252,7 +252,7 @@ Private Sub PopulateParameters()
   'builds collection of Parameters
   sql = "SELECT [STATLABEL].[StatLabel], [STATLABEL].[StatisticLabel], [UNITS].[UnitID]" & _
         "FROM STATLABEL INNER JOIN UNITS ON [STATLABEL].[UnitID]=[UNITS].[UnitID] " & _
-        "ORDER BY [STATLABEL].[StatisticTypeCode], [STATLABEL].[StatisticLabelCode];"
+        "ORDER BY [STATLABEL].[StatisticTypeCode], [STATLABEL].[StatisticLabelID];"
   Set myRec = pnssDB.OpenRecordset(sql, dbOpenForwardOnly)
   While Not myRec.EOF
     Set newParm = New nssParameter

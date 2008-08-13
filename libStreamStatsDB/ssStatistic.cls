@@ -166,17 +166,17 @@ Public Sub Add(ByRef NewValues() As String, StatIndex As Long, Optional NoWarnFl
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     If .RecordCount > 0 Then
-      .FindFirst "StatisticLabelCode =" & NewValues(2, StatIndex, 2)
+      .FindFirst "StatisticLabelID =" & NewValues(2, StatIndex, 2)
     End If
     If .NoMatch Or .RecordCount = 0 Then
       .AddNew
       !StaID = Me.Station.ID
       !DataSourceID = GetSourceID(NewValues(2, StatIndex, 7))
-      !StatisticLabelCode = NewValues(2, StatIndex, 2)
+      !StatisticLabelID = NewValues(2, StatIndex, 2)
       !StatisticValue = NewValues(2, StatIndex, 4)
       '!Date = NewValues(2, StatIndex, 6)
       !YearsRec = NewValues(2, StatIndex, 6)
-      If !StatisticLabelCode = 0 Then
+      If !StatisticLabelID = 0 Then
         NewValues(2, StatIndex, 2) = "bad"
       Else
         .Update
@@ -270,7 +270,7 @@ Public Sub Edit(ByRef NewValues() As String, StatIndex As Long)
     If .RecordCount > 0 Then
       .Edit
       !DataSourceID = GetSourceID(NewValues(2, StatIndex, 7))
-      !StatisticLabelCode = NewValues(2, StatIndex, 2)
+      !StatisticLabelID = NewValues(2, StatIndex, 2)
       !StatisticValue = NewValues(2, StatIndex, 4)
       '!Date = NewValues(2, StatIndex, 6)
       !YearsRec = NewValues(2, StatIndex, 6)
@@ -294,17 +294,6 @@ Public Function GetSourceID(Citation As String) As String
   With myRec
     .FindFirst "Citation='" & Citation & "'"
     If Not .NoMatch Then GetSourceID = .Fields("DataSourceID")
-  End With
-End Function
-
-Public Function GetLabelID(StatLabel As String) As Long
-  Dim myRec As Recordset
-  
-  Set myRec = pDB.DB.OpenRecordset("STATLABEL", dbOpenSnapshot)
-  With myRec
-    .FindFirst "StatLabel='" & StatLabel & "'"
-    If .NoMatch Then .FindFirst "StatisticLabel='" & StatLabel & "'"
-    If Not .NoMatch Then GetLabelID = .Fields("StatisticLabelCode")
   End With
 End Function
 

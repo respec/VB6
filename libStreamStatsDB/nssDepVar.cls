@@ -196,7 +196,7 @@ Private Sub PopulateComponents()
     ssMessageBox "Cannot read components" & vbCr & "DB not set."
   Else
     sql = "SELECT Components.* FROM [Components] " & _
-          "WHERE DepVarID=" & pID & ";"
+          "WHERE DepVarID=" & pID & " ORDER BY ExponentParmID, ParmID;"
     Set comprec = pDB.DB.OpenRecordset(sql)
     While Not comprec.EOF
       Set newComp = New nssComponent
@@ -231,6 +231,7 @@ Public Function Add(IsReturn As Boolean, ByVal Region As nssRegion, _
     'OPTIONAL ByVal Stations As String, OPTIONAL ByVal CoeffDet As String, OPTIONAL ByVal MAD As String) As Boolean
   Dim myRec As Recordset
   Dim ID&
+  Dim StatLabelID&
   
   If Name = "find" Then
     Set myRec = Region.DB.DB.OpenRecordset("lfStatList", dbOpenDynaset)
@@ -241,10 +242,12 @@ Public Function Add(IsReturn As Boolean, ByVal Region As nssRegion, _
       Name = myRec("Stat")
     End If
   End If
+  StatLabelID = GetLabelID(Name, Region.DB)
   Set myRec = Region.DB.DB.OpenRecordset("DepVars", dbOpenDynaset)
   With myRec
     'check to see if parameter with this name already exists for this region
-    .FindFirst "RegionID=" & Region.ID & " AND StatLabelCode='" & Name & "'"
+    '.FindFirst "RegionID=" & Region.ID & " AND StatLabelCode='" & Name & "'"
+    .FindFirst "RegionID=" & Region.ID & " AND StatisticLabelID=" & StatLabelID
     If .NoMatch Then  'OK to add
       'find an unused ID
       If IsReturn Then
@@ -260,7 +263,8 @@ Public Function Add(IsReturn As Boolean, ByVal Region As nssRegion, _
       .AddNew
       !DepVarID = ID
       !RegionID = Region.ID
-      !statLabelCode = Name
+      '!statLabelCode = Name
+      !StatisticLabelID = StatLabelID
       If IsNumeric(StdErr) Then !StdErr = StdErr
       If IsNumeric(EstErr) Then !EstErr = EstErr
       If IsNumeric(PreErr) Then !PreErr = PreErr

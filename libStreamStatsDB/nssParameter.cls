@@ -163,7 +163,7 @@ Public Function Add(ByVal Region As nssRegion, ByVal StatLabel As String, _
     With myRec
       If .RecordCount > 0 Then
         'check to see if parameter with this name already exists for this region
-        .FindFirst "StatisticLabelCode=" & statLabelCode & _
+        .FindFirst "StatisticLabelID=" & statLabelCode & _
                    " AND RegionID=" & Region.ID
       End If
       If .NoMatch Or .RecordCount = 0 Then  'OK to add
@@ -183,10 +183,10 @@ Public Function Add(ByVal Region As nssRegion, ByVal StatLabel As String, _
         .AddNew
         !RegionID = Region.ID
         !ParmID = ID
-        !StatisticLabelCode = statLabelCode
+        !StatisticLabelID = statLabelCode
         'get long label name from STATLABEL table and assign to Parameter field
         Set myRec2 = Region.DB.DB.OpenRecordset("STATLABEL", dbOpenDynaset)
-        myRec2.FindFirst "StatisticLabelCode=" & statLabelCode
+        myRec2.FindFirst "StatisticLabelID=" & statLabelCode
         !Parameter = myRec2!StatisticLabel
         If IsNumeric(Min) Then !Min = Min
         If IsNumeric(Max) Then !Max = Max
@@ -262,7 +262,7 @@ Public Sub Edit(ByVal StatLabel As String, ByVal Min As String, _
     .FindFirst "ParmID=" & Me.ID
     If Not .NoMatch Then
       .Edit
-      !StatisticLabelCode = GetLabelID(StatLabel, Me.Region.DB)
+      !StatisticLabelID = GetLabelID(StatLabel, Me.Region.DB)
       If IsNumeric(Min) Then !Min = Min
       If IsNumeric(Max) Then !Max = Max
       If IsNumeric(ConvFlag) Then !UnitID = ConvFlag
@@ -270,16 +270,6 @@ Public Sub Edit(ByVal StatLabel As String, ByVal Min As String, _
     End If
   End With
 End Sub
-
-Private Function GetLabelID(StatLabel As String, DB As nssDatabase) As Long
-  Dim myRec As Recordset
-  
-  Set myRec = DB.DB.OpenRecordset("STATLABEL", dbOpenSnapshot)
-  With myRec
-    .FindFirst "StatLabel='" & StatLabel & "'"
-    If Not .NoMatch Then GetLabelID = .Fields("StatisticLabelCode")
-  End With
-End Function
 
 Private Sub Class_Initialize()
   pAbbrev = "XX"

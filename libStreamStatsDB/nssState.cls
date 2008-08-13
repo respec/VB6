@@ -397,7 +397,7 @@ Public Sub PopulateStatsOnFile()
       With newStat
         If Not IsNull(statRec("StatisticTypeCode")) Then .StatTypeCode = statRec("StatisticTypeCode")
         If Not IsNull(statRec("StatisticType")) Then .StatType = statRec("StatisticType")
-        If Not IsNull(statRec("StatisticLabelCode")) Then .Code = statRec("StatisticLabelCode")
+        If Not IsNull(statRec("StatisticLabelID")) Then .Code = statRec("StatisticLabelID")
         If Not IsNull(statRec("StatisticLabel")) Then .Name = statRec("StatisticLabel")
         If Not IsNull(statRec("StatLabel")) Then .Abbrev = statRec("StatLabel")
         If Not IsNull(statRec("UnitID")) Then Set .Units = pDB.Units(CStr(statRec("UnitID")))
@@ -439,7 +439,7 @@ Private Sub PopulateROIParms()
     While Not parmRec.EOF
       Set newParm = New nssParameter
       With newParm
-        If Not IsNull(parmRec("StatisticLabelCode")) Then .LabelCode = parmRec("StatisticLabelCode")
+        If Not IsNull(parmRec("StatisticLabelID")) Then .LabelCode = parmRec("StatisticLabelID")
         If Not IsNull(parmRec("StatLabel")) Then .Abbrev = parmRec("StatLabel")
         If Not IsNull(parmRec("StatisticLabel")) Then .Name = parmRec("StatisticLabel")
         If Not IsNull(parmRec("StatisticTypeCode")) Then .StatTypeCode = parmRec("StatisticTypeCode")
