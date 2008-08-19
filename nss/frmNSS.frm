@@ -4,7 +4,7 @@ Begin VB.Form frmNSS
    Caption         =   "National Streamflow Statistics (NSS)"
    ClientHeight    =   7440
    ClientLeft      =   165
-   ClientTop       =   735
+   ClientTop       =   780
    ClientWidth     =   11175
    HelpContextID   =   12
    Icon            =   "frmNSS.frx":0000
@@ -526,12 +526,12 @@ Private Sub cmdFrequency_Click()
   Dim i As Long, NumFloodScens As Long
   NumFloodScens = 0
   For i = 1 To Project.RuralScenarios.Count
-    If Not Project.RuralScenarios(i).lowflow Then
+    If Not Project.RuralScenarios(i).LowFlow Then
       NumFloodScens = NumFloodScens + 1
     End If
   Next i
   For i = 1 To Project.UrbanScenarios.Count
-    If Not Project.UrbanScenarios(i).lowflow Then
+    If Not Project.UrbanScenarios(i).LowFlow Then
       NumFloodScens = NumFloodScens + 1
     End If
   Next i
@@ -546,12 +546,12 @@ Private Sub cmdHydrograph_Click()
   Dim i As Long, NumFloodScens As Long
   NumFloodScens = 0
   For i = 1 To Project.RuralScenarios.Count
-    If Not Project.RuralScenarios(i).lowflow Then
+    If Not Project.RuralScenarios(i).LowFlow Then
       NumFloodScens = NumFloodScens + 1
     End If
   Next i
   For i = 1 To Project.UrbanScenarios.Count
-    If Not Project.UrbanScenarios(i).lowflow Then
+    If Not Project.UrbanScenarios(i).LowFlow Then
       NumFloodScens = NumFloodScens + 1
     End If
   Next i
@@ -625,7 +625,7 @@ Private Sub cmdWeight_Click()
   
   If Project.CurrentRuralScenario > 0 Then
     Set scen = Project.RuralScenarios(Project.CurrentRuralScenario)
-    If scen.lowflow Then
+    If scen.LowFlow Then
       MsgBox "Weighting not available for Low Flow scenarios.", vbInformation, "NSS Weight"
     Else
       If scen.Weight.WeightType > 0 Then 'This is already a weighted scenario, just edit it
@@ -996,7 +996,7 @@ ErrExit:
   End If
 End Sub
 
-Public Sub TestAllEquations(Optional pathname As String = "")
+Public Sub TestAllEquations(Optional PathName As String = "")
   Dim StateIndex As Long
   Dim newScenario As nssScenario
   Dim lastRural As nssScenario
@@ -1009,11 +1009,11 @@ Public Sub TestAllEquations(Optional pathname As String = "")
   
   Me.MousePointer = vbHourglass
   
-  If Len(pathname) > 0 Then
-    If Right(pathname, 1) <> "\" Then pathname = pathname & "\"
+  If Len(PathName) > 0 Then
+    If Right(PathName, 1) <> "\" Then PathName = PathName & "\"
   End If
   
-  For StateIndex = 1 To cboState.ListCount
+  For StateIndex = 1 To cboState.ListCount - 1 'added -1 to listcount to avoid "Dummy" state
     Project.Clear
     Clear
     Set Project.State = Project.DB.States(StateIndex)
@@ -1037,14 +1037,14 @@ Public Sub TestAllEquations(Optional pathname As String = "")
     Set region = Project.NationalUrban
     GoSub AddRegionScenario
     
-    SaveFileString pathname & "NSStest_" & Project.State.Abbrev & ".txt", _
+    SaveFileString PathName & "NSStest_" & Project.State.Abbrev & ".txt", _
                    Project.Report & StateErrors
     Set newScenario = Nothing
     Project.Clear
   Next
   If MsgBox("Finished testing min and max values for all equations." & vbCr _
-          & "Open results folder '" & pathname & "' now?", vbYesNo, "NSS Test") = vbYes Then
-    OpenFile pathname
+          & "Open results folder '" & PathName & "' now?", vbYesNo, "NSS Test") = vbYes Then
+    OpenFile PathName
   End If
   Me.MousePointer = vbDefault
   Exit Sub
@@ -1053,6 +1053,7 @@ AddRegionScenario:
   Set newScenario = New nssScenario
   Set newScenario.Project = Project
   newScenario.Urban = region.Urban
+  If region.LowFlowRegnID > 0 Then newScenario.LowFlow = True
   If doMax Then
     newScenario.Name = region.State.Abbrev & "_" & region.Name & "_Max"
   Else
@@ -1072,7 +1073,7 @@ AddRegionScenario:
     End If
     Project.UrbanScenarios.Add newScenario, LCase(newScenario.Name)
   Else
-    If Not newScenario.lowflow Then 'make sure last rural is a peak flow scenario for urban use
+    If Not newScenario.LowFlow Then 'make sure last rural is a peak flow scenario for urban use
       Set lastRural = newScenario
     End If
     Project.RuralScenarios.Add newScenario, LCase(newScenario.Name)
