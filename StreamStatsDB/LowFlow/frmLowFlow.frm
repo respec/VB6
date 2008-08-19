@@ -288,7 +288,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   2
+         Rows            =   1
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -365,7 +365,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   337
+         Rows            =   338
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -406,7 +406,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   2
+         Rows            =   1
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -472,7 +472,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   2
+         Rows            =   1
          Cols            =   6
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -1171,7 +1171,7 @@ Private Sub cmdExport_Click()
     'Loop thru Parameters
     For j = 1 To MyRegion.Parameters.Count
       Set MyParm = MyRegion.Parameters(j)
-      If MyParm.Abbrev <> "RDA" And MyParm.Abbrev <> "CRD" Then
+      'If MyParm.Abbrev <> "RDA" And MyParm.Abbrev <> "CRD" Then
         tmpCnt = MyRegion.depVars.Count
         str = ""
         If j = 1 Then
@@ -1180,7 +1180,7 @@ Private Sub cmdExport_Click()
         str = str & vbTab & MyParm.Abbrev & vbTab & MyParm.Name & vbTab & _
             MyParm.GetMin(False) & " " & MyParm.GetMax(False) & " " & MyParm.Units.id
         Print #OutFile, str
-      End If
+      'End If
     Next j
     'Loop thru Return Periods/Statistics
     For j = 1 To tmpCnt
