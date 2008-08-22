@@ -337,7 +337,7 @@ Private Sub PopulateStations()
         If Not IsNull(stationRec("CountyCode")) Then .CountyCode = stationRec("CountyCode")
         If Not IsNull(stationRec("MCDCode")) Then .MCDCode = stationRec("MCDCode")
         If Not IsNull(stationRec("Directions")) Then .Directions = stationRec("Directions")
-        If Not IsNull(stationRec("HasData")) Then .HasData = stationRec("HasData")
+        'If Not IsNull(stationRec("HasData")) Then .HasData = stationRec("HasData")
         If Not IsNull(stationRec("StateCode")) Then .StateCode = stationRec("StateCode")
         If Not IsNull(stationRec("DistrictCode")) Then .DistrictCode = stationRec("DistrictCode")
         If Not IsNull(stationRec("ROI")) Then
@@ -655,7 +655,7 @@ Public Sub PopulateROIStations()
         If Not IsNull(stationRec("CountyCode")) Then .CountyCode = stationRec("CountyCode")
         If Not IsNull(stationRec("MCDCode")) Then .MCDCode = stationRec("MCDCode")
         If Not IsNull(stationRec("Directions")) Then .Directions = stationRec("Directions")
-        If Not IsNull(stationRec("HasData")) Then .HasData = stationRec("HasData")
+        'If Not IsNull(stationRec("HasData")) Then .HasData = stationRec("HasData")
         Set .State = Me
         .IsNew = False
       End With

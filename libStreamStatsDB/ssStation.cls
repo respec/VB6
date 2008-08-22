@@ -36,7 +36,7 @@ Private pDirections As String
 Private pIsROI As Boolean
 Private pROIIndex As Long
 Private pIsNew As Boolean
-Private pHasData As Boolean
+'Private pHasData As Boolean
 Private pStateCode As String
 Private pDistrictCode As String
 Private pState As nssState
@@ -211,12 +211,12 @@ Public Property Let IsNew(ByVal newValue As Boolean)
   pIsNew = newValue
 End Property
 
-Public Property Get HasData() As Boolean
-  HasData = pHasData
-End Property
-Public Property Let HasData(ByVal newValue As Boolean)
-  pHasData = newValue
-End Property
+'Public Property Get HasData() As Boolean
+'  HasData = pHasData
+'End Property
+'Public Property Let HasData(ByVal newValue As Boolean)
+'  pHasData = newValue
+'End Property
 
 Public Property Get StateCode() As String
   StateCode = pStateCode
@@ -301,11 +301,11 @@ Public Sub Add(ByRef NewValues() As String, StaIndex As Long, Optional ImportFlg
         End Select
       End If
     Next fld
-    If ImportFlg = 1 Then
-      .Fields("HasData") = 1
-    Else
-      .Fields("HasData") = 0
-    End If
+'    If ImportFlg = 1 Then
+'      .Fields("HasData") = 1
+'    Else
+'      .Fields("HasData") = 0
+'    End If
 'this is now stored on StationState table
 '    .Fields("StateCode") = Me.State.code
     .Update

@@ -181,28 +181,28 @@ Public Sub Add(ByRef NewValues() As String, StatIndex As Long, Optional NoWarnFl
       Else
         .Update
       End If
-      'If adding first datum for station, change "HasData" field of STATION table to true
-      If myRec.RecordCount > 1 Then
-        .Close
-      Else
-        .Close
-'        sql = "SELECT * FROM STATION " & _
-'              "WHERE StaID='" & Me.Station.ID & "' " & _
-'              "AND StateCode='" & Me.Station.State.code & "';"
-        sql = "SELECT STATION.* " & _
-              "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
-              "WHERE STATION.StaID='" & Me.Station.ID & "' " & _
-              "AND [StationState].[StateCode]='" & Me.Station.State.Code & "';"
-        Set stationRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
-        With stationRec
-          If Not .EOF Then
-            .Edit
-            !HasData = True
-            .Update
-          End If
-          .Close
-        End With
-      End If
+'      'If adding first datum for station, change "HasData" field of STATION table to true
+'      If myRec.RecordCount > 1 Then
+'        .Close
+'      Else
+'        .Close
+''        sql = "SELECT * FROM STATION " & _
+''              "WHERE StaID='" & Me.Station.ID & "' " & _
+''              "AND StateCode='" & Me.Station.State.code & "';"
+'        sql = "SELECT STATION.* " & _
+'              "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
+'              "WHERE STATION.StaID='" & Me.Station.ID & "' " & _
+'              "AND [StationState].[StateCode]='" & Me.Station.State.Code & "';"
+'        Set stationRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
+'        With stationRec
+'          If Not .EOF Then
+'            .Edit
+'            !HasData = True
+'            .Update
+'          End If
+'          .Close
+'        End With
+'      End If
     Else
       .Close
       If NoWarnFlg <> 1 Then
@@ -230,26 +230,26 @@ Public Sub Delete()
     End If
   End With
   
-  'If deleting all datum for station, change "HasData" field of STATION table to true
-  If myRec.RecordCount > 0 Then
-    myRec.Close
-    Exit Sub
-  Else
-    myRec.Close
-'    sql = "SELECT * FROM STATION " & _
-'          "WHERE StaID='" & Me.Station.ID & "' " & _
-'          "AND StateCode='" & Me.Station.State.code & "';"
-    sql = "SELECT STATION.* " & _
-          "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
-          "WHERE STATION.StaID='" & Me.Station.ID & "' " & _
-          "AND [StationState].[StateCode]='" & Me.Station.State.Code & "';"
-    Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
-    With myRec
-      .Edit
-      !HasData = False
-      .Update
-    End With
-  End If
+'  'If deleting all datum for station, change "HasData" field of STATION table to true
+'  If myRec.RecordCount > 0 Then
+'    myRec.Close
+'    Exit Sub
+'  Else
+'    myRec.Close
+''    sql = "SELECT * FROM STATION " & _
+''          "WHERE StaID='" & Me.Station.ID & "' " & _
+''          "AND StateCode='" & Me.Station.State.code & "';"
+'    sql = "SELECT STATION.* " & _
+'          "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
+'          "WHERE STATION.StaID='" & Me.Station.ID & "' " & _
+'          "AND [StationState].[StateCode]='" & Me.Station.State.Code & "';"
+'    Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
+'    With myRec
+'      .Edit
+'      !HasData = False
+'      .Update
+'    End With
+'  End If
 End Sub
 
 Public Sub Edit(ByRef NewValues() As String, StatIndex As Long)
