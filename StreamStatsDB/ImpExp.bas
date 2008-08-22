@@ -854,7 +854,7 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
       Set myStatistic = New ssStatistic
       For fldCnt = firstCol + 1 To lastCol
         Set myStatistic.Db = SSDB
-        ImportCol(fldCnt) = myStatistic.GetLabelID(Cells(header, fldCnt))
+        ImportCol(fldCnt) = GetLabelID(Cells(header, fldCnt), SSDB)
         If ImportCol(fldCnt) > 0 Then
           nAtts = nAtts + 1
         ElseIf UCase(Cells(header, fldCnt)) = "YEARS" Or _

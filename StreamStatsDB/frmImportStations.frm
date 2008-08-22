@@ -1,5 +1,4 @@
 VERSION 5.00
-Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmImportStations 
    Caption         =   "Import Stations"
    ClientHeight    =   3240
@@ -86,7 +85,7 @@ Begin VB.Form frmImportStations
       AllowEditHeader =   0   'False
       AllowLoad       =   0   'False
       AllowSorting    =   0   'False
-      Rows            =   77
+      Rows            =   78
       Cols            =   2
       ColWidthMinimum =   300
       gridFontBold    =   0   'False
@@ -612,7 +611,7 @@ Stat:
                   End If
                 End If
               End If
-              dataValues(2, attCnt, 2) = myStatistic.GetLabelID(attribAbbrev)
+              dataValues(2, attCnt, 2) = GetLabelID(attribAbbrev, SSDB)
               dataValues(2, attCnt, 3) = attribAbbrev
               If takeLog(col) Then
                 dataValues(2, attCnt, 4) = CSng(10 ^ parsed(col))

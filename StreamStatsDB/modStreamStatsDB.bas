@@ -193,3 +193,15 @@ BadLatLong:
   DMS2Decimal = Degrees
 
 End Function
+
+Public Function GetLabelID(StatLabel As String, DB As nssDatabase) As Long
+  Dim myRec As Recordset
+
+  Set myRec = DB.DB.OpenRecordset("STATLABEL", dbOpenSnapshot)
+  With myRec
+    .FindFirst "StatLabel='" & StatLabel & "'"
+    If .NoMatch Then .FindFirst "StatisticLabel='" & StatLabel & "'"
+    If Not .NoMatch Then GetLabelID = .Fields("StatisticLabelID")
+  End With
+End Function
+
