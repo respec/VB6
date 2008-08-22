@@ -1,5 +1,4 @@
 VERSION 5.00
-Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmStaData 
    Caption         =   "Station Data"
    ClientHeight    =   4455
@@ -424,7 +423,7 @@ Private Function QACheck() As Boolean
                 SaidYes = True
               ElseIf response = 2 And Not newStat(row) Then
                 Set mySource = _
-                    SSDB.Sources(CStr(station.Statistics(grdStaData.row).sourceid))
+                    SSDB.Sources(CStr(station.Statistics(grdStaData.row).SourceID))
                 mySource.Edit .TextMatrix(row, col), .TextMatrix(row, col + 1)
                 For i = row + 1 To .Rows
                   'Change Citation of other data in grid with same source
@@ -657,7 +656,7 @@ Private Sub RecordChanges(OldVals() As String, madeChanges As Boolean)
         madeChanges = True
       End If
       If col = 2 Or col = 3 Then 'convert label string to index
-        Changes(2, row, col) = myStat.GetLabelID(grdStaData.TextMatrix(row, col - 1))
+        Changes(2, row, col) = GetLabelID(grdStaData.TextMatrix(row, col - 1), SSDB)
       Else
         Changes(2, row, col) = grdStaData.TextMatrix(row, col - 1)
       End If

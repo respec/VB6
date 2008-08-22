@@ -1,12 +1,12 @@
 VERSION 5.00
-Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
-Object = "{BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0"; "TABCTL32.OCX"
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "Comdlg32.ocx"
+Object = "{BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0"; "Tabctl32.ocx"
 Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmStreamStatsDB 
    Caption         =   "Stream Stats DB"
    ClientHeight    =   8625
    ClientLeft      =   165
-   ClientTop       =   780
+   ClientTop       =   735
    ClientWidth     =   10800
    Icon            =   "frmStreamStatsDB.frx":0000
    LinkTopic       =   "Form1"
@@ -53,8 +53,8 @@ Begin VB.Form frmStreamStatsDB
       TabCaption(1)   =   "Stat&istic Management"
       TabPicture(1)   =   "frmStreamStatsDB.frx":0326
       Tab(1).ControlEnabled=   0   'False
-      Tab(1).Control(0)=   "fraStatType"
-      Tab(1).Control(1)=   "fraStatistics"
+      Tab(1).Control(0)=   "fraStatistics"
+      Tab(1).Control(1)=   "fraStatType"
       Tab(1).ControlCount=   2
       Begin VB.Frame fraStatType 
          Caption         =   "Statistic Type"
@@ -625,7 +625,7 @@ Begin VB.Form frmStreamStatsDB
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   -1  'True
-         Rows            =   2
+         Rows            =   1
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -858,7 +858,7 @@ Private Sub cmdAdd_Click()
   With grdGenInfo
     If tabMain.Tab = 0 Then
       SSDB.state.SelStations.Add New ssStation
-      Set SSDB.state.SelStations(SSDB.state.SelStations.Count).Db = SSDB
+      Set SSDB.state.SelStations(SSDB.state.SelStations.Count).DB = SSDB
       Set SSDB.state.SelStations(SSDB.state.SelStations.Count).state = SSDB.state
       SSDB.state.SelStations(SSDB.state.SelStations.Count).IsNew = True
 '      cmdDelete.Enabled = True
@@ -870,7 +870,7 @@ Private Sub cmdAdd_Click()
       Next col
     ElseIf tabMain.Tab = 1 Then
       SSDB.SelStats.Add New ssStatLabel
-      Set SSDB.SelStats(SSDB.SelStats.Count).Db = SSDB
+      Set SSDB.SelStats(SSDB.SelStats.Count).DB = SSDB
       SSDB.SelStats(SSDB.SelStats.Count).IsNew = True
 '      cmdDelete.Enabled = True
       .Rows = .Rows + 1
@@ -1212,7 +1212,7 @@ Private Function QACheck() As Boolean
                     "User Action Verification", "+&Save", "-&Cancel")
                 If response = 1 Then
                   Set myStateBasin = New ssStateBasin
-                  Set myStateBasin.Db = SSDB
+                  Set myStateBasin.DB = SSDB
                   myStateBasin.Add str
                   Set SSDB.state.StateBasins = Nothing
                   Set myStateBasin = _
@@ -1255,7 +1255,7 @@ Private Sub cmdSaveStat_Click()
   End If
   If AddingStatType Then
     Set myStatType = New ssStatType
-    Set myStatType.Db = SSDB
+    Set myStatType.DB = SSDB
     myStatType.Add Trim(txtStatTypeCode.Text), txtStatType.Text
   ElseIf EditingStatType Then
     SSDB.StatType.Edit Trim(txtStatTypeCode.Text), txtStatType.Text
@@ -1543,11 +1543,11 @@ Private Sub cboState_Click()
       If stationCnt = 0 Then GoTo x
       ReDim ListedStations(1 To stationCnt)
       For stateIndex = 1 To stationCnt
-        If SSDB.state.Stations(stateIndex).HasData Then
+'        If SSDB.state.Stations(stateIndex).HasData Then
           lstStations.List(stateIndex - 1) = SSDB.state.Stations(stateIndex).label
-        Else
-          lstStations.List(stateIndex - 1) = "*" & SSDB.state.Stations(stateIndex).label
-        End If
+'        Else
+'          lstStations.List(stateIndex - 1) = "*" & SSDB.state.Stations(stateIndex).label
+'        End If
         Set ListedStations(stateIndex) = SSDB.state.Stations(stateIndex)
       Next
       SelectStations
@@ -1700,11 +1700,11 @@ Private Sub cboFilter_Click()
           ReDim ListedStations(1 To stationCnt)
           catChoice = GetSetting("StreamStatsDB", "Defaults", SSDB.state.code & "StateStations")
           For stateIndex = 1 To stationCnt
-            If SSDB.state.Stations(stateIndex).HasData Then
+'            If SSDB.state.Stations(stateIndex).HasData Then
               lstStations.List(stateIndex - 1) = SSDB.state.Stations(stateIndex).label
-            Else
-              lstStations.List(stateIndex - 1) = "*" & SSDB.state.Stations(stateIndex).label
-            End If
+'            Else
+'              lstStations.List(stateIndex - 1) = "*" & SSDB.state.Stations(stateIndex).label
+'            End If
             Set ListedStations(stateIndex) = SSDB.state.Stations(stateIndex)
           Next
           SelectStations
@@ -1734,11 +1734,11 @@ Private Sub cboCategory_Click()
       stationCnt = SSDB.state.Statebasin.Stations.Count
       ReDim ListedStations(1 To stationCnt)
       For stationIndex = 1 To stationCnt
-        If SSDB.state.Statebasin.Stations(stationIndex).HasData Then
+'        If SSDB.state.Statebasin.Stations(stationIndex).HasData Then
           lstStations.List(stationIndex - 1) = SSDB.state.Statebasin.Stations(stationIndex).label
-        Else
-          lstStations.List(stationIndex - 1) = "*" & SSDB.state.Statebasin.Stations(stationIndex).label
-        End If
+'        Else
+'          lstStations.List(stationIndex - 1) = "*" & SSDB.state.Statebasin.Stations(stationIndex).label
+'        End If
         Set ListedStations(stationIndex) = SSDB.state.Statebasin.Stations(stationIndex)
       Next
       SaveSetting "StreamStatsDB", "Defaults", SSDB.state.code & "SSBasin", SSDB.state.Statebasin.Name
@@ -1749,11 +1749,11 @@ Private Sub cboCategory_Click()
       stationCnt = SSDB.state.County.Stations.Count
       ReDim ListedStations(stationCnt)
       For stationIndex = 1 To SSDB.state.County.Stations.Count
-        If SSDB.state.County.Stations(stationIndex).HasData Then
+'        If SSDB.state.County.Stations(stationIndex).HasData Then
           lstStations.List(stationIndex - 1) = SSDB.state.County.Stations(stationIndex).label
-        Else
-          lstStations.List(stationIndex - 1) = "*" & SSDB.state.County.Stations(stationIndex).label
-        End If
+'        Else
+'          lstStations.List(stationIndex - 1) = "*" & SSDB.state.County.Stations(stationIndex).label
+'        End If
         Set ListedStations(stationIndex) = SSDB.state.County.Stations(stationIndex)
       Next
       SaveSetting "StreamStatsDB", "Defaults", SSDB.state.code & "SSCounty", SSDB.state.County.Name
@@ -1764,11 +1764,11 @@ Private Sub cboCategory_Click()
       stationCnt = SSDB.state.MCD.Stations.Count
       ReDim ListedStations(stationCnt)
       For stationIndex = 1 To stationCnt
-        If SSDB.state.MCD.Stations(stationIndex).HasData Then
+'        If SSDB.state.MCD.Stations(stationIndex).HasData Then
           lstStations.List(stationIndex - 1) = SSDB.state.MCD.Stations(stationIndex).label
-        Else
-          lstStations.List(stationIndex - 1) = "*" & SSDB.state.MCD.Stations(stationIndex).label
-        End If
+'        Else
+'          lstStations.List(stationIndex - 1) = "*" & SSDB.state.MCD.Stations(stationIndex).label
+'        End If
         Set ListedStations(stationIndex) = SSDB.state.MCD.Stations(stationIndex)
       Next
       SaveSetting "StreamStatsDB", "Defaults", SSDB.state.code & "SSMCD", SSDB.state.MCD.Name
@@ -1779,11 +1779,11 @@ Private Sub cboCategory_Click()
       stationCnt = SSDB.state.HUC.Stations.Count
       ReDim ListedStations(stationCnt)
       For stationIndex = 1 To stationCnt
-        If SSDB.state.HUC.Stations(stationIndex).HasData Then
+'        If SSDB.state.HUC.Stations(stationIndex).HasData Then
           lstStations.List(stationIndex - 1) = SSDB.state.HUC.Stations(stationIndex).label
-        Else
-          lstStations.List(stationIndex - 1) = "*" & SSDB.state.HUC.Stations(stationIndex).label
-        End If
+'        Else
+'          lstStations.List(stationIndex - 1) = "*" & SSDB.state.HUC.Stations(stationIndex).label
+'        End If
         Set ListedStations(stationIndex) = SSDB.state.HUC.Stations(stationIndex)
       Next
       SaveSetting "StreamStatsDB", "Defaults", SSDB.state.code & "SSHUC", SSDB.state.HUC.code
@@ -1791,11 +1791,11 @@ Private Sub cboCategory_Click()
       stationCnt = SSDB.state.Stations.Count
       ReDim ListedStations(stationCnt)
       For stationIndex = 1 To stationCnt
-        If SSDB.state.Stations(stationIndex).HasData Then
+'        If SSDB.state.Stations(stationIndex).HasData Then
           lstStations.List(stationIndex - 1) = SSDB.state.Stations(stationIndex).label
-        Else
-          lstStations.List(stationIndex - 1) = "*" & SSDB.state.Stations(stationIndex).label
-        End If
+'        Else
+'          lstStations.List(stationIndex - 1) = "*" & SSDB.state.Stations(stationIndex).label
+'        End If
         Set ListedStations(stationIndex) = SSDB.state.Stations(stationIndex)
       Next
     End If
@@ -2215,11 +2215,11 @@ Private Sub ChangeLabel()
       ListedStations(staNum).label = _
           ListedStations(staNum).id & "-" & ListedStations(staNum).Name
     End If
-    If ListedStations(staNum).HasData Then
+'    If ListedStations(staNum).HasData Then
       lstStations.List(staNum - 1) = ListedStations(staNum).label
-    Else
-      lstStations.List(staNum - 1) = "*" & ListedStations(staNum).label
-    End If
+'    Else
+'      lstStations.List(staNum - 1) = "*" & ListedStations(staNum).label
+'    End If
   Next staNum
   Me.MousePointer = vbDefault
 End Sub
@@ -2289,7 +2289,7 @@ End Sub
 
 Private Sub ShutErDown()
   On Error GoTo x
-  If Len(Dir(fileTitle)) > 0 Then SSDB.Db.Close
+  If Len(Dir(fileTitle)) > 0 Then SSDB.DB.Close
 x:
   Unload Me
 
