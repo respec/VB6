@@ -158,7 +158,7 @@ Public Sub Add(ByRef NewValues() As String, StatIndex As Long, Optional NoWarnFl
   On Error GoTo 0
   
   If NewValues(2, StatIndex, 2) = "" Then
-    NewValues(2, StatIndex, 2) = GetLabelID(NewValues(2, StatIndex, 3))
+    NewValues(2, StatIndex, 2) = GetLabelID(NewValues(2, StatIndex, 3), pDB)
   End If
   
   sql = "SELECT * FROM STATISTIC " & _
