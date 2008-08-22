@@ -6,11 +6,11 @@ Begin VB.Form frmLowFlow
    ClientHeight    =   9075
    ClientLeft      =   45
    ClientTop       =   270
-   ClientWidth     =   8985
+   ClientWidth     =   9690
    Icon            =   "frmLowFlow.frx":0000
    LinkTopic       =   "Form1"
    ScaleHeight     =   9075
-   ScaleWidth      =   8985
+   ScaleWidth      =   9690
    StartUpPosition =   3  'Windows Default
    Begin VB.Frame fraUnits 
       Caption         =   "Units"
@@ -24,7 +24,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   615
-      Left            =   5130
+      Left            =   5400
       TabIndex        =   38
       Top             =   480
       Width           =   2175
@@ -94,7 +94,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   492
-      Left            =   8160
+      Left            =   8880
       TabIndex        =   32
       Top             =   7440
       Width           =   732
@@ -112,7 +112,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   8160
+      Left            =   8880
       TabIndex        =   29
       Top             =   600
       Width           =   732
@@ -130,7 +130,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   7320
+      Left            =   7920
       TabIndex        =   28
       Top             =   600
       Width           =   732
@@ -183,7 +183,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   492
-      Left            =   8160
+      Left            =   8880
       TabIndex        =   25
       Top             =   8040
       Width           =   732
@@ -200,7 +200,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   8160
+      Left            =   8880
       TabIndex        =   21
       Top             =   4320
       Width           =   732
@@ -217,7 +217,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   8160
+      Left            =   8880
       TabIndex        =   20
       Top             =   3840
       Width           =   732
@@ -234,7 +234,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   8160
+      Left            =   8880
       TabIndex        =   19
       Top             =   4800
       Width           =   732
@@ -251,7 +251,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   8160
+      Left            =   8880
       TabIndex        =   18
       Top             =   5280
       Width           =   732
@@ -273,22 +273,22 @@ Begin VB.Form frmLowFlow
       TabIndex        =   11
       Top             =   3240
       Visible         =   0   'False
-      Width           =   7935
+      Width           =   8655
       Begin ATCoCtl.ATCoGrid grdComps 
          CausesValidation=   0   'False
          Height          =   1515
          Left            =   120
          TabIndex        =   24
          Top             =   1560
-         Width           =   7695
-         _ExtentX        =   13573
+         Width           =   8415
+         _ExtentX        =   14843
          _ExtentY        =   2672
          SelectionToggle =   0   'False
          AllowBigSelection=   -1  'True
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -357,15 +357,15 @@ Begin VB.Form frmLowFlow
          Left            =   120
          TabIndex        =   31
          Top             =   3960
-         Width           =   7695
-         _ExtentX        =   13573
+         Width           =   8415
+         _ExtentX        =   14843
          _ExtentY        =   2884
          SelectionToggle =   0   'False
          AllowBigSelection=   -1  'True
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   338
+         Rows            =   353
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -398,15 +398,15 @@ Begin VB.Form frmLowFlow
          Left            =   120
          TabIndex        =   23
          Top             =   240
-         Width           =   7695
-         _ExtentX        =   13573
+         Width           =   8415
+         _ExtentX        =   14843
          _ExtentY        =   2090
          SelectionToggle =   0   'False
          AllowBigSelection=   -1  'True
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -458,21 +458,21 @@ Begin VB.Form frmLowFlow
       TabIndex        =   10
       Top             =   3960
       Visible         =   0   'False
-      Width           =   7815
+      Width           =   8655
       Begin ATCoCtl.ATCoGrid grdParms 
          Height          =   1695
          Left            =   120
          TabIndex        =   22
          Top             =   240
-         Width           =   7575
-         _ExtentX        =   13361
+         Width           =   8415
+         _ExtentX        =   14843
          _ExtentY        =   2990
          SelectionToggle =   0   'False
          AllowBigSelection=   -1  'True
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   6
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -515,14 +515,14 @@ Begin VB.Form frmLowFlow
       Left            =   120
       TabIndex        =   2
       Top             =   1080
-      Width           =   8775
+      Width           =   9495
       Begin VB.ListBox lstRetPds 
          Height          =   1230
          Left            =   7440
          Sorted          =   -1  'True
          TabIndex        =   8
          Top             =   600
-         Width           =   1215
+         Width           =   1815
       End
       Begin VB.ListBox lstParms 
          Height          =   1230
@@ -672,7 +672,7 @@ Begin VB.Form frmLowFlow
    Begin VB.ComboBox cboState 
       Height          =   315
       ItemData        =   "frmLowFlow.frx":0321
-      Left            =   3600
+      Left            =   3720
       List            =   "frmLowFlow.frx":0323
       TabIndex        =   0
       Text            =   "cboState"
@@ -720,7 +720,7 @@ Begin VB.Form frmLowFlow
       EndProperty
       ForeColor       =   &H80000008&
       Height          =   255
-      Left            =   3000
+      Left            =   3120
       TabIndex        =   9
       Top             =   600
       Width           =   570
@@ -1303,6 +1303,17 @@ Private Sub grdInterval_RowColChange()
         Next i
       End If
       .ComboCheckValidValues = False
+    ElseIf .col = .cols - 1 Then
+      If Metric Then
+        For i = 1 To DB.Units.Count
+          .addValue DB.Units(i).MetricLabel
+        Next i
+      Else
+        For i = 1 To DB.Units.Count
+          .addValue DB.Units(i).EnglishLabel
+        Next i
+      End If
+      .ComboCheckValidValues = True
     End If
   End With
 End Sub
@@ -2347,7 +2358,7 @@ Private Sub SetGrid(Table As String)
         .ColType(0) = ATCoTxt
         .TextMatrix(-1, 0) = "Parm"
         .TextMatrix(0, 0) = "Type"
-        .colWidth(0) = 800
+        .colWidth(0) = 900
         .ColType(1) = ATCoTxt
         .TextMatrix(-1, 1) = ""
         .TextMatrix(0, 1) = "Parameter"
@@ -2355,20 +2366,20 @@ Private Sub SetGrid(Table As String)
         .ColType(2) = ATCoTxt
         .TextMatrix(-1, 2) = ""
         .TextMatrix(0, 2) = "Abbreviation"
-        .colWidth(2) = 1200
+        .colWidth(2) = 1300
         .ColType(3) = ATCoSng
         .TextMatrix(-1, 3) = "Min"
         .TextMatrix(0, 3) = "Value"
-        .colWidth(3) = 700
+        .colWidth(3) = 800
         .ColType(4) = ATCoSng
         .TextMatrix(-1, 4) = "Max"
         .TextMatrix(0, 4) = "Value"
-        .colWidth(4) = 700
+        .colWidth(4) = 800
         '.ColType(5) = ATCoInt
         .CausesValidation = False
         .TextMatrix(-1, 5) = "Conversion"
         .TextMatrix(0, 5) = "Flag"
-        .colWidth(5) = 900
+        .colWidth(5) = 1100
         '.CellBackColor = &H80000005
         For row = 1 To SelParms.Count
           For col = 0 To .cols - 1
@@ -2411,11 +2422,11 @@ Private Sub SetGrid(Table As String)
       With grdInterval
         .Rows = lstRetPds.SelCount
         If MyRegion.PredInt Then
-          DepVarFlds = 9
+          DepVarFlds = 10
           AddSpace = 0
         Else
-          DepVarFlds = 6
-          AddSpace = 300
+          DepVarFlds = 7
+          AddSpace = 250
         End If
         .cols = DepVarFlds + 1
         .ColType(0) = ATCoTxt
@@ -2463,9 +2474,11 @@ Private Sub SetGrid(Table As String)
           .TextMatrix(0, 8) = "Variance"
           .colWidth(8) = 740
         End If
-        .ColType(.cols - 1) = ATCoSng
-        .TextMatrix(-1, .cols - 1) = "Drn. Area"
-        .TextMatrix(0, .cols - 1) = "Exponent"
+        .ColType(.cols - 2) = ATCoSng
+        .TextMatrix(-1, .cols - 2) = "Drn. Area"
+        .TextMatrix(0, .cols - 2) = "Exponent"
+        .colWidth(.cols - 2) = 850 + AddSpace
+        .TextMatrix(0, .cols - 1) = "Units"
         .colWidth(.cols - 1) = 850 + AddSpace
         For col = 0 To .cols - 1
           .ColEditable(col) = True
@@ -2486,6 +2499,12 @@ Private Sub SetGrid(Table As String)
                         Else
                           .Text = MyDepVar.ExpDA
                         End If
+                Case .cols - 1:
+                  If rdoUnits(0).Value Then
+                    .Text = MyDepVar.Units.EnglishLabel
+                  Else
+                    .Text = MyDepVar.Units.MetricLabel
+                  End If
                 Case 7: .Text = MyDepVar.tdist
                 Case 8: .Text = MyDepVar.Variance
                 Case 9: .Text = MyDepVar.ExpDA
@@ -2525,7 +2544,7 @@ Private Sub SetGrid(Table As String)
         .TextMatrix(0, 6) = "Exponent"
         For col = 0 To .cols - 1
           .ColEditable(col) = True
-          .colWidth(0) = 930
+          .colWidth(0) = 1080
         Next col
         If lstRetPds.SelCount > 0 Then
           For row = 1 To compCnt
@@ -2932,7 +2951,8 @@ Private Function ChangesMade() As Boolean
         oldVals(7) = MyDepVar.tdist
         oldVals(8) = MyDepVar.Variance
       End If
-      oldVals(DepVarFlds) = MyDepVar.ExpDA
+      oldVals(DepVarFlds - 1) = MyDepVar.ExpDA
+      oldVals(DepVarFlds) = MyDepVar.Units.id
       Set MyDepVar.DB = DB
       If compCnt > 0 And MyRegion.PredInt Then
         OldMatrix = MyDepVar.PopulateMatrix()
@@ -2942,6 +2962,9 @@ Private Function ChangesMade() As Boolean
       For i = 0 To DepVarFlds
         tmpstr = grdInterval.TextMatrix(1, i)
         If tmpstr = "" Then tmpstr = "0"
+        If i = DepVarFlds Then 'convert unit label to index for comparison
+          tmpstr = CStr(UnitIDFromLabel(grdInterval.TextMatrix(1, i), DB.Units))
+        End If
         If tmpstr <> oldVals(i) Then
           Changes(0, i) = oldVals(i)
           Changes(1, i) = grdInterval.TextMatrix(1, i)
