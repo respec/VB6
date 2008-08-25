@@ -288,16 +288,16 @@ Public Sub Add(ByRef NewValues() As String, StaIndex As Long, Optional ImportFlg
                   .Fields("StationTypeCode") = Trim(NewValues(2, StaIndex, fld))
           Case 4: .Fields("IsRegulated") = Trim(NewValues(2, StaIndex, fld))
           Case 5: .Fields("PeriodOfRecord") = Trim(NewValues(2, StaIndex, fld))
-          Case 6: .Fields("StationRemarks") = Trim(NewValues(2, StaIndex, fld))
-          Case 7: .Fields("Latitude") = Trim(NewValues(2, StaIndex, fld))
-          Case 8: .Fields("Longitude") = Trim(NewValues(2, StaIndex, fld))
-          Case 9: .Fields("HUC") = Trim(NewValues(2, StaIndex, fld))
-          Case 10: .Fields("StateBasinCode") = Trim(NewValues(2, StaIndex, fld))
-          Case 11: .Fields("CountyCode") = Trim(NewValues(2, StaIndex, fld))
-          Case 12: .Fields("MCDCode") = Trim(NewValues(2, StaIndex, fld))
-          Case 13: .Fields("Directions") = Trim(NewValues(2, StaIndex, fld))
-          Case 14: .Fields("StateCode") = GetStateCode(Trim(NewValues(2, StaIndex, fld)))
-          Case 15: .Fields("DistrictCode") = GetStateCode(Trim(NewValues(2, StaIndex, fld)))
+          Case 6: .Fields("Directions") = Trim(NewValues(2, StaIndex, fld))
+          Case 7: .Fields("StationRemarks") = Trim(NewValues(2, StaIndex, fld))
+          Case 8: .Fields("Latitude") = Trim(NewValues(2, StaIndex, fld))
+          Case 9: .Fields("Longitude") = Trim(NewValues(2, StaIndex, fld))
+          Case 10: .Fields("DistrictCode") = GetStateCode(Trim(NewValues(2, StaIndex, fld)))
+          Case 11: .Fields("StateCode") = GetStateCode(Trim(NewValues(2, StaIndex, fld)))
+          Case 12: .Fields("CountyCode") = Trim(NewValues(2, StaIndex, fld))
+          Case 13: .Fields("MCDCode") = Trim(NewValues(2, StaIndex, fld))
+          Case 14: .Fields("HUC") = Trim(NewValues(2, StaIndex, fld))
+          Case 15: .Fields("StateBasinCode") = Trim(NewValues(2, StaIndex, fld))
         End Select
       End If
     Next fld
@@ -380,11 +380,12 @@ Public Sub Edit(ByRef NewValues() As String, StaIndex As Long)
       For fld = 2 To UBound(NewValues, 3)
         If fld = 3 Then NewValues(2, StaIndex, fld) = _
             GetStationTypeCode(NewValues(2, StaIndex, fld))
-        If (fld = 10 And NewValues(2, StaIndex, fld) = "") Then
+        If (fld = 15 And NewValues(2, StaIndex, fld) = "") Then
           .Fields(fld - 1) = Null
         ElseIf Len(NewValues(2, StaIndex, fld)) > 0 Then 'only update if array element contains something
-          If fld > 13 Then 'State and District codes fall after HasData field on Station table
-            .Fields(fld) = GetStateCode(NewValues(2, StaIndex, fld))
+'          If fld > 13 Then 'State and District codes fall after HasData field on Station table
+          If fld = 10 Or fld = 11 Then 'State or District codes
+            .Fields(fld - 1) = GetStateCode(NewValues(2, StaIndex, fld))
           Else
             .Fields(fld - 1) = NewValues(2, StaIndex, fld)
           End If
@@ -431,7 +432,7 @@ Public Sub PopulateStatistics()
         "STATTYPE.StatisticTypeCode, STATTYPE.StatisticTypeID, STATTYPE.StatisticType, " & _
         "DATASOURCE.DataSourceID, DATASOURCE.Citation, DATASOURCE.CitationURL " & _
         "FROM DATASOURCE RIGHT JOIN (STATTYPE INNER JOIN (STATLABEL INNER JOIN STATISTIC ON " & _
-        "STATLABEL.StatisticLabelID = STATLABEL.StatisticLabelID) ON " & _
+        "STATLABEL.StatisticLabelID = STATISTIC.StatisticLabelID) ON " & _
         "STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode) ON " & _
         "DATASOURCE.DataSourceID = STATISTIC.DataSourceID " & _
         "WHERE STATISTIC.StaID='" & pID & "' " & _
