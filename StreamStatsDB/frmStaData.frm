@@ -1,4 +1,5 @@
 VERSION 5.00
+Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmStaData 
    Caption         =   "Station Data"
    ClientHeight    =   4455
@@ -253,7 +254,7 @@ Private Sub cmdAdd_Click()
     newStat(.Rows) = True
     ReDim Preserve SelStats(1 To .Rows)
     Set SelStats(.Rows) = New ssStatistic
-    Set SelStats(.Rows).Db = SSDB
+    Set SelStats(.Rows).DB = SSDB
     Set SelStats(.Rows).station = station
     .row = .Rows
     .col = 3
@@ -309,6 +310,8 @@ End Sub
 Private Sub cmdSave_Click()
   Dim row&, col&, response&, fldID&
   Dim madeChanges As Boolean
+  Dim lOldVal As String
+  Dim lNewVal As String
   
   'Perform QA check on values selected/entered in grid
   If Not QACheck Then GoTo NoChanges
@@ -331,7 +334,7 @@ Private Sub cmdSave_Click()
     For row = 1 To grdStaData.Rows
       If newStat(row) Then
         Set SelStats(row) = New ssStatistic
-        Set SelStats(row).Db = SSDB
+        Set SelStats(row).DB = SSDB
         Set SelStats(row).station = station
         SelStats(row).Add Changes(), row
       Else
@@ -342,13 +345,19 @@ Private Sub cmdSave_Click()
         If col = 2 Or col = 4 Or col = 6 Or col = 7 Then
           If Changes(0, row, col) = "1" Or Changes(0, row, col) = "2" Then
             Select Case col
-              Case 2: fldID = 3
-              Case 4: fldID = 4
-              Case 6: fldID = 5
+              Case 2: fldID = 1 '3
+              Case 4: fldID = 3 '4
+              Case 6: fldID = 4 '5
               Case 7: fldID = 2
             End Select
-            SSDB.RecordChanges TransID, "STATISTIC", fldID, CStr(station.id), _
-                Changes(1, row, col), Changes(2, row, col)
+            If col = 7 Then 'record change in source ID (source can be too long for field)
+              lOldVal = GetSourceID(Changes(1, row, col))
+              lNewVal = GetSourceID(Changes(2, row, col))
+            Else
+              lOldVal = Changes(1, row, col)
+              lNewVal = Changes(2, row, col)
+            End If
+            SSDB.RecordChanges TransID, "STATISTIC", fldID, CStr(station.id), lOldVal, lNewVal
           End If
         End If
       Next col
@@ -417,7 +426,7 @@ Private Function QACheck() As Boolean
               End If
               If response = 1 Then
                 Set mySource = New ssSource
-                Set mySource.Db = SSDB
+                Set mySource.DB = SSDB
                 mySource.Add .TextMatrix(row, col), .TextMatrix(row, col + 1)
                 Set SSDB.Sources = Nothing
                 SaidYes = True
@@ -645,7 +654,7 @@ Private Sub RecordChanges(OldVals() As String, madeChanges As Boolean)
   Dim myStat As ssStatistic
   
   Set myStat = New ssStatistic
-  Set myStat.Db = SSDB
+  Set myStat.DB = SSDB
   statCnt = grdStaData.Rows
   ReDim Changes(0 To 2, 1 To statCnt, 1 To UBound(DataFields))
   For row = 1 To statCnt
