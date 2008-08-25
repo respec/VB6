@@ -324,25 +324,25 @@ Private Function wilfrt(sku!, zeta!, errflg&) As Single
   'REV 7/86 BY AML TO OSW CODING CONVENTION
   'rev 9/96 by PRH for VB
     
-  Dim ask!, a!, b!, G!, h!, z!, sig!, fmu!
+  Dim ask!, A!, B!, G!, h!, z!, sig!, fmu!
   Const skutol As Single = 0.0003
 
   'first time thru or new sku (skew)
   ask = Abs(sku)
   If ask >= skutol Then
     'nonzero skew
-    Call wilfrs(ask, G, h, a, b, errflg)
+    Call wilfrs(ask, G, h, A, B, errflg)
     sig = G * 0.1666667
     fmu = 1# - sig * sig
     If sku < 0# Then
       sig = -sig
-      a = -a
+      A = -A
     End If
     z = fmu + sig * zeta
     If z < h Then
       z = h
     End If
-    wilfrt = a * (z * z * z - b)
+    wilfrt = A * (z * z * z - B)
   Else
     'zero skew
     wilfrt = zeta
@@ -350,7 +350,7 @@ Private Function wilfrt(sku!, zeta!, errflg&) As Single
 
 End Function
 
-Private Sub wilfrs(sk!, G!, h!, a!, b!, errflg&)
+Private Sub wilfrs(sk!, G!, h!, A!, B!, errflg&)
 
   'COMPUTES PARAMETERS USED BY WILFRT TRANSFORMATIN
   'USES APPROX FORMULA AND CORRECTION TERMS PREPARED FROM
@@ -568,19 +568,19 @@ Private Sub wilfrs(sk!, G!, h!, a!, b!, errflg&)
   tog = 2# / s
   q = tog
   If q < 0.4 Then q = 0.4
-  a = q + row(3)
+  A = q + row(3)
 '   replace "row" equivalence
 '    a = q + p
   q = 0.12 * (s - 2.25)
   If q < 0# Then q = 0#
-  b = 1# + q * q + row(4)
+  B = 1# + q * q + row(4)
 '   replace "row" equivalence
 '    b = 1# + q * q + tog
-  If (b - tog / a) < 0# Then
+  If (B - tog / A) < 0# Then
     'Stop WILFRS
     ssMessageBox "Very serious problem in routine WILFRS.  Contact software distributor", 16
   End If
-  h = (b - tog / a) ^ 0.3333333
+  h = (B - tog / A) ^ 0.3333333
 
 End Sub
 

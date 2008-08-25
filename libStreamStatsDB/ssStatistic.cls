@@ -260,7 +260,7 @@ Public Sub Edit(ByRef NewValues() As String, StatIndex As Long)
   On Error GoTo 0
 
   sql = "SELECT STATISTIC.* FROM STATLABEL INNER JOIN STATISTIC ON " & _
-      "STATLABEL.StatisticLabelID = STATLABEL.StatisticLabelID " & _
+      "STATLABEL.StatisticLabelID = STATISTIC.StatisticLabelID " & _
       "WHERE STATLABEL.StatLabel='" & Me.Abbrev & _
       "' AND STATISTIC.StaID='" & Me.Station.ID & "';"
   'using dbInconsistent to get recordset not read-only,
