@@ -1,12 +1,12 @@
 VERSION 5.00
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "Comdlg32.ocx"
-Object = "{BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0"; "Tabctl32.ocx"
+Object = "{BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0"; "TABCTL32.OCX"
 Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmStreamStatsDB 
    Caption         =   "Stream Stats DB"
    ClientHeight    =   8625
    ClientLeft      =   165
-   ClientTop       =   735
+   ClientTop       =   780
    ClientWidth     =   10800
    Icon            =   "frmStreamStatsDB.frx":0000
    LinkTopic       =   "Form1"
@@ -940,16 +940,16 @@ Private Sub cmdNWIS_Click()
   PathName = GetSetting("StreamStatsDB", "Defaults", "NWISImportPath")
   With frmCDLG.CDLG
     .DialogTitle = "Select a file for import"
-    If Len(PathName) > 0 Then .filename = PathName & "*.xls"
+    If Len(PathName) > 0 Then .Filename = PathName & "*.xls"
     .Filter = "(*.xls)|*.xls"
     .filterIndex = 1
     .CancelError = True
     .ShowOpen
-    If Len(Dir(.filename, vbDirectory)) > 1 Then
-      PathName = Left(.filename, Len(.filename) - Len(.fileTitle))
+    If Len(Dir(.Filename, vbDirectory)) > 1 Then
+      PathName = Left(.Filename, Len(.Filename) - Len(.fileTitle))
       SaveSetting "StreamStatsDB", "Defaults", "NWISImportPath", PathName
       Me.MousePointer = vbHourglass
-      NWISImport .filename
+      NWISImport .Filename
       'Reassign class structure to previous selections
       cboState_Click
     End If
@@ -968,14 +968,14 @@ Private Sub cmdBCF_Click()
   PathName = GetSetting("StreamStatsDB", "Defaults", "BCFImportPath")
   With frmCDLG.CDLG
     .DialogTitle = "Select a file for import"
-    If Len(PathName) > 0 Then .filename = PathName & "*.txt"
+    If Len(PathName) > 0 Then .Filename = PathName & "*.txt"
     .Filter = "(*.txt)|*.txt"
     .filterIndex = 1
     .CancelError = True
     .ShowOpen
-    If Len(Dir(.filename, vbDirectory)) > 1 Then
-      PathName = PathNameOnly(.filename)
-      PathName = Left(.filename, Len(.filename) - Len(.fileTitle))
+    If Len(Dir(.Filename, vbDirectory)) > 1 Then
+      PathName = PathNameOnly(.Filename)
+      PathName = Left(.Filename, Len(.Filename) - Len(.fileTitle))
       SaveSetting "StreamStatsDB", "Defaults", "BCFImportPath", PathName
       Me.MousePointer = vbHourglass
       i = InStr(1, UCase(.fileTitle), "BC")
@@ -999,7 +999,7 @@ Private Sub cmdBCF_Click()
            (stName = LCase(SSDB.States(i).Abbrev)) Then Exit For
       Next i
       cboState.ListIndex = i - 1
-      BCFImport .filename
+      BCFImport .Filename
       cboState.ListIndex = i - 1
       Set SSDB.state.Stations = Nothing
       cboState_Click
@@ -1110,7 +1110,7 @@ Private Function QACheck() As Boolean
                     " must have a name.", vbCritical, "Bad Data Value"
                 GoTo QAproblem
               End If
-           Case 6 To 7:
+           Case 7 To 8:
               If Not IsNumeric(.TextMatrix(row, col)) Then
                 .TextMatrix(row, col) = ""
                 .Selected(row, col) = True
@@ -1134,7 +1134,7 @@ Private Function QACheck() As Boolean
 '                    vbCritical, "Bad Data Value"
 '                GoTo QAproblem
               End If
-              If col = 6 Then
+              If col = 7 Then
                 If CLng(.TextMatrix(row, col)) < 17.5 Then
                   response = myMsgBox.Show("The latitude for station " & .TextMatrix(row, 1) & _
                       " on row " & row & " is south of the Virgin Islands." & vbCrLf & _
@@ -1148,7 +1148,7 @@ Private Function QACheck() As Boolean
                       "an area in the U.S.", "Too far north for U.S.", "+&Change Now", "-&Continue")
                   If response = 1 Then GoTo QAproblem
                 End If
-              ElseIf col = 7 Then
+              ElseIf col = 8 Then
                 If Abs(CLng(.TextMatrix(row, col))) < 64# Then
                   response = myMsgBox.Show("The longitude for station " & .TextMatrix(row, 1) & _
                       " on row " & row & " is east of the Virgin Islands." & vbCrLf & _
@@ -1165,7 +1165,7 @@ Private Function QACheck() As Boolean
                   If response = 1 Then GoTo QAproblem
                 End If
               End If
-            Case 9: 'State Basin
+            Case 14: 'State Basin
               'Separate the code and name if they've been aggregated
               i = InStr(1, .TextMatrix(row, col), "-")
               str = Mid(.TextMatrix(row, col), i + 1)
@@ -1357,36 +1357,36 @@ Private Sub grdGenInfo_RowColChange()
                   .addValue "No"
                   .addValue "Yes"
                   .ComboCheckValidValues = True
-        Case 8:   .addValue ""
+        Case 13:  .addValue ""
                   For i = 1 To SSDB.state.HUCs.Count
                     .addValue SSDB.state.HUCs(i).code
                   Next i
                   .ComboCheckValidValues = True
                   .ColWidth(.col) = 1000
-        Case 9:   .addValue ""
+        Case 14:  .addValue ""
                   For i = 1 To SSDB.state.StateBasins.Count
                     .addValue SSDB.state.StateBasins(i).code & "-" & SSDB.state.StateBasins(i).Name
                   Next i
                   .ComboCheckValidValues = False
-        Case 10:  .addValue ""
+        Case 11:  .addValue ""
                   For i = 1 To SSDB.state.Counties.Count
                     .addValue SSDB.state.Counties(i).code & "-" & SSDB.state.Counties(i).Name
                   Next i
                   .ComboCheckValidValues = True
-        Case 11:  .addValue ""
+        Case 12:  .addValue ""
                   For i = 1 To SSDB.state.MCDs.Count
                     .addValue SSDB.state.MCDs(i).code & "-" & SSDB.state.MCDs(i).Name
                   Next i
                   .ComboCheckValidValues = True
-        Case 13, 14: .addValue ""
+        Case 9, 10: .addValue ""
                   For i = 1 To SSDB.States.Count
                     .addValue SSDB.States(i).Abbrev
                   Next i
                   .ComboCheckValidValues = True
       End Select
-      .ColWidth(9) = 2500
-      .ColWidth(10) = 2000
       .ColWidth(11) = 2500
+      .ColWidth(12) = 2000
+      .ColWidth(14) = 2500
     End With
   ElseIf tabMain.Tab = 1 Then
     With grdGenInfo
@@ -1820,25 +1820,25 @@ Private Sub ChangesMade(madeChanges As Boolean)
         If Not myStation.StationType Is Nothing Then OldVals(row, 3) = myStation.StationType.Name
         OldVals(row, 4) = myStation.IsRegulated
         OldVals(row, 5) = myStation.Period
-        OldVals(row, 6) = myStation.Remarks
-        OldVals(row, 7) = myStation.Latitude
-        OldVals(row, 8) = myStation.Longitude
-        OldVals(row, 9) = myStation.HUCCode
-        If myStation.StatebasinCode <> "" Then
-          OldVals(row, 10) = SSDB.state.StateBasins(myStation.StatebasinCode).code & _
-              "-" & SSDB.state.StateBasins(myStation.StatebasinCode).Name
-        End If
+        OldVals(row, 6) = myStation.Directions
+        OldVals(row, 7) = myStation.Remarks
+        OldVals(row, 8) = myStation.Latitude
+        OldVals(row, 9) = myStation.Longitude
+        OldVals(row, 10) = SSDB.States.ItemByKey(myStation.DistrictCode).Abbrev
+        OldVals(row, 11) = SSDB.States.ItemByKey(myStation.StateCode).Abbrev
         If myStation.countyCode <> "" Then
-          OldVals(row, 11) = SSDB.state.Counties(myStation.countyCode).code & _
+          OldVals(row, 12) = SSDB.state.Counties(myStation.countyCode).code & _
               "-" & SSDB.state.Counties(myStation.countyCode).Name
         End If
         If myStation.mcdCode <> "" Then
-          OldVals(row, 12) = SSDB.state.MCDs(myStation.mcdCode).code & _
+          OldVals(row, 13) = SSDB.state.MCDs(myStation.mcdCode).code & _
               "-" & SSDB.state.MCDs(myStation.mcdCode).Name
         End If
-        OldVals(row, 13) = myStation.Directions
-        OldVals(row, 14) = SSDB.States.ItemByKey(myStation.StateCode).Abbrev
-        OldVals(row, 15) = SSDB.States.ItemByKey(myStation.DistrictCode).Abbrev
+        OldVals(row, 14) = myStation.HUCCode
+        If myStation.StatebasinCode <> "" Then
+          OldVals(row, 15) = SSDB.state.StateBasins(myStation.StatebasinCode).code & _
+              "-" & SSDB.state.StateBasins(myStation.StatebasinCode).Name
+        End If
         Set myStation = Nothing
       End If
     Next row
@@ -1867,13 +1867,13 @@ Private Sub RecordChanges(OldVals() As String, madeChanges As Boolean)
       If grdGenInfo.TextMatrix(row, col - 1) <> OldVals(row, col) Then
         If Changes(0, row, col) <> "2" Then Changes(0, row, col) = "1"
         Changes(1, row, col) = OldVals(row, col)
-        If col = 10 Or col = 11 Or col = 12 Then  'extract code from full identifier
+        If col = 12 Or col = 13 Or col = 15 Then  'extract code from full identifier
           Changes(1, row, col) = StrSplit(OldVals(row, col), "-", "")
         End If
         madeChanges = True
       End If
       Changes(2, row, col) = grdGenInfo.TextMatrix(row, col - 1)
-      If col = 10 Or col = 11 Or col = 12 Then  'extract code from full identifier
+      If col = 12 Or col = 13 Or col = 15 Then  'extract code from full identifier
         Changes(2, row, col) = StrSplit(Changes(2, row, col), "-", "")
       End If
     Next col
@@ -1954,36 +1954,36 @@ Private Sub ResetGrid()
               .TextMatrix(row, 2) = SSDB.state.SelStations(row).StationType.Name
           .TextMatrix(row, 3) = SSDB.state.SelStations(row).IsRegulated
           .TextMatrix(row, 4) = SSDB.state.SelStations(row).Period
-          .TextMatrix(row, 5) = SSDB.state.SelStations(row).Remarks
+          .TextMatrix(row, 5) = SSDB.state.SelStations(row).Directions
+          .TextMatrix(row, 6) = SSDB.state.SelStations(row).Remarks
           If SSDB.state.SelStations(row).Latitude > 72# Then
-            .TextMatrix(row, 6) = DMS2Decimal(CStr(SSDB.state.SelStations(row).Latitude))
+            .TextMatrix(row, 7) = DMS2Decimal(CStr(SSDB.state.SelStations(row).Latitude))
           Else
-            .TextMatrix(row, 6) = CStr(SSDB.state.SelStations(row).Latitude)
+            .TextMatrix(row, 7) = CStr(SSDB.state.SelStations(row).Latitude)
           End If
           If SSDB.state.SelStations(row).Longitude > 172# Then
-            .TextMatrix(row, 7) = DMS2Decimal(CStr(SSDB.state.SelStations(row).Longitude))
+            .TextMatrix(row, 8) = DMS2Decimal(CStr(SSDB.state.SelStations(row).Longitude))
           Else
-            .TextMatrix(row, 7) = CStr(SSDB.state.SelStations(row).Longitude)
+            .TextMatrix(row, 8) = CStr(SSDB.state.SelStations(row).Longitude)
           End If
-          .TextMatrix(row, 8) = SSDB.state.SelStations(row).HUCCode
-          basinCode = SSDB.state.SelStations(row).StatebasinCode
-          If SSDB.state.StateBasins.IndexFromKey(basinCode) > 0 Then
-            .TextMatrix(row, 9) = SSDB.state.StateBasins(basinCode).code _
-                & "-" & SSDB.state.StateBasins(basinCode).Name
-          End If
+          .TextMatrix(row, 9) = SSDB.States.ItemByKey(SSDB.state.SelStations(row).DistrictCode).Abbrev
+          .TextMatrix(row, 10) = SSDB.States.ItemByKey(SSDB.state.SelStations(row).StateCode).Abbrev
           countyCode = SSDB.state.SelStations(row).countyCode
           If SSDB.state.Counties.IndexFromKey(countyCode) > 0 Then
-            .TextMatrix(row, 10) = SSDB.state.Counties(countyCode).code _
+            .TextMatrix(row, 11) = SSDB.state.Counties(countyCode).code _
                         & "-" & SSDB.state.Counties(countyCode).Name
           End If
           mcdCode = SSDB.state.SelStations(row).mcdCode
           If SSDB.state.MCDs.IndexFromKey(mcdCode) > 0 Then
-            .TextMatrix(row, 11) = SSDB.state.MCDs(mcdCode).code _
+            .TextMatrix(row, 12) = SSDB.state.MCDs(mcdCode).code _
                         & "-" & SSDB.state.MCDs(mcdCode).Name
           End If
-          .TextMatrix(row, 12) = SSDB.state.SelStations(row).Directions
-          .TextMatrix(row, 13) = SSDB.States.ItemByKey(SSDB.state.SelStations(row).StateCode).Abbrev
-          .TextMatrix(row, 14) = SSDB.States.ItemByKey(SSDB.state.SelStations(row).DistrictCode).Abbrev
+          .TextMatrix(row, 13) = SSDB.state.SelStations(row).HUCCode
+          basinCode = SSDB.state.SelStations(row).StatebasinCode
+          If SSDB.state.StateBasins.IndexFromKey(basinCode) > 0 Then
+            .TextMatrix(row, 14) = SSDB.state.StateBasins(basinCode).code _
+                & "-" & SSDB.state.StateBasins(basinCode).Name
+          End If
         End If
       Next row
       .Rows = SSDB.state.SelStations.Count
@@ -2062,16 +2062,16 @@ Private Sub Initialize(TabIndex As Long)
     StationFields(3) = "Type"
     StationFields(4) = "Regulated"
     StationFields(5) = "Period of Record"
-    StationFields(6) = "Remarks"
-    StationFields(7) = "Latitude"
-    StationFields(8) = "Longitude"
-    StationFields(9) = "HUC"
-    StationFields(10) = "Basin"
-    StationFields(11) = "County"
-    StationFields(12) = "MCD"
-    StationFields(13) = "Directions"
-    StationFields(14) = "State"
-    StationFields(15) = "District"
+    StationFields(6) = "Directions"
+    StationFields(7) = "Remarks"
+    StationFields(8) = "Latitude"
+    StationFields(9) = "Longitude"
+    StationFields(10) = "District"
+    StationFields(11) = "State"
+    StationFields(12) = "County"
+    StationFields(13) = "MCD"
+    StationFields(14) = "HUC"
+    StationFields(15) = "Basin"
     With grdGenInfo
       .FixedRows = 2
       .Rows = lstStations.SelCount
@@ -2088,12 +2088,12 @@ Private Sub Initialize(TabIndex As Long)
         End If
         If .Rows = 0 Then .ColWidth(fldCnt - 1) = Len(.TextMatrix(0, fldCnt - 1)) * 200
       Next fldCnt
-      .ColType(6) = ATCoSng
-      .ColMin(6) = 17.5
-      .ColMax(6) = 72#
       .ColType(7) = ATCoSng
-      .ColMin(7) = -172#
-      .ColMax(7) = -64#
+      .ColMin(7) = 17.5
+      .ColMax(7) = 72#
+      .ColType(8) = ATCoSng
+      .ColMin(8) = -172#
+      .ColMax(8) = -64#
     End With
   ElseIf TabIndex = 1 Then
     StatFields(1) = "Type"

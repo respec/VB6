@@ -22,7 +22,7 @@ Private Sub Main()
   Dim ExeName As String 'name of executable
   Dim s As String * 80
   Dim hdle&, binpos&, i&
-  Dim filename As String
+  Dim Filename As String
 
   On Error GoTo MiscError
   
@@ -54,10 +54,10 @@ Private Sub Main()
   Set SSDB = New nssDatabase
   
   StepName = "GetDatabaseFilename"
-  filename = GetDatabaseFilename
+  Filename = GetDatabaseFilename
   
-  StepName = "SSDB.Filename = " & filename
-  SSDB.filename = filename
+  StepName = "SSDB.Filename = " & Filename
+  SSDB.Filename = Filename
   
   StepName = "Set IPC = New ATCoIPC"
   Set IPC = New ATCoIPC
@@ -202,6 +202,21 @@ Public Function GetLabelID(StatLabel As String, DB As nssDatabase) As Long
     .FindFirst "StatLabel='" & StatLabel & "'"
     If .NoMatch Then .FindFirst "StatisticLabel='" & StatLabel & "'"
     If Not .NoMatch Then GetLabelID = .Fields("StatisticLabelID")
+  End With
+End Function
+
+Public Function GetSourceID(Citation As String) As String
+  Dim myRec As Recordset
+  Dim sql As String
+  
+  sql = "SELECT DATASOURCE.* FROM DATASOURCE WHERE DATASOURCE.Citation='" & Citation & "';"
+  'using dbInconsistent to get recordset not read-only,
+  'OK for this case since we are not updating StaID, to which the dbIconsistent option applies
+  Set myRec = SSDB.DB.OpenRecordset(sql, dbOpenDynaset)
+'  Set myRec = pDB.DB.OpenRecordset("DATASOURCE", dbOpenSnapshot)
+  With myRec
+    .FindFirst "Citation='" & Citation & "'"
+    If Not .NoMatch Then GetSourceID = .Fields("DataSourceID")
   End With
 End Function
 

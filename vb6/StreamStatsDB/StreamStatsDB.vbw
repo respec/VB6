@@ -1,11 +1,11 @@
 frmStreamStatsDB = 43, 60, 917, 697, , 3, 0, 772, 679, C
 modStreamStatsDB = 5, 115, 775, 513, 
 UTILITY = 110, 110, 840, 551, C
-frmUserInfo = 66, 66, 774, 577, C, 149, 177, 788, 753, C
-frmStaData = 84, 38, 997, 576, C, 32, 21, 992, 426, C
+frmUserInfo = 66, 66, 774, 577, , 149, 177, 788, 753, C
+frmStaData = 84, 38, 997, 576, , 32, 21, 992, 426, C
 frmCDLG = 22, 22, 932, 346, C, 286, 286, 925, 862, C
 Import = 73, 220, 1093, 839, 
-modWin32Api = 154, 154, 897, 673, C
+modWin32Api = 154, 154, 897, 673, 
 modShell = 264, 264, 974, 815, C
 frmROISetUp = 22, 110, 734, 536, C, 99, 56, 725, 578, C
 frmImportStations = 122, 85, 924, 853, , 22, 22, 646, 447, C
