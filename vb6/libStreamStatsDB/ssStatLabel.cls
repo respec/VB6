@@ -87,6 +87,13 @@ Public Property Let Definition(ByVal newValue As String)
 End Property
 
 Public Sub Add(ByRef NewValues() As String, StatIndex As Long)
+  'NewValues(dim 1) - 0, 1, or 2, with 2 being the modified value
+  'NewValues(dim 2) - index in array of stations (always? 1 in StreamStatsDB)
+  'NewValues(dim 3) - 1 = Stat Type
+  '                   2 = Code (one word name)
+  '                   3 = Full Name (must include underscores between words)
+  '                   4 = Units
+  '                   5 = Full Definition (no underscores needed)
   Dim myRec As Recordset
   Dim fld&
   Dim sql$
@@ -115,18 +122,17 @@ Public Sub Add(ByRef NewValues() As String, StatIndex As Long)
     fld = !StatisticLabelID + 1
     .AddNew
     .Fields("StatisticLabelID") = fld
-    .Fields("StatisticTypeCode") = GetTypeCode(Trim(NewValues(2, StatIndex, 1)))
-    For fld = 2 To UBound(NewValues, 3)
-      If fld = 3 Then 'be sure to use underscores for blanks
-        .Fields(fld) = Trim(ReplaceString(NewValues(2, StatIndex, fld), " ", "_"))
-      ElseIf fld = 4 Then 'convert unit string to numeric
-        .Fields(fld) = GetUnitCode(Trim(NewValues(2, StatIndex, fld)))
-      Else
-        .Fields(fld) = Trim(NewValues(2, StatIndex, fld))
-      End If
-    Next fld
+    .Fields("StatisticTypeID") = GetStatTypeID(Trim(NewValues(2, StatIndex, 1)))
+    .Fields("StatisticTypeCode") = GetStatTypeCode(Trim(NewValues(2, StatIndex, 1)))
+    .Fields("StatLabel") = Trim(NewValues(2, StatIndex, 2))
+    'be sure to use underscores for blanks in Full Name
+    .Fields("StatisticLabel") = Trim(ReplaceString(NewValues(2, StatIndex, 3), " ", "_"))
+    'convert unit string to numeric
+    .Fields("UnitID") = GetUnitCode(Trim(NewValues(2, StatIndex, 4)))
     If UBound(NewValues, 3) < 5 Then 'include description field, no underscores
-      .Fields(5) = Trim(ReplaceString(NewValues(2, StatIndex, 3), "_", " "))
+      .Fields("Definition") = Trim(ReplaceString(NewValues(2, StatIndex, 3), "_", " "))
+    Else
+      .Fields("Definition") = Trim(NewValues(2, StatIndex, 5))
     End If
     .Update
   End With
@@ -169,13 +175,23 @@ Public Sub Edit(ByRef NewValues() As String, StatIndex As Long)
   End With
 End Sub
 
-Private Function GetTypeCode(TypeName As String) As String
+Private Function GetStatTypeCode(TypeName As String) As String
   Dim myRec As Recordset
   
   Set myRec = pDB.DB.OpenRecordset("STATTYPE", dbOpenSnapshot)
   With myRec
     .FindFirst "StatisticType='" & TypeName & "'"
-    If Not .NoMatch Then GetTypeCode = .Fields("StatisticTypeCode")
+    If Not .NoMatch Then GetStatTypeCode = .Fields("StatisticTypeCode")
+  End With
+End Function
+
+Private Function GetStatTypeID(TypeName As String) As Integer
+  Dim myRec As Recordset
+  
+  Set myRec = pDB.DB.OpenRecordset("STATTYPE", dbOpenSnapshot)
+  With myRec
+    .FindFirst "StatisticType='" & TypeName & "'"
+    If Not .NoMatch Then GetStatTypeID = .Fields("StatisticTypeID")
   End With
 End Function
 
