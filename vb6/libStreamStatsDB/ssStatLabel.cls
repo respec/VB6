@@ -151,6 +151,13 @@ Public Sub Delete()
 End Sub
 
 Public Sub Edit(ByRef NewValues() As String, StatIndex As Long)
+  'NewValues(dim 1) - 0, 1, or 2, with 2 being the modified value
+  'NewValues(dim 2) - index in array of stations (always? 1 in StreamStatsDB)
+  'NewValues(dim 3) - 1 = Stat Type
+  '                   2 = Code (one word name)
+  '                   3 = Full Name (must include underscores between words)
+  '                   4 = Units
+  '                   5 = Full Definition (no underscores needed)
   Dim myRec As Recordset
   Dim fld&
   
