@@ -204,19 +204,3 @@ Public Function GetLabelID(StatLabel As String, DB As nssDatabase) As Long
     If Not .NoMatch Then GetLabelID = .Fields("StatisticLabelID")
   End With
 End Function
-
-Public Function GetSourceID(Citation As String) As String
-  Dim myRec As Recordset
-  Dim sql As String
-  
-  sql = "SELECT DATASOURCE.* FROM DATASOURCE WHERE DATASOURCE.Citation='" & Citation & "';"
-  'using dbInconsistent to get recordset not read-only,
-  'OK for this case since we are not updating StaID, to which the dbIconsistent option applies
-  Set myRec = SSDB.DB.OpenRecordset(sql, dbOpenDynaset)
-'  Set myRec = pDB.DB.OpenRecordset("DATASOURCE", dbOpenSnapshot)
-  With myRec
-    .FindFirst "Citation='" & Citation & "'"
-    If Not .NoMatch Then GetSourceID = .Fields("DataSourceID")
-  End With
-End Function
-
