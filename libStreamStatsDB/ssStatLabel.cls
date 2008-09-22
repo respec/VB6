@@ -166,14 +166,18 @@ Public Sub Edit(ByRef NewValues() As String, StatIndex As Long)
     .FindFirst "StatisticLabelID=" & Me.ID
     If Not .NoMatch Then
       .Edit
-      .Fields("StatisticTypeCode") = GetTypeCode(Trim(NewValues(2, StatIndex, 1)))
-      For fld = 2 To UBound(NewValues, 3)
-        If fld = 4 Then 'convert unit string to numeric
-          .Fields(fld) = GetUnitCode(Trim(NewValues(2, StatIndex, fld)))
-        Else
-          .Fields(fld) = NewValues(2, StatIndex, fld)
-        End If
-      Next fld
+      .Fields("StatisticTypeID") = GetStatTypeID(Trim(NewValues(2, StatIndex, 1)))
+      .Fields("StatisticTypeCode") = GetStatTypeCode(Trim(NewValues(2, StatIndex, 1)))
+      .Fields("StatLabel") = Trim(NewValues(2, StatIndex, 2))
+      'be sure to use underscores for blanks in Full Name
+      .Fields("StatisticLabel") = Trim(ReplaceString(NewValues(2, StatIndex, 3), " ", "_"))
+      'convert unit string to numeric
+      .Fields("UnitID") = GetUnitCode(Trim(NewValues(2, StatIndex, 4)))
+      If UBound(NewValues, 3) < 5 Then 'include description field, no underscores
+        .Fields("Definition") = Trim(ReplaceString(NewValues(2, StatIndex, 3), "_", " "))
+      Else
+        .Fields("Definition") = Trim(NewValues(2, StatIndex, 5))
+      End If
       .Update
     Else
       ssMessageBox "This Statistic is not found in the database." & _

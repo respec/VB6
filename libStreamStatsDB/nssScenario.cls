@@ -458,7 +458,7 @@ Public Function PredInts() As Double()
   Dim CurStat As nssDepVar
   Dim CurReturn As nssDepVar
   Dim CurComponent As nssComponent
-  Dim i&, j&, MDim&, S!, T!
+  Dim i&, j&, MDim&, s!, T!
   Dim Prod() As Single, Prod2(1, 1) As Single
   Dim lv As Double
   Dim lParm As Single
@@ -556,8 +556,8 @@ Public Function PredInts() As Double()
           ReDim Prod(MDim, 1)
           Call mltply(Prod, U, X, MDim, MDim, 1, 1, 1, 1)
           Call mltply(Prod2, Xt, Prod, 1, MDim, 1, 1, 1, 1)
-          S = Sqr(CurStat.Variance + Prod2(1, 1))
-          T = 10 ^ (CurStat.tDist * S)
+          s = Sqr(CurStat.Variance + Prod2(1, 1))
+          T = 10 ^ (CurStat.tDist * s)
           retval(1, ReturnIndex) = retval(1, ReturnIndex) + ((1 / T) * (CurRegion.Discharges(ReturnIndex) / CurReturn.BCF)) * CurRegion.UserParms(1).GetValue(Me.Project.Metric)
           retval(2, ReturnIndex) = retval(2, ReturnIndex) + (T * (CurRegion.Discharges(ReturnIndex) / CurReturn.BCF)) * CurRegion.UserParms(1).GetValue(Me.Project.Metric)
         Next
@@ -664,6 +664,8 @@ Public Function Discharges() As Double()
   Dim Equation As String
   Dim msg As String
   Dim StateMetric As Boolean
+  Dim InMultParmExp As Boolean
+  Dim MultParmExpVal As Double
   
   On Error GoTo ErrHand
   
@@ -718,11 +720,14 @@ Public Function Discharges() As Double()
           ssMessageBox StepName, vbOKOnly, "NSS Discharges"
           WarnedAboutMissingComponents = True
         End If
+        MultParmExpVal = 1
         For ComponentIndex = 1 To CurReturn.Components.Count
           StepName = "Set CurComponent = CurReturn.Components(ComponentIndex)"
           Set CurComponent = CurReturn.Components(ComponentIndex)
           StepName = "Select Case CurComponent.ParmID (" & CurComponent.ParmID & ")"
           Select Case CurComponent.ParmID
+            Case -4: curval = 0
+            Case -3: InMultParmExp = True
             Case -2: curval = findRuralValue(FirstReturns(ReturnIndex).Name, StateMetric) 'find computed rural discharge
                      If curval = -999 Then 'Could not find a rural discharge, so we can't compute this urban one
                        IntervalDischarge(ReturnIndex) = -1
@@ -761,11 +766,20 @@ Public Function Discharges() As Double()
             Equation = CurComponent.BaseExp & " * (" & Equation & ")"
             ExpVal = ExpVal * CurComponent.BaseExp
           End If
-          Equation = "((" & curval & " + " & CurComponent.BaseMod & ") * " & CurComponent.BaseCoeff & ") ^ " & Equation
-          curval = curval + CurComponent.BaseMod
-          StepName = "curval = (curval * CurComponent.BaseCoeff) ^ ExpVal [curval = (" & curval & " * " & CurComponent.BaseCoeff & ") ^ " & ExpVal & "]"
-          curval = (curval * CurComponent.BaseCoeff) ^ ExpVal
-          RegionVal = RegionVal * curval
+          If InMultParmExp Then 'compute exponent value from multiple parms
+            MultParmExpVal = MultParmExpVal * ExpVal
+            If CurComponent.ParmID = -4 Then 'last parm in exponent
+              ExpVal = MultParmExpVal
+              InMultParmExp = False
+            End If
+          End If
+          If Not InMultParmExp Then
+            Equation = "((" & curval & " + " & CurComponent.BaseMod & ") * " & CurComponent.BaseCoeff & ") ^ " & Equation
+            curval = curval + CurComponent.BaseMod
+            StepName = "curval = (curval * CurComponent.BaseCoeff) ^ ExpVal [curval = (" & curval & " * " & CurComponent.BaseCoeff & ") ^ " & ExpVal & "]"
+            curval = (curval * CurComponent.BaseCoeff) ^ ExpVal
+            RegionVal = RegionVal * curval
+          End If
         Next
         StepName = "IntervalDischarge(ReturnIndex) = ..."
         IntervalDischarge(ReturnIndex) = IntervalDischarge(ReturnIndex) + RegionVal * CurRegion.UserParms(1).GetValue(StateMetric) / Me.GetArea(StateMetric)
