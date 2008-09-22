@@ -262,7 +262,7 @@ Public Function Add(IsReturn As Boolean, ByVal Region As nssRegion, _
       Wend
       .AddNew
       !DepVarID = ID
-      !RegionID = Region.ID
+      !Regionid = Region.ID
       '!statLabelCode = Name
       !StatisticLabelID = StatLabelID
       If IsNumeric(StdErr) Then !StdErr = StdErr
@@ -314,7 +314,10 @@ Public Sub Edit(ByVal Name As String, _
     .FindFirst "DepVarID=" & Me.ID
     If Not .NoMatch Then
       .Edit
-      !Name = Name
+      '!Name = Name
+      !DepVarID = Me.ID
+      !Regionid = Me.Region.ID
+      !StatisticLabelID = GetLabelID(Name, pDB)
       If IsNumeric(StdErr) Then !StdErr = StdErr
       If IsNumeric(EstErr) Then !EstErr = EstErr
       If IsNumeric(PreErr) Then !PreErr = PreErr
