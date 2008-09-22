@@ -6,11 +6,11 @@ Begin VB.Form frmLowFlow
    ClientHeight    =   9075
    ClientLeft      =   45
    ClientTop       =   270
-   ClientWidth     =   9690
+   ClientWidth     =   10725
    Icon            =   "frmLowFlow.frx":0000
    LinkTopic       =   "Form1"
    ScaleHeight     =   9075
-   ScaleWidth      =   9690
+   ScaleWidth      =   10725
    StartUpPosition =   3  'Windows Default
    Begin VB.Frame fraUnits 
       Caption         =   "Units"
@@ -24,7 +24,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   615
-      Left            =   5400
+      Left            =   6120
       TabIndex        =   38
       Top             =   480
       Width           =   2175
@@ -94,7 +94,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   492
-      Left            =   8880
+      Left            =   9840
       TabIndex        =   32
       Top             =   7440
       Width           =   732
@@ -112,7 +112,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   8880
+      Left            =   9840
       TabIndex        =   29
       Top             =   600
       Width           =   732
@@ -130,7 +130,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   7920
+      Left            =   8880
       TabIndex        =   28
       Top             =   600
       Width           =   732
@@ -183,7 +183,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   492
-      Left            =   8880
+      Left            =   9840
       TabIndex        =   25
       Top             =   8040
       Width           =   732
@@ -200,7 +200,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   8880
+      Left            =   9840
       TabIndex        =   21
       Top             =   4320
       Width           =   732
@@ -217,7 +217,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   8880
+      Left            =   9840
       TabIndex        =   20
       Top             =   3840
       Width           =   732
@@ -234,7 +234,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   8880
+      Left            =   9840
       TabIndex        =   19
       Top             =   4800
       Width           =   732
@@ -251,7 +251,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   8880
+      Left            =   9840
       TabIndex        =   18
       Top             =   5280
       Width           =   732
@@ -273,22 +273,22 @@ Begin VB.Form frmLowFlow
       TabIndex        =   11
       Top             =   3240
       Visible         =   0   'False
-      Width           =   8655
+      Width           =   9615
       Begin ATCoCtl.ATCoGrid grdComps 
          CausesValidation=   0   'False
          Height          =   1515
          Left            =   120
          TabIndex        =   24
          Top             =   1560
-         Width           =   8415
-         _ExtentX        =   14843
+         Width           =   9375
+         _ExtentX        =   16536
          _ExtentY        =   2672
          SelectionToggle =   0   'False
          AllowBigSelection=   -1  'True
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   2
+         Rows            =   1
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -357,15 +357,15 @@ Begin VB.Form frmLowFlow
          Left            =   120
          TabIndex        =   31
          Top             =   3960
-         Width           =   8415
-         _ExtentX        =   14843
+         Width           =   9375
+         _ExtentX        =   16536
          _ExtentY        =   2884
          SelectionToggle =   0   'False
          AllowBigSelection=   -1  'True
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   353
+         Rows            =   366
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -398,15 +398,15 @@ Begin VB.Form frmLowFlow
          Left            =   120
          TabIndex        =   23
          Top             =   240
-         Width           =   8415
-         _ExtentX        =   14843
+         Width           =   9375
+         _ExtentX        =   16536
          _ExtentY        =   2090
          SelectionToggle =   0   'False
          AllowBigSelection=   -1  'True
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   2
+         Rows            =   1
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -464,15 +464,15 @@ Begin VB.Form frmLowFlow
          Left            =   120
          TabIndex        =   22
          Top             =   240
-         Width           =   8415
-         _ExtentX        =   14843
+         Width           =   9375
+         _ExtentX        =   16536
          _ExtentY        =   2990
          SelectionToggle =   0   'False
          AllowBigSelection=   -1  'True
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   2
+         Rows            =   1
          Cols            =   6
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -515,22 +515,22 @@ Begin VB.Form frmLowFlow
       Left            =   120
       TabIndex        =   2
       Top             =   1080
-      Width           =   9495
+      Width           =   10455
       Begin VB.ListBox lstRetPds 
          Height          =   1230
-         Left            =   7440
+         Left            =   8160
          Sorted          =   -1  'True
          TabIndex        =   8
          Top             =   600
-         Width           =   1815
+         Width           =   2175
       End
       Begin VB.ListBox lstParms 
          Height          =   1230
-         Left            =   3960
+         Left            =   4200
          MultiSelect     =   1  'Simple
          TabIndex        =   7
          Top             =   600
-         Width           =   3375
+         Width           =   3855
       End
       Begin VB.ListBox lstRegions 
          Height          =   1230
@@ -539,7 +539,7 @@ Begin VB.Form frmLowFlow
          List            =   "frmLowFlow.frx":0311
          TabIndex        =   6
          Top             =   600
-         Width           =   3735
+         Width           =   3975
       End
       Begin VB.Label lblParms 
          Caption         =   "Parameters:"
@@ -672,7 +672,7 @@ Begin VB.Form frmLowFlow
    Begin VB.ComboBox cboState 
       Height          =   315
       ItemData        =   "frmLowFlow.frx":0321
-      Left            =   3720
+      Left            =   3840
       List            =   "frmLowFlow.frx":0323
       TabIndex        =   0
       Text            =   "cboState"
@@ -701,7 +701,7 @@ Begin VB.Form frmLowFlow
       Left            =   960
       TabIndex        =   37
       Top             =   120
-      Width           =   7935
+      Width           =   9735
    End
    Begin VB.Label lblState 
       Alignment       =   1  'Right Justify
@@ -720,7 +720,7 @@ Begin VB.Form frmLowFlow
       EndProperty
       ForeColor       =   &H80000008&
       Height          =   255
-      Left            =   3120
+      Left            =   3240
       TabIndex        =   9
       Top             =   600
       Width           =   570
@@ -824,6 +824,7 @@ Private Sub cmdComponent_Click(Index As Integer)
         .TextMatrix(.Rows, 4) = "none"
         .TextMatrix(.Rows, 5) = "0"
         .TextMatrix(.Rows, 6) = "0"
+        .TextMatrix(.Rows, 7) = "0"
       End If
     ElseIf .Rows > 1 Then 'delete row
       If Len(.TextMatrix(.row, 0)) > 0 Then 'confirm delete of existing component
@@ -1558,6 +1559,7 @@ Private Sub grdComps_RowColChange()
   Dim EqtnStr As String, BaseVar As String, BaseStr As String
   Dim ExpStr As String
   Dim BaseMod As Single, ExpMod As Single
+  Dim InMultExp As Boolean
   
   With grdComps
     .ClearValues
@@ -1573,6 +1575,15 @@ Private Sub grdComps_RowColChange()
         Next i
       End If
       .addValue "none"
+    ElseIf .col = 7 And Len(.TextMatrix(.row, .col)) > 0 Then 'set allowable indices for exponent
+      .addValue "0"
+      .addValue "1" 'allows for first exponent with multiple parms to be selected
+      For i = 1 To .Rows
+        If Len(.TextMatrix(i, 7)) > 0 And .TextMatrix(i, 7) <> "0" Then
+          'allows for next exponent with mutliple parms to be entered
+          .addValue CStr(CInt(.TextMatrix(i, 7)) + 1)
+        End If
+      Next i
     End If
 
     'update equation display
@@ -1581,30 +1592,39 @@ Private Sub grdComps_RowColChange()
     Else
       EqtnStr = lstRetPds.List(lstRetPds.ListIndex) & " ="
     End If
+    InMultExp = False
     For i = 1 To .Rows
-      If Len(.TextMatrix(i, 0)) > 0 Then
-        If .TextMatrix(i, 0) = "none" Then
-          BaseVar = ""
-        Else
-          BaseVar = .TextMatrix(i, 0)
+      If Not InMultExp Then
+        If Len(.TextMatrix(i, 0)) > 0 Then
+          If .TextMatrix(i, 0) = "none" Then
+            BaseVar = ""
+          Else
+            BaseVar = .TextMatrix(i, 0)
+          End If
+          If Len(.TextMatrix(i, 1)) > 0 Then
+            BaseMod = CSng(.TextMatrix(i, 1))
+          Else
+            BaseMod = 0
+          End If
+          Select Case BaseMod
+            Case Is > 0: BaseStr = "(" & BaseVar & "+" & BaseMod & ")"
+            Case Is < 0: BaseStr = "(" & BaseVar & "-" & BaseMod & ")"
+            Case Else: BaseStr = "(" & BaseVar & ")"
+          End Select
+          If Len(.TextMatrix(i, 2)) > 0 And .TextMatrix(i, 2) <> "1" Then
+            BaseStr = "(" & .TextMatrix(i, 2) & BaseStr & ")"
+          End If
         End If
-        If Len(.TextMatrix(i, 1)) > 0 Then
-          BaseMod = CSng(.TextMatrix(i, 1))
-        Else
-          BaseMod = 0
-        End If
-        Select Case BaseMod
-          Case Is > 0: BaseStr = "(" & BaseVar & "+" & BaseMod & ")"
-          Case Is < 0: BaseStr = "(" & BaseVar & "-" & BaseMod & ")"
-          Case Else: BaseStr = "(" & BaseVar & ")"
-        End Select
-        If Len(.TextMatrix(i, 2)) > 0 And .TextMatrix(i, 2) <> "1" Then
-          BaseStr = "(" & .TextMatrix(i, 2) & BaseStr & ")"
-        End If
+        EqtnStr = EqtnStr & "  " & BaseStr
       End If
-      EqtnStr = EqtnStr & "  " & BaseStr
       If Len(.TextMatrix(i, 3)) > 0 And .TextMatrix(i, 3) <> "1" Then
-        EqtnStr = EqtnStr & "^" & .TextMatrix(i, 3)
+        If Not InMultExp And .TextMatrix(i, 7) <> "0" Then '1st instance of multiple parms in exponent
+          EqtnStr = EqtnStr & "^(" & .TextMatrix(i, 3)
+        ElseIf InMultExp Then
+          EqtnStr = EqtnStr & .TextMatrix(i, 3)
+        Else
+          EqtnStr = EqtnStr & "^" & .TextMatrix(i, 3)
+        End If
       End If
       If Len(.TextMatrix(i, 4)) > 0 Then
         If .TextMatrix(i, 4) = "none" Then
@@ -1617,15 +1637,27 @@ Private Sub grdComps_RowColChange()
             ExpMod = 0
           End If
           Select Case ExpMod
-            Case Is > 0: ExpStr = "^" & "(" & ExpStr & "+" & ExpMod & ")"
-            Case Is < 0: ExpStr = "^" & "(" & ExpStr & "-" & ExpMod & ")"
-            Case Else: ExpStr = "^" & "(" & ExpStr & ")"
+            Case Is > 0: ExpStr = "(" & ExpStr & "+" & ExpMod & ")" '"^" & "(" & ExpStr & "+" & ExpMod & ")"
+            Case Is < 0: ExpStr = "(" & ExpStr & "-" & ExpMod & ")" '"^" & "(" & ExpStr & "-" & ExpMod & ")"
+            Case Else: ExpStr = "(" & ExpStr & ")" '"^" & "(" & ExpStr & ")"
           End Select
           If Len(.TextMatrix(i, 6)) > 0 And .TextMatrix(i, 6) <> "1" Then
             ExpStr = ExpStr & "^" & .TextMatrix(i, 6)
           End If
         End If
         EqtnStr = EqtnStr & ExpStr
+        If .TextMatrix(i, 7) <> "0" Then 'indicates multiple parms in exponent
+          If i < .Rows Then 'see if next row's parm also belongs in this exponent
+            If .TextMatrix(i + 1, 7) = .TextMatrix(i, 7) Then 'yes, it's part of this exponent
+              InMultExp = True
+            Else 'no, this is the last parm in this exponent
+              InMultExp = False
+              EqtnStr = EqtnStr & ")"
+            End If
+          Else 'must be last of multiple parms in exponent
+            EqtnStr = EqtnStr & ")"
+          End If
+        End If
       End If
     Next i
     lblEquation.Caption = EqtnStr
@@ -1960,6 +1992,7 @@ Private Sub cmdAdd_Click()
       .TextMatrix(1, 4) = "none"
       .TextMatrix(1, 5) = "0"
       .TextMatrix(1, 6) = "0"
+      .TextMatrix(1, 7) = "0"
       .col = 2  'avoids conflict with change event that creates listboxes
     End With
     With grdMatrix
@@ -2281,7 +2314,20 @@ Private Sub cmdSave_Click()
       ReDim covArray(1 To grdMatrix.Rows, 1 To grdMatrix.cols)
       For i = 1 To grdComps.Rows
         If i <= grdComps.Rows Then
-          baseID = GetCode(grdComps.TextMatrix(i, 0))
+          If grdComps.TextMatrix(i, 7) <> "0" Then 'one of multiple parms in exponent
+            If i < grdComps.Rows Then 'see if this is the last parm in exponent
+              If grdComps.TextMatrix(i + 1, 7) = grdComps.TextMatrix(i, 7) Then
+                'more parms coming that belong in this exponent
+                baseID = -3
+              Else 'last parm in this exponent
+                baseID = -4
+              End If
+            Else 'last component, so must be last parm in exponent
+              baseID = -4
+            End If
+          Else
+            baseID = GetCode(grdComps.TextMatrix(i, 0))
+          End If
           expID = GetCode(grdComps.TextMatrix(i, 4))
           'Add components from grid to DB
           MyComp.Add MyRegion, tmpID, baseID, grdComps.TextMatrix(i, 1), _
@@ -2423,10 +2469,10 @@ Private Sub SetGrid(Table As String)
         .Rows = lstRetPds.SelCount
         If MyRegion.PredInt Then
           DepVarFlds = 10
-          AddSpace = 0
+          AddSpace = 100
         Else
           DepVarFlds = 7
-          AddSpace = 250
+          AddSpace = 350
         End If
         .cols = DepVarFlds + 1
         .ColType(0) = ATCoTxt
@@ -2519,7 +2565,7 @@ Private Sub SetGrid(Table As String)
         Else
           .Rows = 0
         End If
-        .cols = 7
+        .cols = 8
         .col = 2
         .ColType(0) = ATCoTxt
         .TextMatrix(-1, 0) = "Base"
@@ -2542,11 +2588,16 @@ Private Sub SetGrid(Table As String)
         .ColType(6) = ATCoSng
         .TextMatrix(-1, 6) = "Exponent"
         .TextMatrix(0, 6) = "Exponent"
+        .ColType(7) = ATCoTxt
+        .TextMatrix(-1, 7) = "Exponent"
+        .TextMatrix(0, 7) = "Index"
         For col = 0 To .cols - 1
           .ColEditable(col) = True
           .colWidth(0) = 1080
         Next col
         If lstRetPds.SelCount > 0 Then
+          Dim lExpInd As Integer
+          lExpInd = 1
           For row = 1 To compCnt
             Set MyComp = MyDepVar.Components(row)
             str = GetAbbrev(MyComp.ParmID)
@@ -2563,6 +2614,15 @@ Private Sub SetGrid(Table As String)
                           .Text = str
                   Case 5: .Text = MyComp.ExpMod
                   Case 6: .Text = MyComp.ExpExp
+                  Case 7:
+                    If MyComp.ParmID < -2 Then 'one of multiple parms in exponent
+                      .Text = lExpInd
+                      If MyComp.ParmID = -4 Then 'last of this exponent's parms, increment index
+                        lExpInd = lExpInd + 1
+                      End If
+                    Else
+                      .Text = "0"
+                    End If
                 End Select
               End If
             Next col
@@ -2781,7 +2841,7 @@ Private Function GetAbbrev(ByVal Parm As Long) As String
   Select Case Parm
     Case -2: GetAbbrev = "rural Dis"
     Case -1: GetAbbrev = "rural DA"
-    Case 0: GetAbbrev = "none"
+    Case -4, -3, 0: GetAbbrev = "none"
     Case Else:
       If Parm < 0 Then
         takeLog = True
@@ -2973,7 +3033,8 @@ Private Function ChangesMade() As Boolean
       Next i
     End If
     'Now record changes to Components
-    ReDim CompChanges(1, grdComps.Rows, grdComps.cols - 1)
+    'don't track Exponent Index (col=7) as it is not stored on the DB, thus subtract 2 from 2nd dimension
+    ReDim CompChanges(1, grdComps.Rows, grdComps.cols - 2)
     For row = 1 To grdComps.Rows
       If row > compCnt Then
         CompChanges(1, row - 1, 0) = grdComps.TextMatrix(row, 0)
@@ -2987,7 +3048,7 @@ Private Function ChangesMade() As Boolean
       Else
         Set tmpComp = MyDepVar.Components(row)
         baseID = GetCode(grdComps.TextMatrix(row, 0))
-        If baseID <> tmpComp.ParmID Then
+        If baseID <> tmpComp.ParmID And tmpComp.ParmID >= 0 Then
           CompChanges(0, row - 1, 0) = GetAbbrev(tmpComp.ParmID)
           CompChanges(1, row - 1, 0) = grdComps.TextMatrix(row, 0)
           ChangesMade = True

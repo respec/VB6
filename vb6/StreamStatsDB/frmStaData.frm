@@ -312,6 +312,7 @@ Private Sub cmdSave_Click()
   Dim madeChanges As Boolean
   Dim lOldVal As String
   Dim lNewVal As String
+  Dim lRecIDStr As String
   
   'Perform QA check on values selected/entered in grid
   If Not QACheck Then GoTo NoChanges
@@ -351,13 +352,15 @@ Private Sub cmdSave_Click()
               Case 7: fldID = 2
             End Select
             If col = 7 Then 'record change in source ID (source can be too long for field)
-              lOldVal = GetSourceID(Changes(1, row, col))
-              lNewVal = GetSourceID(Changes(2, row, col))
+              lOldVal = SelStats(row).GetSourceID(Changes(1, row, col))
+              lNewVal = SelStats(row).GetSourceID(Changes(2, row, col))
             Else
               lOldVal = Changes(1, row, col)
               lNewVal = Changes(2, row, col)
             End If
-            SSDB.RecordChanges TransID, "STATISTIC", fldID, CStr(station.id), lOldVal, lNewVal
+            lRecIDStr = station.id & " - " & SelStats(row).code
+            'SSDB.RecordChanges TransID, "STATISTIC", fldID, CStr(station.id), lOldVal, lNewVal
+            SSDB.RecordChanges TransID, "STATISTIC", fldID, lRecIDStr, lOldVal, lNewVal
           End If
         End If
       Next col
