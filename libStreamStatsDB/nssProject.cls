@@ -116,18 +116,18 @@ Public Property Let CurrentUrbanScenario(newValue As Long)
 End Property
 
 Public Property Get XML() As String
-  Dim retval As String
+  Dim RetVal As String
   Dim vScenario As Variant, vRegion As Variant, vParameter As Variant
   Dim Scenario As nssScenario
   
-  retval = "<NSSproject"
-  retval = retval & " name=""" & Me.Name & """"
-  retval = retval & " username=""" & Me.UserName & """"
-  retval = retval & " state=""" & Me.State.Code & """"
-  retval = retval & " metric=""" & Me.Metric & """"
-  retval = retval & " currentrural=""" & Me.CurrentRuralScenario & """"
-  retval = retval & " currenturban=""" & Me.CurrentUrbanScenario & """"
-  retval = retval & ">" & vbCrLf
+  RetVal = "<NSSproject"
+  RetVal = RetVal & " name=""" & Me.Name & """"
+  RetVal = RetVal & " username=""" & Me.UserName & """"
+  RetVal = RetVal & " state=""" & Me.State.Code & """"
+  RetVal = RetVal & " metric=""" & Me.Metric & """"
+  RetVal = RetVal & " currentrural=""" & Me.CurrentRuralScenario & """"
+  RetVal = RetVal & " currenturban=""" & Me.CurrentUrbanScenario & """"
+  RetVal = RetVal & ">" & vbCrLf
 
   For Each vScenario In Me.RuralScenarios
     GoSub AddScenario
@@ -136,39 +136,39 @@ Public Property Get XML() As String
     GoSub AddScenario
   Next
 
-  retval = retval & "</NSSproject>"
-  XML = retval
+  RetVal = RetVal & "</NSSproject>"
+  XML = RetVal
 
   Exit Sub
 
 AddScenario:
   
   Set Scenario = vScenario
-  retval = retval & "<NSSScenario"
-  retval = retval & " name=""" & Scenario.Name & """"
+  RetVal = RetVal & "<NSSScenario"
+  RetVal = RetVal & " name=""" & Scenario.Name & """"
   If Scenario.RegCrippenBue > 0 Then
-    retval = retval & " crippenbue=""" & Scenario.RegCrippenBue & """"
+    RetVal = RetVal & " crippenbue=""" & Scenario.RegCrippenBue & """"
   End If
-  retval = retval & " urban=""" & Scenario.Urban & """"
+  RetVal = RetVal & " urban=""" & Scenario.Urban & """"
   If Not Scenario.RuralScenario Is Nothing Then
-    retval = retval & " ruralname=""" & Scenario.RuralScenario.Name & """"
+    RetVal = RetVal & " ruralname=""" & Scenario.RuralScenario.Name & """"
   End If
-  retval = retval & " area=""" & Scenario.GetArea(Me.State.Metric) & """"
-  retval = retval & ">" & vbCrLf
+  RetVal = RetVal & " area=""" & Scenario.GetArea(Me.State.Metric) & """"
+  RetVal = RetVal & ">" & vbCrLf
   If Scenario.Weight.WeightType > 0 Then
-    retval = retval & Scenario.Weight.XML
+    RetVal = RetVal & Scenario.Weight.XML
   End If
   
   For Each vRegion In Scenario.UserRegions
-    retval = retval & "<NSSRegion"
-    retval = retval & " name=""" & vRegion.Region.Name & """"
+    RetVal = RetVal & "<NSSRegion"
+    RetVal = RetVal & " name=""" & vRegion.Region.Name & """"
     For Each vParameter In vRegion.UserParms
-      retval = retval & " " & vParameter.Parameter.NSSName & "=""" & vParameter.GetValue(Me.State.Metric) & """"
+      RetVal = RetVal & " " & vParameter.Parameter.NSSName & "=""" & vParameter.GetValue(Me.State.Metric) & """"
     Next
-    retval = retval & "/>" & vbCrLf
+    RetVal = RetVal & "/>" & vbCrLf
   Next
   
-  retval = retval & "</NSSScenario>" & vbCrLf
+  RetVal = RetVal & "</NSSScenario>" & vbCrLf
   Return
 End Property
 Public Property Let XML(newValue As String)
@@ -231,7 +231,8 @@ Public Property Let XML(newValue As String)
             Else
               Set newRegion.Region = Me.State.Regions(RegionName)
             End If
-            If newRegion.Region.LowFlowRegnID >= 0 Then newScenario.LowFlow = True
+            If newRegion.Region.LowFlowRegnID > 0 Then newScenario.LowFlow = True
+            If newRegion.Region.LowFlowRegnID < 0 Then newScenario.ProbEqtn = True
             If newRegion.Region.PredInt Then newScenario.UsePredInts = True
             If newRegion.Region.ROIRegnID >= 0 Then
               newScenario.ROI = True
@@ -263,10 +264,10 @@ ReadProblem:
   ssMessageBox "Problem Reading Project XML" & vbCr & Err.Description
 End Property
 
-Public Property Get FileName() As String
-  FileName = pFileName
+Public Property Get Filename() As String
+  Filename = pFileName
 End Property
-Public Property Let FileName(newValue As String)
+Public Property Let Filename(newValue As String)
   pFileName = newValue
 End Property
 
@@ -281,10 +282,10 @@ Public Property Get DB() As nssDatabase
   Set DB = pDB
 End Property
 
-Public Sub LoadNSSdatabase(FileName As String)
+Public Sub LoadNSSdatabase(Filename As String)
   Set pDB = Nothing
   Set pDB = New nssDatabase
-  pDB.FileName = FileName
+  pDB.Filename = Filename
   Set pNationalState = New nssState
   pNationalState.Name = "Nation"
   pNationalState.Code = "00"
@@ -302,7 +303,7 @@ Public Sub Clear()
 End Sub
 
 Public Function Report() As String
-  Dim retval As String
+  Dim RetVal As String
   Dim vScenario As Variant, vRegion As Variant, vParameter As Variant
   Dim Scenario As nssScenario
   Dim lScenario As nssScenario
@@ -315,31 +316,31 @@ Public Function Report() As String
   Dim StdErrText As String
   Dim Index As Long
   Dim Val As Double, Max As Double, Min As Double
-  Dim S As String
+  Dim s As String
   Const indent As String = "    "
   Dim i As Long
   Dim RegArea As Single
   
   On Error GoTo ErrHandler
   
-  retval = ""
-  retval = retval & "National Streamflow Statistics Program" & vbCrLf
-  retval = retval & "Version 4.0" ' & App.Major & "." & App.Minor '& "." & App.Revision & vbCrLf
-  retval = retval & vbCrLf
-  retval = retval & "Based on Techniques and Methods Book 4-A6" & vbCrLf
-  retval = retval & "Equations from database " & pDB.FileName & vbCrLf
-  retval = retval & "Updated by " & pDB.LastEdited & vbCrLf
-  retval = retval & "Equations for " & Me.State.Name & " developed using "
+  RetVal = ""
+  RetVal = RetVal & "National Streamflow Statistics Program" & vbCrLf
+  RetVal = RetVal & "Version 4.0" ' & App.Major & "." & App.Minor '& "." & App.Revision & vbCrLf
+  RetVal = RetVal & vbCrLf
+  RetVal = RetVal & "Based on Techniques and Methods Book 4-A6" & vbCrLf
+  RetVal = RetVal & "Equations from database " & pDB.Filename & vbCrLf
+  RetVal = RetVal & "Updated by " & pDB.LastEdited & vbCrLf
+  RetVal = RetVal & "Equations for " & Me.State.Name & " developed using "
   If Me.State.Metric Then
-    retval = retval & "Metric units" & vbCrLf
+    RetVal = RetVal & "Metric units" & vbCrLf
   Else
-    retval = retval & "English units" & vbCrLf
+    RetVal = RetVal & "English units" & vbCrLf
   End If
-  retval = retval & vbCrLf
-  retval = retval & "Site: " & Me.Name & ", " & Me.State.Name & vbCrLf
-  retval = retval & "User: " & Me.UserName & vbCrLf
-  retval = retval & "Date: " & Format(Date, "Long Date") & " " & Format(Time, "hh:mm ampm") & vbCrLf
-  retval = retval & vbCrLf
+  RetVal = RetVal & vbCrLf
+  RetVal = RetVal & "Site: " & Me.Name & ", " & Me.State.Name & vbCrLf
+  RetVal = RetVal & "User: " & Me.UserName & vbCrLf
+  RetVal = RetVal & "Date: " & Format(Date, "Long Date") & " " & Format(Time, "hh:mm ampm") & vbCrLf
+  RetVal = RetVal & vbCrLf
   
 '  For Each vScenario In Me.RuralScenarios
 '    GoSub AddScenario
@@ -366,7 +367,7 @@ Public Function Report() As String
     GoSub AddFlows
   Next
 
-  Report = retval
+  Report = RetVal
   Exit Function
 
 'AddScenario:
@@ -379,11 +380,11 @@ Public Function Report() As String
 
 AddFlows:
   Set Scenario = vScenario
-  retval = retval & vbCrLf
-  If Scenario.Urban Then retval = retval & "Urban Estimate: " Else retval = retval & "Rural Estimate: "
-  retval = retval & ReplaceString(Scenario.Summary, vbLf, vbLf & "   ") & vbCrLf
-  retval = retval & Scenario.ErrorDescription
-  retval = retval & vbCrLf & vbCrLf & "Results for:  " & Scenario.Name & vbCrLf & vbCrLf
+  RetVal = RetVal & vbCrLf
+  If Scenario.Urban Then RetVal = RetVal & "Urban Estimate: " Else RetVal = RetVal & "Rural Estimate: "
+  RetVal = RetVal & ReplaceString(Scenario.Summary, vbLf, vbLf & "   ") & vbCrLf
+  RetVal = RetVal & Scenario.ErrorDescription
+  RetVal = RetVal & vbCrLf & vbCrLf & "Results for:  " & Scenario.Name & vbCrLf & vbCrLf
   If Scenario.UserRegions.Count > 1 Then 'show results for each region in scenario
     For Each vRegion In Scenario.UserRegions
       Set lScenario = Scenario.Copy
@@ -394,27 +395,27 @@ AddFlows:
         vRegion.UserParms(1).SetValue .GetArea(Me.Metric), Me.Metric
         .UserRegions.Add vRegion
         'add region name to scenario name
-        S = indent & .Name & vbCrLf & .EstimateString
+        s = indent & .Name & vbCrLf & .EstimateString
         vRegion.UserParms(1).SetValue RegArea, Me.Metric 'restore original region area
         'insert region results with scenario results
-        While Len(S) > 0
-          i = InStr(S, vbCrLf)
+        While Len(s) > 0
+          i = InStr(s, vbCrLf)
           If i > 0 Then 'take up to CR/LF
-            retval = retval & Left(S, i - 1) & vbCrLf
-            S = Mid(S, i + 2)
+            RetVal = RetVal & Left(s, i - 1) & vbCrLf
+            s = Mid(s, i + 2)
           Else 'take all
-            retval = retval & S
-            S = ""
+            RetVal = RetVal & s
+            s = ""
           End If
-          If Len(S) > 0 Then retval = retval & indent 'more lines to insert
+          If Len(s) > 0 Then RetVal = RetVal & indent 'more lines to insert
         Wend
-        retval = retval & vbCrLf & vbCrLf
+        RetVal = RetVal & vbCrLf & vbCrLf
       End With
     Next
     'include label for combined results
-    retval = retval & Scenario.Name & " - Area-Averaged Estimates" & vbCrLf
+    RetVal = RetVal & Scenario.Name & " - Area-Averaged Estimates" & vbCrLf
   End If
-  retval = retval & Scenario.EstimateString & vbCrLf & vbCrLf & vbCrLf
+  RetVal = RetVal & Scenario.EstimateString & vbCrLf & vbCrLf & vbCrLf
 '  Flows = Scenario.WeightedDischarges
 '  Years = Scenario.EquivalentYears
 '  StdError = Scenario.StdError
@@ -459,11 +460,11 @@ AddFlows:
 '                    & SignificantDigits(Scenario.MaxFloodEnvelope(Me.Metric), 3) _
 '                    & " (for C&B region " & Scenario.RegCrippenBue & ")" & vbCrLf
 '  End If
-  retval = retval & Scenario.ErrorDescription
+  RetVal = RetVal & Scenario.ErrorDescription
   Return
   
 ErrHandler:
-  retval = retval & "Error: " & Err.Description
+  RetVal = RetVal & "Error: " & Err.Description
   Resume Next
 End Function
 
