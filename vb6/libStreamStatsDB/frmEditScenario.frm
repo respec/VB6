@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
+Object = "{872F11D5-3322-11D4-9D23-00A0C9768F70}#1.10#0"; "ATCoCtl.ocx"
 Begin VB.Form frmEditScenario 
    Caption         =   "Edit Scenario"
    ClientHeight    =   3690
@@ -489,9 +489,11 @@ Private Sub cmdOk_Click()
   pScenario.ROI = False
   pScenario.UsePredInts = True
   pScenario.LowFlow = True
+  pScenario.ProbEqtn = True
   For Each vRegion In pScenario.UserRegions
     If Not vRegion.Region.PredInt Then pScenario.UsePredInts = False
     If vRegion.Region.LowFlowRegnID <= 0 Then pScenario.LowFlow = False
+    If vRegion.Region.LowFlowRegnID >= 0 Then pScenario.ProbEqtn = False
     If vRegion.Region.ROIRegnID >= 0 Then
       pScenario.ROI = True
       pScenario.UsePredInts = True 'ROI always uses prediction intervals
@@ -690,7 +692,8 @@ Private Sub SetSelectedRegionsFromList()
         End If
         If newRegion.Region.UrbanNeedsRural Then
           If pScenario.Project.CurrentRuralScenario > 0 Then
-            If pScenario.Project.RuralScenarios(pScenario.Project.CurrentRuralScenario).LowFlow Then
+            If pScenario.Project.RuralScenarios(pScenario.Project.CurrentRuralScenario).LowFlow Or _
+               pScenario.Project.RuralScenarios(pScenario.Project.CurrentRuralScenario).LowFlow Then
               ssMessageBox "This equation requires a rural scenario result," & vbCr _
                  & "but the current rural scenario is for Low Flow estimates.", vbOKOnly, "Urban Requires Rural"
             Else
