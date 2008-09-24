@@ -12,6 +12,24 @@ Begin VB.Form frmLowFlow
    ScaleHeight     =   9075
    ScaleWidth      =   10725
    StartUpPosition =   3  'Windows Default
+   Begin VB.OptionButton rdoMainOpt 
+      Caption         =   "Probability"
+      BeginProperty Font 
+         Name            =   "MS Sans Serif"
+         Size            =   8.25
+         Charset         =   0
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   252
+      Index           =   2
+      Left            =   2880
+      TabIndex        =   41
+      Top             =   600
+      Width           =   1335
+   End
    Begin VB.Frame fraUnits 
       Caption         =   "Units"
       BeginProperty Font 
@@ -24,7 +42,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   615
-      Left            =   6120
+      Left            =   6600
       TabIndex        =   38
       Top             =   480
       Width           =   2175
@@ -130,7 +148,7 @@ Begin VB.Form frmLowFlow
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   8880
+      Left            =   9000
       TabIndex        =   28
       Top             =   600
       Width           =   732
@@ -365,7 +383,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   366
+         Rows            =   370
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -672,12 +690,12 @@ Begin VB.Form frmLowFlow
    Begin VB.ComboBox cboState 
       Height          =   315
       ItemData        =   "frmLowFlow.frx":0321
-      Left            =   3840
+      Left            =   5160
       List            =   "frmLowFlow.frx":0323
       TabIndex        =   0
       Text            =   "cboState"
       Top             =   600
-      Width           =   1452
+      Width           =   1215
    End
    Begin MSComDlg.CommonDialog cdlgFileSel 
       Left            =   -120
@@ -720,7 +738,7 @@ Begin VB.Form frmLowFlow
       EndProperty
       ForeColor       =   &H80000008&
       Height          =   255
-      Left            =   3240
+      Left            =   4560
       TabIndex        =   9
       Top             =   600
       Width           =   570
@@ -851,6 +869,7 @@ Private Sub cmdDatabase_Click()
   If lDBFName <> DB.FileName Then 'database changed
     rdoMainOpt(0).Value = False
     rdoMainOpt(1).Value = False
+    rdoMainOpt(2).Value = False
     fraEdit(0).Visible = False
     fraEdit(1).Visible = False
     fraEdit(2).Visible = False
@@ -925,7 +944,7 @@ TryAgain:
     .DialogTitle = "Select import file"
     If RDO = 0 Then
       FileName = GetSetting("SEE", "Defaults", "NSSExportFile", FileName)
-    ElseIf RDO = 1 Then
+    ElseIf RDO >= 1 Then
       FileName = GetSetting("SEE", "Defaults", "LowFlowExportFile", FileName)
     End If
     If Len(Dir(FileName, vbDirectory)) = 0 Then
@@ -1119,7 +1138,7 @@ Private Sub cmdExport_Click()
     .DialogTitle = "Assign name of export file"
     If RDO = 0 Then
       FileName = GetSetting("SEE", "Defaults", "NSSExportFile")
-    ElseIf RDO = 1 Then
+    ElseIf RDO >= 1 Then
       FileName = GetSetting("SEE", "Defaults", "LowFlowExportFile")
     End If
     If Len(Dir(FileName, vbDirectory)) <= 1 Then
@@ -1129,7 +1148,7 @@ Private Sub cmdExport_Click()
     End If
     If RDO = 0 Then
       FileName = FileName & "-PeakFlow"
-    ElseIf RDO = 1 Then
+    ElseIf RDO >= 1 Then
       FileName = FileName & "-LowFlow"
     End If
     'Increment output file name if files already exported for state
@@ -1147,7 +1166,7 @@ Private Sub cmdExport_Click()
     If RDO = 0 Then
       SaveSetting "SEE", "Defaults", "NSSExportFile", PathNameOnly(FileName)
       j = 0
-    ElseIf RDO = 1 Then
+    ElseIf RDO >= 1 Then
       SaveSetting "SEE", "Defaults", "LowFlowExportFile", PathNameOnly(FileName)
       j = 1
     End If
@@ -1298,7 +1317,7 @@ Private Sub grdInterval_RowColChange()
         For i = 1 To retCnt
           .addValue returns.ItemByIndex(i)
         Next i
-      ElseIf RDO = 1 Then  'add statistics to drop-down list
+      ElseIf RDO >= 1 Then  'add statistics to drop-down list
         For i = 1 To DB.LFStats.Count
           .addValue DB.LFStats(i).Name
         Next i
@@ -1461,7 +1480,7 @@ Private Sub rdoMainOpt_Click(Index As Integer)
   RDO = Index
   If RDO = 0 Then
     lblRetPds.Caption = "Return Periods:"
-  ElseIf RDO = 1 Then
+  ElseIf RDO >= 1 Then
     lblRetPds.Caption = vbCrLf & "Statistics:"
   End If
   FocusOnRegions
@@ -1494,7 +1513,7 @@ Private Function DBCheck(dbName As String) As Boolean
           "Please select another database.", vbCritical, "Wrong database"
       Exit Function
     End If
-  ElseIf rdoMainOpt(1) Then
+  ElseIf rdoMainOpt(1) Or rdoMainOpt(2) Then
     If DB.LFStats.Count = 0 Then
       MsgBox "'" & dbName & "' is not a LowFlow database." & _
           vbCrLf & "Please select another database.", vbCritical, "Wrong database"
@@ -1527,8 +1546,9 @@ Private Sub cboState_Click()
     i = 0
     For regnIndex = 1 To regnCount
       If DB.State.Regions(regnIndex - i).ROIRegnID > 0 Or _
-          rdoMainOpt(0) And DB.State.Regions(regnIndex - i).LowFlowRegnID > 0 Or _
-          rdoMainOpt(1) And DB.State.Regions(regnIndex - i).LowFlowRegnID < 0 Then
+          rdoMainOpt(0) And Abs(DB.State.Regions(regnIndex - i).LowFlowRegnID) > 0 Or _
+          rdoMainOpt(1) And DB.State.Regions(regnIndex - i).LowFlowRegnID <= 0 Or _
+          rdoMainOpt(2) And DB.State.Regions(regnIndex - i).LowFlowRegnID >= 0 Then
         DB.State.Regions.RemoveByIndex (regnIndex - i)
         i = i + 1
       End If
@@ -1557,6 +1577,7 @@ End Sub
 Private Sub grdComps_RowColChange()
   Dim i&
   Dim EqtnStr As String, BaseVar As String, BaseStr As String
+  Dim EqtnModStr As String
   Dim ExpStr As String
   Dim BaseMod As Single, ExpMod As Single
   Dim InMultExp As Boolean
@@ -1587,8 +1608,9 @@ Private Sub grdComps_RowColChange()
     End If
 
     'update equation display
-    If Len(grdInterval.TextMatrix(1, 5)) > 0 And grdInterval.TextMatrix(1, 5) <> "1" Then
-      EqtnStr = lstRetPds.List(lstRetPds.ListIndex) & " = " & grdInterval.TextMatrix(1, 5)
+    EqtnModStr = grdInterval.TextMatrix(1, 5)
+    If Len(EqtnModStr) > 0 And EqtnModStr <> "1" Then
+      EqtnStr = lstRetPds.List(lstRetPds.ListIndex) & " = " & EqtnModStr
     Else
       EqtnStr = lstRetPds.List(lstRetPds.ListIndex) & " ="
     End If
@@ -1660,7 +1682,12 @@ Private Sub grdComps_RowColChange()
         End If
       End If
     Next i
-    lblEquation.Caption = EqtnStr
+    If RDO = 2 Then
+      i = InStr(EqtnStr, "=")
+      lblEquation.Caption = Left(EqtnStr, i + 1) & "e^(" & EqtnStr & ")/1+e^(" & EqtnStr & ")"
+    Else
+      lblEquation.Caption = EqtnStr
+    End If
   End With
 End Sub
 
@@ -2078,7 +2105,7 @@ Private Sub cmdDelete_Click()
             lstRetPds.List(lstRetPds.ListIndex) & "-year" & vbCrLf & _
             "Return Period from the database for " & MyRegion.Name & ", " & State & "?", _
             "User Action Verification", "+&Yes", "-&Cancel")
-      ElseIf RDO = 1 Then
+      ElseIf RDO >= 1 Then
         response = myMsgBox.Show("Are you certain you want to delete the " & _
             lstRetPds.List(lstRetPds.ListIndex) & " statistic" & vbCrLf & _
             "from the database for " & MyRegion.Name & ", " & State & "?", _
@@ -2112,7 +2139,7 @@ Private Sub cmdSave_Click()
   
   If RDO = 0 Then
     isReturn = True
-  ElseIf RDO = 1 Then
+  ElseIf RDO >= 1 Then
     isReturn = False
   End If
 
@@ -2188,7 +2215,7 @@ Private Sub cmdSave_Click()
     ElseIf fraEdit(2).Visible Then  'editing Return Period / Statistic
       If RDO = 0 Then
         depVarName = "Return Period"
-      ElseIf RDO = 1 Then
+      ElseIf RDO >= 1 Then
         depVarName = "Statistic"
       End If
       If MyDepVar.IsNew Then
@@ -2480,7 +2507,7 @@ Private Sub SetGrid(Table As String)
           .TextMatrix(-1, 0) = "Return"
           .TextMatrix(0, 0) = "Interval"
           grdInterval.header = "Return Interval"
-        ElseIf RDO = 1 Then
+        ElseIf RDO >= 1 Then
           .TextMatrix(-1, 0) = ""
           .TextMatrix(0, 0) = "Statistic"
           grdInterval.header = "Statistic"
@@ -2700,7 +2727,7 @@ Private Sub FocusOnReturns()
   ChoseReturns = True
   If RDO = 0 Then
     fraEdit(2).Caption = "Return Period Values"
-  ElseIf RDO = 1 Then
+  ElseIf RDO >= 1 Then
     fraEdit(2).Caption = "Statistic Values"
   End If
   fraEdit(0).Visible = False
@@ -2823,7 +2850,7 @@ Private Sub PopulateDepVars()
             rank = rank + 1
           End If
         Next cntr
-      ElseIf RDO = 1 Then  'low flow
+      ElseIf RDO >= 1 Then  'low flow
         If depVarIndex > 1 Then rank = rank + 1
       End If
       rankedDepVars(0, depVarIndex - 1) = MyRegion.depVars(rank + 1).Name
@@ -3176,7 +3203,7 @@ y:
       On Error GoTo Z
       If RDO = 0 Then
         str = "Return Period"
-      ElseIf RDO = 1 Then
+      ElseIf RDO >= 1 Then
         str = "Statistic"
       End If
       i = MsgBox("Do you want to save the new " & str & vbCrLf & _
