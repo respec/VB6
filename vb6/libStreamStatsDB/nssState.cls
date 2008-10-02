@@ -559,10 +559,13 @@ Public Sub ClearState(DVTable As String)
   i = 0
   If DVTable = "ReturnPeriods" Then
     sql = "SELECT Regions.* From [Regions] " & _
-          "WHERE StateCode='" & Me.Code & "' And LowFlow=-1 And ROI=-1;"
+          "WHERE StateCode='" & Me.Code & "' And LowFlow=0 And ROI=-1;"
   ElseIf DVTable = "Statistics" Then
     sql = "SELECT Regions.* From [Regions] " & _
           "WHERE StateCode='" & Me.Code & "' And LowFlow>0;"
+  ElseIf DVTable = "Probability" Then
+    sql = "SELECT Regions.* From [Regions] " & _
+          "WHERE StateCode='" & Me.Code & "' And LowFlow<0;"
   End If
   Set regRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   While regRec.RecordCount > 0
