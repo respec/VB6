@@ -4,7 +4,7 @@ Begin VB.Form frmNSS
    Caption         =   "National Streamflow Statistics (NSS)"
    ClientHeight    =   7440
    ClientLeft      =   165
-   ClientTop       =   780
+   ClientTop       =   735
    ClientWidth     =   11175
    HelpContextID   =   12
    Icon            =   "frmNSS.frx":0000
@@ -526,12 +526,12 @@ Private Sub cmdFrequency_Click()
   Dim i As Long, NumFloodScens As Long
   NumFloodScens = 0
   For i = 1 To Project.RuralScenarios.Count
-    If Not Project.RuralScenarios(i).LowFlow Then
+    If Not Project.RuralScenarios(i).lowflow Then
       NumFloodScens = NumFloodScens + 1
     End If
   Next i
   For i = 1 To Project.UrbanScenarios.Count
-    If Not Project.UrbanScenarios(i).LowFlow Then
+    If Not Project.UrbanScenarios(i).lowflow Then
       NumFloodScens = NumFloodScens + 1
     End If
   Next i
@@ -546,12 +546,12 @@ Private Sub cmdHydrograph_Click()
   Dim i As Long, NumFloodScens As Long
   NumFloodScens = 0
   For i = 1 To Project.RuralScenarios.Count
-    If Not Project.RuralScenarios(i).LowFlow Then
+    If Not Project.RuralScenarios(i).lowflow Then
       NumFloodScens = NumFloodScens + 1
     End If
   Next i
   For i = 1 To Project.UrbanScenarios.Count
-    If Not Project.UrbanScenarios(i).LowFlow Then
+    If Not Project.UrbanScenarios(i).lowflow Then
       NumFloodScens = NumFloodScens + 1
     End If
   Next i
@@ -625,7 +625,7 @@ Private Sub cmdWeight_Click()
   
   If Project.CurrentRuralScenario > 0 Then
     Set scen = Project.RuralScenarios(Project.CurrentRuralScenario)
-    If scen.LowFlow Then
+    If scen.lowflow Then
       MsgBox "Weighting not available for Low Flow scenarios.", vbInformation, "NSS Weight"
     Else
       If scen.Weight.WeightType > 0 Then 'This is already a weighted scenario, just edit it
@@ -1053,7 +1053,7 @@ AddRegionScenario:
   Set newScenario = New nssScenario
   Set newScenario.Project = Project
   newScenario.Urban = region.Urban
-  If region.LowFlowRegnID > 0 Then newScenario.LowFlow = True
+  If Abs(region.LowFlowRegnID) > 0 Then newScenario.lowflow = True
   If doMax Then
     newScenario.Name = region.State.Abbrev & "_" & region.Name & "_Max"
   Else
@@ -1073,7 +1073,7 @@ AddRegionScenario:
     End If
     Project.UrbanScenarios.Add newScenario, LCase(newScenario.Name)
   Else
-    If Not newScenario.LowFlow Then 'make sure last rural is a peak flow scenario for urban use
+    If Not newScenario.lowflow Then 'make sure last rural is a peak flow scenario for urban use
       Set lastRural = newScenario
     End If
     Project.RuralScenarios.Add newScenario, LCase(newScenario.Name)
