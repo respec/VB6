@@ -306,7 +306,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -383,7 +383,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   370
+         Rows            =   381
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -424,7 +424,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -490,7 +490,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   6
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -926,7 +926,7 @@ Private Sub cmdImport_Click()
   Dim i&, j&, k&, m&, inFile&, regnCnt&, parmCnt&, depVarCnt&, _
       compCnt&, flds&, DepVarID&, response&
   Dim FileName$, str$, regnName$, flowFlag$
-  Dim urban As Boolean, isReturn As Boolean, isLowFlow As Boolean
+  Dim urban As Boolean, isReturn As Boolean
   Dim regnVals() As Integer
   Dim parmVals() As String, depVarVals() As String, compVals() As String
   Dim covArray() As String
@@ -979,11 +979,12 @@ TryAgain:
   If flowFlag = "0" Then
     DB.State.ClearState "ReturnPeriods"
     isReturn = True
-    isLowFlow = False
   ElseIf flowFlag = "1" Then
     DB.State.ClearState "Statistics"
     isReturn = False
-    isLowFlow = True
+  ElseIf flowFlag = "2" Then
+    DB.State.ClearState "Probability"
+    isReturn = False
   End If
 
   DepVarFlds = 10 'always set to import all possible DepVar fields
@@ -1006,7 +1007,7 @@ TryAgain:
     regnVals(1) = StrRetRem(str)
     Set MyRegion = New nssRegion
     Set MyRegion.DB = DB
-    MyRegion.Add isReturn, regnName, urban, regnVals(0), regnVals(1), -1
+    MyRegion.Add RDO, regnName, urban, regnVals(0), regnVals(1), -1
     DB.State.PopulateRegions
     Set MyRegion = DB.State.Regions(regnName)
     'Read in parameters info
@@ -1080,6 +1081,10 @@ TryAgain:
             compVals(j - 1, k, m) = StrRetRem(str)
           End If
         Next m
+        If compVals(j - 1, k, 0) < -10 Then 'indicates to take natural log
+          compVals(j - 1, k, 0) = Abs(compVals(j - 1, k, 0))
+          compVals(j - 1, k, 4) = -999
+        End If
         'Get rid of instructional equation on end of component string
         compVals(j - 1, k, m - 1) = StrSplit(compVals(j - 1, k, m - 1), vbTab, "")
         'Write values to DB
@@ -1138,8 +1143,10 @@ Private Sub cmdExport_Click()
     .DialogTitle = "Assign name of export file"
     If RDO = 0 Then
       FileName = GetSetting("SEE", "Defaults", "NSSExportFile")
-    ElseIf RDO >= 1 Then
+    ElseIf RDO = 1 Then
       FileName = GetSetting("SEE", "Defaults", "LowFlowExportFile")
+    ElseIf RDO = 2 Then
+      FileName = GetSetting("SEE", "Defaults", "ProbabilityExportFile")
     End If
     If Len(Dir(FileName, vbDirectory)) <= 1 Then
       FileName = CurDir & "\" & DB.State.Abbrev & "_Export"
@@ -1148,8 +1155,10 @@ Private Sub cmdExport_Click()
     End If
     If RDO = 0 Then
       FileName = FileName & "-PeakFlow"
-    ElseIf RDO >= 1 Then
+    ElseIf RDO = 1 Then
       FileName = FileName & "-LowFlow"
+    ElseIf RDO = 2 Then
+      FileName = FileName & "-Probability"
     End If
     'Increment output file name if files already exported for state
     While Len(Dir(FileName & ".txt")) > 0
@@ -1166,9 +1175,12 @@ Private Sub cmdExport_Click()
     If RDO = 0 Then
       SaveSetting "SEE", "Defaults", "NSSExportFile", PathNameOnly(FileName)
       j = 0
-    ElseIf RDO >= 1 Then
+    ElseIf RDO = 1 Then
       SaveSetting "SEE", "Defaults", "LowFlowExportFile", PathNameOnly(FileName)
       j = 1
+    ElseIf RDO = 2 Then
+      SaveSetting "SEE", "Defaults", "ProbabilityExportFile", PathNameOnly(FileName)
+      j = 2
     End If
   End With
   
@@ -1217,10 +1229,24 @@ Private Sub cmdExport_Click()
       For k = 1 To compCnt
         Set MyComp = MyDepVar.Components(k)
         str = BldEqtn(MyComp)
-        Print #OutFile, vbTab & vbTab & GetAbbrev(MyComp.ParmID) & vbTab & _
-            MyComp.BaseMod & " " & MyComp.BaseCoeff & " " & _
-            MyComp.BaseExp & " " & GetAbbrev(MyComp.expID) & vbTab & _
-            MyComp.ExpMod & " " & MyComp.ExpExp & str
+        With MyComp
+          If .ParmID = -3 Or .ParmID = -4 Then
+            Print #OutFile, vbTab & vbTab & GetAbbrev(.ParmID) & CStr(.ParmID) & vbTab & _
+                .BaseMod & " " & .BaseCoeff & " " & _
+                .BaseExp & " " & GetAbbrev(.expID) & vbTab & _
+                .ExpMod & " " & .ExpExp & str
+          ElseIf .expID = -999 Then
+            Print #OutFile, vbTab & vbTab & "ln(" & GetAbbrev(.ParmID) & ")" & vbTab & _
+                .BaseMod & " " & .BaseCoeff & " " & _
+                .BaseExp & " " & GetAbbrev(.expID) & vbTab & _
+                .ExpMod & " " & .ExpExp & str
+          Else
+            Print #OutFile, vbTab & vbTab & GetAbbrev(.ParmID) & vbTab & _
+                .BaseMod & " " & .BaseCoeff & " " & _
+                .BaseExp & " " & GetAbbrev(.expID) & vbTab & _
+                .ExpMod & " " & .ExpExp & str
+          End If
+        End With
       Next k
       If MyRegion.PredInt Then  'using prediction intervals
         If UBound(covArray, 1) > 1 Then  'this Return/Stat has a covariance matrix
@@ -1253,8 +1279,13 @@ Private Function BldEqtn(MyComp As nssComponent) As String
   
   With MyComp
     'Set base portion of equation
-    str = vbTab & "#" & vbTab & .BaseCoeff & "(" & .BaseMod & "+" & _
-          GetAbbrev(.ParmID) & ")^" & .BaseExp
+    If .expID = -999 Then
+      str = vbTab & "#" & vbTab & .BaseCoeff & "ln(" & .BaseMod & "+" & _
+            GetAbbrev(.ParmID) & ")^" & .BaseExp
+    Else
+      str = vbTab & "#" & vbTab & .BaseCoeff & "(" & .BaseMod & "+" & _
+            GetAbbrev(.ParmID) & ")^" & .BaseExp
+    End If
     'Set exponent portion of equation, if applicable
     If GetAbbrev(.expID) <> "none" Then
       str = str & "(" & .ExpMod & "+" & GetAbbrev(.expID) & ")"
@@ -1584,12 +1615,18 @@ Private Sub grdComps_RowColChange()
   
   With grdComps
     .ClearValues
-    If .col = 0 Or .col = 4 Then
+    If .col = 0 Or .col = 4 Then 'build list of parameters for base or exponent variable
       For i = 0 To lstParms.ListCount - 1
         If Not (.col = 4 And lstParms.ItemData(i) < 0) Then _
             .addValue GetAbbrev(lstParms.ItemData(i))
       Next i
-      If .col = 4 Then
+      If .col = 0 And RDO = 2 Then 'allow natural log for probability equations
+        For i = 0 To lstParms.ListCount - 1
+          If lstParms.ItemData(i) >= 0 Then _
+            .addValue "ln(" & GetAbbrev(lstParms.ItemData(i)) & ")"
+        Next i
+      End If
+      If .col = 4 Then 'allow log transformations in exponent
         For i = 0 To lstParms.ListCount - 1
           If lstParms.ItemData(i) >= 0 Then _
             .addValue "log(" & GetAbbrev(lstParms.ItemData(i)) & ")"
@@ -1637,7 +1674,11 @@ Private Sub grdComps_RowColChange()
             BaseStr = "(" & .TextMatrix(i, 2) & BaseStr & ")"
           End If
         End If
-        EqtnStr = EqtnStr & "  " & BaseStr
+        If RDO = 2 Then
+          EqtnStr = EqtnStr & "+ " & BaseStr
+        Else
+          EqtnStr = EqtnStr & "  " & BaseStr
+        End If
       End If
       If Len(.TextMatrix(i, 3)) > 0 And .TextMatrix(i, 3) <> "1" Then
         If Not InMultExp And .TextMatrix(i, 7) <> "0" Then '1st instance of multiple parms in exponent
@@ -1684,7 +1725,7 @@ Private Sub grdComps_RowColChange()
     Next i
     If RDO = 2 Then
       i = InStr(EqtnStr, "=")
-      lblEquation.Caption = Left(EqtnStr, i + 1) & "e^(" & EqtnStr & ")/1+e^(" & EqtnStr & ")"
+      lblEquation.Caption = Left(EqtnStr, i + 1) & "e^(" & Mid(EqtnStr, i + 2) & ")/1+e^(" & Mid(EqtnStr, i + 2) & ")"
     Else
       lblEquation.Caption = EqtnStr
     End If
@@ -2234,7 +2275,7 @@ Private Sub cmdSave_Click()
     If fraEdit(0).Visible Then 'editing region
       If MyRegion.IsNew Then
         Set MyRegion.DB = DB
-        If Not MyRegion.Add(isReturn, txtRegName.Text, rdoRegOpt(1), _
+        If Not MyRegion.Add(RDO, txtRegName.Text, rdoRegOpt(1), _
             chkRuralInput.Value, chkPredInt.Value, -1) Then GoTo x
 '?????? add possible 2 parms to DB?
         ResetDB
@@ -2341,6 +2382,7 @@ Private Sub cmdSave_Click()
       ReDim covArray(1 To grdMatrix.Rows, 1 To grdMatrix.cols)
       For i = 1 To grdComps.Rows
         If i <= grdComps.Rows Then
+          expID = GetCode(grdComps.TextMatrix(i, 4))
           If grdComps.TextMatrix(i, 7) <> "0" Then 'one of multiple parms in exponent
             If i < grdComps.Rows Then 'see if this is the last parm in exponent
               If grdComps.TextMatrix(i + 1, 7) = grdComps.TextMatrix(i, 7) Then
@@ -2354,8 +2396,11 @@ Private Sub cmdSave_Click()
             End If
           Else
             baseID = GetCode(grdComps.TextMatrix(i, 0))
+            If baseID < 0 Then 'indicates natural log, set exponent ID to indicate so
+              baseID = Abs(baseID)
+              expID = -999
+            End If
           End If
-          expID = GetCode(grdComps.TextMatrix(i, 4))
           'Add components from grid to DB
           MyComp.Add MyRegion, tmpID, baseID, grdComps.TextMatrix(i, 1), _
               grdComps.TextMatrix(i, 2), grdComps.TextMatrix(i, 3), expID, _
@@ -2628,6 +2673,7 @@ Private Sub SetGrid(Table As String)
           For row = 1 To compCnt
             Set MyComp = MyDepVar.Components(row)
             str = GetAbbrev(MyComp.ParmID)
+            If MyComp.expID = -999 Then str = "ln(" & str & ")" 'indicates use natural log
             For col = 0 To .cols - 1
               .row = row
               .col = col
@@ -2868,7 +2914,7 @@ Private Function GetAbbrev(ByVal Parm As Long) As String
   Select Case Parm
     Case -2: GetAbbrev = "rural Dis"
     Case -1: GetAbbrev = "rural DA"
-    Case -4, -3, 0: GetAbbrev = "none"
+    Case -999, -4, -3, 0: GetAbbrev = "none"
     Case Else:
       If Parm < 0 Then
         takeLog = True
@@ -2887,7 +2933,13 @@ Private Function GetCode(ByVal Parm As String) As Long
     Case "rural Dis": GetCode = -2
     Case "rural DA": GetCode = -1
     Case "none": GetCode = 0
+    Case "none-3": GetCode = -3
+    Case "none-4": GetCode = -4
     Case Else:
+      If Left(Parm, 3) = "ln(" Then
+        Parm = Mid(Parm, 4, Len(Parm) - 4)
+        takeLog = True
+      End If
       If Left(Parm, 4) = "log(" Then
         Parm = Mid(Parm, 5, Len(Parm) - 5)
         takeLog = True
@@ -3074,7 +3126,7 @@ Private Function ChangesMade() As Boolean
         ChangesMade = True
       Else
         Set tmpComp = MyDepVar.Components(row)
-        baseID = GetCode(grdComps.TextMatrix(row, 0))
+        baseID = Abs(GetCode(grdComps.TextMatrix(row, 0)))
         If baseID <> tmpComp.ParmID And tmpComp.ParmID >= 0 Then
           CompChanges(0, row - 1, 0) = GetAbbrev(tmpComp.ParmID)
           CompChanges(1, row - 1, 0) = grdComps.TextMatrix(row, 0)
@@ -3096,6 +3148,7 @@ Private Function ChangesMade() As Boolean
           ChangesMade = True
         End If
         expID = GetCode(grdComps.TextMatrix(row, 4))
+        If Left(grdComps.TextMatrix(row, 0), 2) = "ln" Then expID = -999
         If expID <> tmpComp.expID Then
           CompChanges(0, row - 1, 4) = GetAbbrev(tmpComp.expID)
           CompChanges(1, row - 1, 4) = grdComps.TextMatrix(row, 4)
