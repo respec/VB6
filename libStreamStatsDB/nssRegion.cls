@@ -382,11 +382,13 @@ Public Sub PopulateROIStations()
   'this sub is no longer functional as PopulateROIStations is now done in nssState.cls
 End Sub
 
-Public Function Add(IsReturn As Boolean, ByVal RegName As String, ByVal Urban As Boolean, _
+Public Function Add(ByVal RegType As Long, ByVal RegName As String, ByVal Urban As Boolean, _
     ByVal RuralInput As Long, ByVal PredInt As Long, ByVal ROIRegnID As Long, Optional NoWarnFlg As Boolean) As Boolean
+  'RegType: 0 - Peak Flow, 1 - Low Flow, 2 - Probability
   Dim myRec As Recordset
   Dim ID&, lowFlowID&
   Dim sql$
+  Dim lInc As Integer
   
   RegName = NoSpaces(RegName)
   Set myRec = Me.DB.DB.OpenRecordset("Regions", dbOpenDynaset)
@@ -418,19 +420,29 @@ Public Function Add(IsReturn As Boolean, ByVal RegName As String, ByVal Urban As
         "WHERE StateCode='" & DB.State.Code & "';"
   Set myRec = Me.DB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
-    If IsReturn Then
-      lowFlowID = -1
+    If RegType = 0 Then
+      lowFlowID = 0
     Else 'find a LowFlow ID
+      If RegType = 1 Then 'low flow region
+        lInc = 1
+      Else 'probability region, use negative LowFlowID numbers
+        lInc = -1
+      End If
       If .RecordCount > 0 Then
         .MoveFirst
         lowFlowID = !LowFlow
         .MoveNext
         While Not .EOF
-          If !LowFlow > lowFlowID Then lowFlowID = !LowFlow
+          If RegType = 1 And !LowFlow > lowFlowID Then lowFlowID = !LowFlow
+          If RegType = 2 And !LowFlow < lowFlowID Then lowFlowID = !LowFlow
           .MoveNext
         Wend
       End If
-      If lowFlowID > 0 Then lowFlowID = lowFlowID + 1 Else lowFlowID = 1
+      If (RegType = 1 And lowFlowID > 0) Or (RegType = 2 And lowFlowID < 0) Then 'set ID to next available number
+        lowFlowID = lowFlowID + lInc
+      Else 'first LowFlow region for this state
+        lowFlowID = lInc
+      End If
     End If
     .AddNew
     !StateCode = DB.State.Code

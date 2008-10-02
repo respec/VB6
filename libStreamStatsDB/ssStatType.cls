@@ -147,7 +147,7 @@ Public Sub Delete()
   
   Set myRec = pDB.DB.OpenRecordset("STATTYPE", dbOpenDynaset)
   With myRec
-    .FindFirst "ID=" & Me.ID
+    .FindFirst "StatisticTypeID=" & Me.ID
     If Not .NoMatch Then
       .Delete
     End If

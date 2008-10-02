@@ -628,7 +628,11 @@ Public Function GetLabelID(StatLabel As String, DB As nssDatabase) As Long
   With myRec
     .FindFirst "StatLabel='" & StatLabel & "'"
     If .NoMatch Then .FindFirst "StatisticLabel='" & StatLabel & "'"
-    If Not .NoMatch Then GetLabelID = .Fields("StatisticLabelID")
+    If Not .NoMatch Then
+      GetLabelID = .Fields("StatisticLabelID")
+    Else
+      GetLabelID = -1
+    End If
   End With
 End Function
 

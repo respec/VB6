@@ -492,7 +492,7 @@ Private Sub cmdOk_Click()
   pScenario.ProbEqtn = True
   For Each vRegion In pScenario.UserRegions
     If Not vRegion.Region.PredInt Then pScenario.UsePredInts = False
-    If vRegion.Region.LowFlowRegnID <= 0 Then pScenario.LowFlow = False
+    If vRegion.Region.LowFlowRegnID = 0 Then pScenario.LowFlow = False '<= 0 Then pScenario.LowFlow = False
     If vRegion.Region.LowFlowRegnID >= 0 Then pScenario.ProbEqtn = False
     If vRegion.Region.ROIRegnID >= 0 Then
       pScenario.ROI = True

@@ -243,48 +243,55 @@ Public Function Add(IsReturn As Boolean, ByVal Region As nssRegion, _
     End If
   End If
   StatLabelID = GetLabelID(Name, Region.DB)
-  Set myRec = Region.DB.DB.OpenRecordset("DepVars", dbOpenDynaset)
-  With myRec
-    'check to see if parameter with this name already exists for this region
-    '.FindFirst "RegionID=" & Region.ID & " AND StatLabelCode='" & Name & "'"
-    .FindFirst "RegionID=" & Region.ID & " AND StatisticLabelID=" & StatLabelID
-    If .NoMatch Then  'OK to add
-      'find an unused ID
-      If IsReturn Then
-        ID = 1
-      Else
-        ID = 10001
-      End If
-      .FindFirst "DepVarID=" & ID
-      While Not .NoMatch
-        ID = !DepVarID + 1
+  If StatLabelID >= 0 Then
+    Set myRec = Region.DB.DB.OpenRecordset("DepVars", dbOpenDynaset)
+    With myRec
+      'check to see if parameter with this name already exists for this region
+      '.FindFirst "RegionID=" & Region.ID & " AND StatLabelCode='" & Name & "'"
+      .FindFirst "RegionID=" & Region.ID & " AND StatisticLabelID=" & StatLabelID
+      If .NoMatch Then  'OK to add
+        'find an unused ID
+        If IsReturn Then
+          ID = 1
+        Else
+          ID = 10001
+        End If
         .FindFirst "DepVarID=" & ID
-      Wend
-      .AddNew
-      !DepVarID = ID
-      !Regionid = Region.ID
-      '!statLabelCode = Name
-      !StatisticLabelID = StatLabelID
-      If IsNumeric(StdErr) Then !StdErr = StdErr
-      If IsNumeric(EstErr) Then !EstErr = EstErr
-      If IsNumeric(PreErr) Then !PreErr = PreErr
-      If IsNumeric(eqyrs) Then !EquivYears = eqyrs
-      If IsNumeric(Constant) Then !Constant = Constant
-      If IsNumeric(BCF) Then !BCF = BCF
-      If IsNumeric(tDist) Then !T = tDist
-      If IsNumeric(Variance) Then !Variance = Variance
-      If IsNumeric(ExpDA) Then !ExpDA = ExpDA
-'      if isnumeric(Stations) then !Stas = Stations
-'      if isnumeric(CoeffDet) then !CoeffDet = CoeffDet
-'      if isnumeric(MAD) then !MAD = MAD
-      .Update
-      Add = ID
-    Else
-      ssMessageBox "'" & Name & "' already exists for " & Region.Name & _
-            "." & vbCrLf & "No entry was made."
-      Add = -1
-    End If
-  End With
+        While Not .NoMatch
+          ID = !DepVarID + 1
+          .FindFirst "DepVarID=" & ID
+        Wend
+        .AddNew
+        !DepVarID = ID
+        !Regionid = Region.ID
+        '!statLabelCode = Name
+        !StatisticLabelID = StatLabelID
+        If IsNumeric(StdErr) Then !StdErr = StdErr
+        If IsNumeric(EstErr) Then !EstErr = EstErr
+        If IsNumeric(PreErr) Then !PreErr = PreErr
+        If IsNumeric(eqyrs) Then !EquivYears = eqyrs
+        If IsNumeric(Constant) Then !Constant = Constant
+        If IsNumeric(BCF) Then !BCF = BCF
+        If IsNumeric(tDist) Then !T = tDist
+        If IsNumeric(Variance) Then !Variance = Variance
+        If IsNumeric(ExpDA) Then !ExpDA = ExpDA
+  '      if isnumeric(Stations) then !Stas = Stations
+  '      if isnumeric(CoeffDet) then !CoeffDet = CoeffDet
+  '      if isnumeric(MAD) then !MAD = MAD
+        .Update
+        Add = ID
+      Else
+        ssMessageBox "'" & Name & "' already exists for " & Region.Name & _
+              "." & vbCrLf & "No entry was made."
+        Add = -1
+      End If
+    End With
+  Else
+    ssMessageBox "'" & Name & "' not found as an available statistic to be a Dependant Variable." & vbCrLf & _
+                 "Add the new statistic using the Statistic Management tab in the StreamStatsDB program." & vbCrLf & _
+                 "." & vbCrLf & "No entry was made."
+    Add = -1
+  End If
 End Function
 
 Public Sub Delete()
