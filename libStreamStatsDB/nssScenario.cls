@@ -731,7 +731,7 @@ Public Function Discharges() As Double()
           WarnedAboutMissingComponents = True
         End If
         ReDim lVals(CurReturn.Components.Count)
-        MultParmExpVal = 1
+        MultParmExpVal = 0 '1
         For ComponentIndex = 1 To CurReturn.Components.Count
           StepName = "Set CurComponent = CurReturn.Components(ComponentIndex)"
           Set CurComponent = CurReturn.Components(ComponentIndex)
@@ -765,6 +765,7 @@ Public Function Discharges() As Double()
           ElseIf pProbEqtn And CurComponent.ExpID = -999 Then
             'probability equation, -999 ExpID indicates to take natural log of base parm
             curval = Log(curval)
+            lVals(ComponentIndex) = curval
             ExpVal = CurComponent.BaseExp
             Equation = ExpVal
           Else
@@ -784,7 +785,7 @@ Public Function Discharges() As Double()
             ExpVal = ExpVal * CurComponent.BaseExp
           End If
           If InMultParmExp Then 'compute exponent value from multiple parms
-            MultParmExpVal = MultParmExpVal * ExpVal
+            MultParmExpVal = MultParmExpVal + ExpVal '* ExpVal
             If CurComponent.ParmID = -4 Then 'last parm in exponent
               ExpVal = MultParmExpVal
               InMultParmExp = False
