@@ -468,3 +468,93 @@ ErrHandler:
   Resume Next
 End Function
 
+Private Function BuildEquation(ByVal aScenario As nssScenario) As String
+
+    'update equation display
+    
+    EqtnModStr = grdInterval.TextMatrix(1, 5)
+    If Len(EqtnModStr) > 0 And EqtnModStr <> "1" Then
+      EqtnStr = lstRetPds.List(lstRetPds.ListIndex) & " = " & EqtnModStr
+    Else
+      EqtnStr = lstRetPds.List(lstRetPds.ListIndex) & " ="
+    End If
+    InMultExp = False
+    For i = 1 To .rows
+      If Not InMultExp Then
+        If Len(.TextMatrix(i, 0)) > 0 Then
+          If .TextMatrix(i, 0) = "none" Then
+            BaseVar = ""
+          Else
+            BaseVar = .TextMatrix(i, 0)
+          End If
+          If Len(.TextMatrix(i, 1)) > 0 Then
+            BaseMod = CSng(.TextMatrix(i, 1))
+          Else
+            BaseMod = 0
+          End If
+          Select Case BaseMod
+            Case Is > 0: BaseStr = "(" & BaseVar & "+" & BaseMod & ")"
+            Case Is < 0: BaseStr = "(" & BaseVar & "-" & BaseMod & ")"
+            Case Else: BaseStr = "(" & BaseVar & ")"
+          End Select
+          If Len(.TextMatrix(i, 2)) > 0 And .TextMatrix(i, 2) <> "1" Then
+            BaseStr = "(" & .TextMatrix(i, 2) & BaseStr & ")"
+          End If
+        End If
+        If RDO = 2 Then
+          EqtnStr = EqtnStr & "+ " & BaseStr
+        Else
+          EqtnStr = EqtnStr & "  " & BaseStr
+        End If
+      End If
+      If Len(.TextMatrix(i, 3)) > 0 And .TextMatrix(i, 3) <> "1" Then
+        If Not InMultExp And .TextMatrix(i, 7) <> "0" Then '1st instance of multiple parms in exponent
+          EqtnStr = EqtnStr & "^(" & .TextMatrix(i, 3)
+        ElseIf InMultExp Then
+          EqtnStr = EqtnStr & .TextMatrix(i, 3)
+        Else
+          EqtnStr = EqtnStr & "^" & .TextMatrix(i, 3)
+        End If
+      End If
+      If Len(.TextMatrix(i, 4)) > 0 Then
+        If .TextMatrix(i, 4) = "none" Then
+          ExpStr = ""
+        Else
+          ExpStr = .TextMatrix(i, 4)
+          If Len(.TextMatrix(i, 5)) > 0 Then
+            ExpMod = CSng(.TextMatrix(i, 5))
+          Else
+            ExpMod = 0
+          End If
+          Select Case ExpMod
+            Case Is > 0: ExpStr = "(" & ExpStr & "+" & ExpMod & ")" '"^" & "(" & ExpStr & "+" & ExpMod & ")"
+            Case Is < 0: ExpStr = "(" & ExpStr & "-" & ExpMod & ")" '"^" & "(" & ExpStr & "-" & ExpMod & ")"
+            Case Else: ExpStr = "(" & ExpStr & ")" '"^" & "(" & ExpStr & ")"
+          End Select
+          If Len(.TextMatrix(i, 6)) > 0 And .TextMatrix(i, 6) <> "1" Then
+            ExpStr = ExpStr & "^" & .TextMatrix(i, 6)
+          End If
+        End If
+        EqtnStr = EqtnStr & ExpStr
+        If .TextMatrix(i, 7) <> "0" Then 'indicates multiple parms in exponent
+          If i < .rows Then 'see if next row's parm also belongs in this exponent
+            If .TextMatrix(i + 1, 7) = .TextMatrix(i, 7) Then 'yes, it's part of this exponent
+              InMultExp = True
+            Else 'no, this is the last parm in this exponent
+              InMultExp = False
+              EqtnStr = EqtnStr & ")"
+            End If
+          Else 'must be last of multiple parms in exponent
+            EqtnStr = EqtnStr & ")"
+          End If
+        End If
+      End If
+    Next i
+    If RDO = 2 Then
+      i = InStr(EqtnStr, "=")
+      lblEquation.Caption = Left(EqtnStr, i + 1) & "e^(" & Mid(EqtnStr, i + 2) & ")/1+e^(" & Mid(EqtnStr, i + 2) & ")"
+    Else
+      lblEquation.Caption = EqtnStr
+    End If
+
+End Function
