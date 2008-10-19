@@ -395,7 +395,7 @@ AddFlows:
         vRegion.UserParms(1).SetValue .GetArea(Me.Metric), Me.Metric
         .UserRegions.Add vRegion
         'add region name to scenario name
-        s = indent & .Name & vbCrLf & .EstimateString
+        s = indent & .Name & vbCrLf & vbCrLf & BuildEquations(lScenario) & .EstimateString
         vRegion.UserParms(1).SetValue RegArea, Me.Metric 'restore original region area
         'insert region results with scenario results
         While Len(s) > 0
@@ -414,6 +414,8 @@ AddFlows:
     Next
     'include label for combined results
     retval = retval & Scenario.Name & " - Area-Averaged Estimates" & vbCrLf
+  Else
+    retval = retval & BuildEquations(Scenario)
   End If
   retval = retval & Scenario.EstimateString & vbCrLf & vbCrLf & vbCrLf
 '  Flows = Scenario.WeightedDischarges
@@ -468,93 +470,107 @@ ErrHandler:
   Resume Next
 End Function
 
-Private Function BuildEquation(ByVal aScenario As nssScenario) As String
+Private Function BuildEquations(ByVal aScenario As nssScenario) As String
+  'builds equation strings for all equations in a single region in a scenario
+  Dim i As Integer
+  Dim EqtnStr As String
+  Dim BaseVar As String
+  Dim BaseStr As String
+  Dim ExpStr As String
+  Dim InMultExp As Boolean
+  Dim lRegion As nssRegion
+  Dim vDepVar As nssDepVar
+  Dim vComp As nssComponent
 
-    'update equation display
-    
-    EqtnModStr = grdInterval.TextMatrix(1, 5)
-    If Len(EqtnModStr) > 0 And EqtnModStr <> "1" Then
-      EqtnStr = lstRetPds.List(lstRetPds.ListIndex) & " = " & EqtnModStr
-    Else
-      EqtnStr = lstRetPds.List(lstRetPds.ListIndex) & " ="
-    End If
+On Error GoTo BEErrHandler
+  EqtnStr = "Equations used:" & vbCrLf
+  Set lRegion = aScenario.UserRegions(1).Region
+  For Each vDepVar In lRegion.DepVars
     InMultExp = False
-    For i = 1 To .rows
-      If Not InMultExp Then
-        If Len(.TextMatrix(i, 0)) > 0 Then
-          If .TextMatrix(i, 0) = "none" Then
+    If vDepVar.Constant <> 0 And vDepVar.Constant <> 1 Then
+      EqtnStr = EqtnStr & vDepVar.Name & " = " & vDepVar.Constant
+    Else
+      EqtnStr = EqtnStr & vDepVar.Name & " = "
+    End If
+    If vDepVar.Components.Count > 0 Then
+      For Each vComp In vDepVar.Components
+        If Not InMultExp Then
+          If vComp.ParmID = -2 Then
+            BaseVar = "Rural Dis"
+          ElseIf vComp.ParmID = -1 Then
+            BaseVar = "Rural DA"
+          ElseIf vComp.ParmID > 0 Then
+            If vComp.ExpID = -999 Then
+              BaseVar = "ln(" & vComp.Parameter.Abbrev & ")"
+            Else
+              BaseVar = vComp.Parameter.Abbrev
+            End If
+          Else
             BaseVar = ""
-          Else
-            BaseVar = .TextMatrix(i, 0)
           End If
-          If Len(.TextMatrix(i, 1)) > 0 Then
-            BaseMod = CSng(.TextMatrix(i, 1))
-          Else
-            BaseMod = 0
-          End If
-          Select Case BaseMod
-            Case Is > 0: BaseStr = "(" & BaseVar & "+" & BaseMod & ")"
-            Case Is < 0: BaseStr = "(" & BaseVar & "-" & BaseMod & ")"
+          Select Case vComp.BaseMod
+            Case Is > 0: BaseStr = "(" & BaseVar & "+" & vComp.BaseMod & ")"
+            Case Is < 0: BaseStr = "(" & BaseVar & "-" & vComp.BaseMod & ")"
             Case Else: BaseStr = "(" & BaseVar & ")"
           End Select
-          If Len(.TextMatrix(i, 2)) > 0 And .TextMatrix(i, 2) <> "1" Then
-            BaseStr = "(" & .TextMatrix(i, 2) & BaseStr & ")"
+          If vComp.BaseCoeff <> 1 Then
+            BaseStr = "(" & vComp.BaseCoeff & BaseStr & ")"
+          End If
+          If aScenario.ProbEqtn Then
+            EqtnStr = EqtnStr & "+ " & BaseStr
+          Else
+            EqtnStr = EqtnStr & "  " & BaseStr
           End If
         End If
-        If RDO = 2 Then
-          EqtnStr = EqtnStr & "+ " & BaseStr
-        Else
-          EqtnStr = EqtnStr & "  " & BaseStr
+        If vComp.BaseExp <> 1 Then
+          If Not InMultExp And vComp.ParmID = -3 Then '1st instance of multiple parms in exponent
+            EqtnStr = EqtnStr & "^(" & vComp.BaseExp
+          ElseIf InMultExp Then
+            If vComp.BaseExp < 0 Then
+              EqtnStr = EqtnStr & " " & vComp.BaseExp
+            Else
+              EqtnStr = EqtnStr & " +" & vComp.BaseExp
+            End If
+          Else
+            EqtnStr = EqtnStr & "^" & vComp.BaseExp
+          End If
         End If
-      End If
-      If Len(.TextMatrix(i, 3)) > 0 And .TextMatrix(i, 3) <> "1" Then
-        If Not InMultExp And .TextMatrix(i, 7) <> "0" Then '1st instance of multiple parms in exponent
-          EqtnStr = EqtnStr & "^(" & .TextMatrix(i, 3)
-        ElseIf InMultExp Then
-          EqtnStr = EqtnStr & .TextMatrix(i, 3)
-        Else
-          EqtnStr = EqtnStr & "^" & .TextMatrix(i, 3)
-        End If
-      End If
-      If Len(.TextMatrix(i, 4)) > 0 Then
-        If .TextMatrix(i, 4) = "none" Then
+        If vComp.ExpID <= 0 Then
           ExpStr = ""
         Else
-          ExpStr = .TextMatrix(i, 4)
-          If Len(.TextMatrix(i, 5)) > 0 Then
-            ExpMod = CSng(.TextMatrix(i, 5))
-          Else
-            ExpMod = 0
-          End If
-          Select Case ExpMod
-            Case Is > 0: ExpStr = "(" & ExpStr & "+" & ExpMod & ")" '"^" & "(" & ExpStr & "+" & ExpMod & ")"
-            Case Is < 0: ExpStr = "(" & ExpStr & "-" & ExpMod & ")" '"^" & "(" & ExpStr & "-" & ExpMod & ")"
-            Case Else: ExpStr = "(" & ExpStr & ")" '"^" & "(" & ExpStr & ")"
+          ExpStr = vComp.ExponentParameter.Abbrev
+          Select Case vComp.ExpMod
+            Case Is > 0: ExpStr = "(" & ExpStr & "+" & vComp.ExpMod & ")"
+            Case Is < 0: ExpStr = "(" & ExpStr & "-" & vComp.ExpMod & ")"
+            Case Else: ExpStr = "(" & ExpStr & ")"
           End Select
-          If Len(.TextMatrix(i, 6)) > 0 And .TextMatrix(i, 6) <> "1" Then
-            ExpStr = ExpStr & "^" & .TextMatrix(i, 6)
+          If vComp.ExpExp > 0 And vComp.ExpExp <> 1 Then
+            ExpStr = ExpStr & "^" & vComp.ExpExp
           End If
         End If
         EqtnStr = EqtnStr & ExpStr
-        If .TextMatrix(i, 7) <> "0" Then 'indicates multiple parms in exponent
-          If i < .rows Then 'see if next row's parm also belongs in this exponent
-            If .TextMatrix(i + 1, 7) = .TextMatrix(i, 7) Then 'yes, it's part of this exponent
-              InMultExp = True
-            Else 'no, this is the last parm in this exponent
-              InMultExp = False
-              EqtnStr = EqtnStr & ")"
-            End If
-          Else 'must be last of multiple parms in exponent
-            EqtnStr = EqtnStr & ")"
-          End If
+        If vComp.ParmID = -3 Then 'indicates multiple parms in exponent and not the last
+          InMultExp = True
+        ElseIf vComp.ParmID = -4 Then 'last of multiple parms in this exponent
+          InMultExp = False
+          EqtnStr = EqtnStr & ")"
         End If
-      End If
-    Next i
-    If RDO = 2 Then
-      i = InStr(EqtnStr, "=")
-      lblEquation.Caption = Left(EqtnStr, i + 1) & "e^(" & Mid(EqtnStr, i + 2) & ")/1+e^(" & Mid(EqtnStr, i + 2) & ")"
-    Else
-      lblEquation.Caption = EqtnStr
+      Next
+    ElseIf vDepVar.Name = "PK500" Then 'extrapolated 500-year value
+      EqtnStr = EqtnStr & "<extrapolated>"
     End If
+    If aScenario.ProbEqtn Then
+      i = InStr(EqtnStr, "=")
+      EqtnStr = Left(EqtnStr, i + 1) & "e^(" & Mid(EqtnStr, i + 2) & ")/1+e^(" & Mid(EqtnStr, i + 2) & ")" & vbCrLf
+    Else
+      EqtnStr = EqtnStr & vbCrLf
+    End If
+  Next
+  BuildEquations = EqtnStr & vbCrLf
+  Return
+  
+BEErrHandler:
+  EqtnStr = EqtnStr & "Error: " & Err.Description
+  Resume Next
 
 End Function
