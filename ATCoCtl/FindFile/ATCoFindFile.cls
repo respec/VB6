@@ -162,6 +162,7 @@ NoFile:
   
 CancelledDialog:     'Return empty string if user clicked Cancel
   pDefaultFileName = ""
+  lFileName = ""
   Resume NoFile
 End Function
 
