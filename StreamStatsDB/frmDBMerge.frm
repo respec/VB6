@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "Comdlg32.ocx"
 Begin VB.Form frmDBMerge 
    Caption         =   "StreamStats Database Merge Utility"
    ClientHeight    =   2730
@@ -99,7 +99,7 @@ Private Renumb As New FastCollection 'of new stat label ids, with old id as key
 
 Private Sub cboState_Click()
   Dim STKey As String
-  If Len(Master.filename) > 0 And Len(Adding.filename) > 0 Then
+  If Len(Master.Filename) > 0 And Len(Adding.Filename) > 0 Then
     STKey = CStr(cboState.ItemData(cboState.ListIndex))
     If Len(STKey) = 1 Then STKey = "0" & STKey
     If Master.States(STKey).Name = Adding.States(STKey).Name Then
@@ -127,10 +127,10 @@ Private Sub cmdDB_Click(Index As Integer)
     cdlDB.DialogTitle = "Open Additional StreamStats Database"
   End If
   cdlDB.ShowOpen
-  DBName = cdlDB.filename
+  DBName = cdlDB.Filename
   If Index = 0 Then
     With Master
-      .filename = DBName
+      .Filename = DBName
       For i = 1 To .States.Count
         cboState.AddItem .States(i).Abbrev
         cboState.ItemData(i - 1) = CStr(.States(i).Code)
@@ -138,7 +138,7 @@ Private Sub cmdDB_Click(Index As Integer)
     End With
   Else
     Set Adding = New nssDatabase
-    Adding.filename = DBName
+    Adding.Filename = DBName
   End If
   lblDBName(Index).Caption = DBName
 End Sub
@@ -182,23 +182,27 @@ Private Sub MergeStatLabels()
     For Each vStatLabel In Adding.StatisticTypes(i).StatLabels
       If Not Master.StatisticTypes(Adding.StatisticTypes(i).Code).StatLabels.KeyExists(vStatLabel.Code) Then
         'need to add new stat
-        sql = "SELECT STATLABEL.* FROM STATLABEL ORDER BY StatisticLabelCode;"
+        sql = "SELECT STATLABEL.* FROM STATLABEL ORDER BY StatisticLabelID;" 'StatisticLabelCode;"
         Set myRec = Master.DB.OpenRecordset(sql, dbOpenDynaset)
         With myRec
           .MoveLast
-          fld = !StatisticLabelCode + 1
+          fld = !StatisticLabelID + 1
           .AddNew
-          .Fields("StatisticLabelCode") = fld
+          .Fields("StatisticLabelID") = fld
           If vStatLabel.id <> fld Then 'need to renumber this stat label
             Renumb.Add fld, vStatLabel.id 'store original stat label code as key
           End If
+          .Fields("StatisticTypeID") = vStatLabel.GetStatTypeID(vStatLabel.TypeName)
           .Fields("StatisticTypeCode") = vStatLabel.TypeCode
           .Fields("StatLabel") = vStatLabel.Code
           .Fields("StatisticLabel") = vStatLabel.Name
-          .Fields("Units") = vStatLabel.Units
-          'definition not available as property, use name without the underscores
-          'this is how it currently is done in StreamStats
-          .Fields("Definition") = ReplaceString(vStatLabel.Name, "_", " ")
+'          .Fields("Units") = vStatLabel.Units
+          'convert unit string to numeric
+          .Fields("UnitID") = vStatLabel.Units 'GetUnitCode(vStatLabel.Units)
+'          'definition not available as property, use name without the underscores
+'          'this is how it currently is done in StreamStats
+'          .Fields("Definition") = ReplaceString(vStatLabel.Name, "_", " ")
+          .Fields("Definition") = vStatLabel.definition
           .Update
         End With
       End If
@@ -209,7 +213,7 @@ Private Sub MergeStatLabels()
     'add all sources from adding database (existing ones won't be added)
     Set mySource = New ssSource
     Set mySource.DB = Master
-    mySource.Add lSource.Name
+    mySource.Add lSource.Name, lSource.URL
   Next
 
 End Sub
@@ -218,8 +222,7 @@ Private Sub MergeStations()
 
   Dim vStation As Variant
   Dim Stn As New ssStation
-  Dim StnType As New ssStationType
-  Dim vals(2, 1, 13) As String
+  Dim vals(2, 1, 15) As String
   Dim sql As String, StnID As String
   Dim myRec As Recordset
   Dim myMsgBox As New ATCoMessage
@@ -236,7 +239,7 @@ Private Sub MergeStations()
       StnID = Stn.id
     End If
     'master DB should have fully defined station IDs
-    sql = "SELECT * FROM [Station State] WHERE StaID='" & StnID & "'"
+    sql = "SELECT * FROM [StationState] WHERE StaID='" & StnID & "'"
     Set myRec = Master.DB.OpenRecordset(sql, dbOpenDynaset)
     With myRec
       If .RecordCount > 0 Then 'station exists
@@ -264,18 +267,20 @@ Private Sub MergeStations()
       If AddIt Then 'station not on master, just add it
         vals(2, 1, 1) = StnID
         vals(2, 1, 2) = Stn.Name
-        Set StnType = Stn.StationType
-        vals(2, 1, 3) = StnType.Name
+        vals(2, 1, 3) = Stn.StationType.Code
         vals(2, 1, 4) = Stn.IsRegulated
         vals(2, 1, 5) = Stn.Period
-        vals(2, 1, 6) = Stn.Remarks
-        vals(2, 1, 7) = Stn.Latitude
-        vals(2, 1, 8) = Stn.Longitude
-        vals(2, 1, 9) = Stn.HUCCode
-        vals(2, 1, 10) = Stn.StatebasinCode
-        vals(2, 1, 11) = Stn.CountyCode
-        vals(2, 1, 12) = Stn.MCDCode
-        vals(2, 1, 13) = Stn.Directions
+        vals(2, 1, 6) = Stn.Directions
+        vals(2, 1, 7) = Stn.Remarks
+        vals(2, 1, 8) = Stn.Latitude
+        vals(2, 1, 9) = Stn.Longitude
+        'edit/add methods expecting state name abbreviation for district/state code fields
+        vals(2, 1, 10) = Stn.DB.States(Stn.DistrictCode).Abbrev
+        vals(2, 1, 11) = Stn.DB.States(Stn.StateCode).Abbrev
+        vals(2, 1, 12) = Stn.CountyCode
+        vals(2, 1, 13) = Stn.MCDCode
+        vals(2, 1, 14) = Stn.HUCCode
+        vals(2, 1, 15) = Stn.StatebasinCode
         If Stn.Statistics.Count > 0 Then 'has data
           ImportFg = 1
         Else
@@ -318,7 +323,7 @@ Private Sub AddStats(Stn As ssStation)
       Set myStat = vStat
       AddFg = False 'assume editing, not adding
       If .RecordCount > 0 Then 'statistics exist for this station
-        .FindFirst "StatisticLabelCode=" & myStat.Code
+        .FindFirst "StatisticLabelID=" & myStat.Code
         If .NoMatch Then AddFg = True 'this stat not on master, add to station's statistics
       Else 'no exising stats, add all stats for this station
         AddFg = True
@@ -329,7 +334,7 @@ Private Sub AddStats(Stn As ssStation)
         atts(2, 1, 2) = myStat.Code
       End If
       atts(2, 1, 4) = myStat.Value
-      atts(2, 1, 6) = myStat.RecDate
+      atts(2, 1, 6) = myStat.YearsRec
       atts(2, 1, 7) = myStat.Source
       Set myStat.DB = Master
       If AddFg Then
