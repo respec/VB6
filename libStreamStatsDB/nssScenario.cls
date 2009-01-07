@@ -345,7 +345,7 @@ Public Function StdError() As Double()
 '    Exit Function
 '  End If
   
-  If Me.ROI Or Me.ProbEqtn Then
+  If Me.ROI Or (Me.ProbEqtn And Me.UsePredInts) Then
     StdError = pSaveStdError 'this was computed in call to ComputeROIDischarge
   Else
     If pUserRegions.Count = 0 Then
@@ -719,7 +719,7 @@ Public Function Discharges() As Double()
         Set CurReturn = CurRegion.Region.DepVars(ReturnIndex)
         RegionVal = CurReturn.Constant
         StepName = "For ComponentIndex = 1 To CurReturn.Components.Count"
-        If pProbEqtn Then
+        If pProbEqtn And Me.UsePredInts Then
           Uv = CurReturn.PopulateMatrix
           lVariance = Uv(1, 1)
         End If
@@ -806,7 +806,7 @@ Public Function Discharges() As Double()
               RegionVal = RegionVal * curval
             End If
           End If
-          If pProbEqtn Then
+          If pProbEqtn And Me.UsePredInts Then
             lVariance = lVariance + (Uv(ComponentIndex + 1, 1) * (lVals(ComponentIndex) ^ 2)) + (2 * lVals(ComponentIndex) * Uv(ComponentIndex + 1, ComponentIndex + 1))
             Dim j As Integer
             For j = ComponentIndex To 2 Step -1
@@ -826,10 +826,12 @@ Public Function Discharges() As Double()
         CurRegion.Discharges.Add RegionVal
       Next
       If pProbEqtn Then
-        StepName = "Compute Probability - e^Value/(1 + e^Value)"
-        pSaveStdError(ReturnIndex) = Sqr(lVariance)
-        pSavePredInts(1, ReturnIndex) = Exp(IntervalDischarge(ReturnIndex) - CurReturn.tDist * pSaveStdError(ReturnIndex)) / (1 + Exp(IntervalDischarge(ReturnIndex) - CurReturn.tDist * pSaveStdError(ReturnIndex)))
-        pSavePredInts(2, ReturnIndex) = Exp(IntervalDischarge(ReturnIndex) + CurReturn.tDist * pSaveStdError(ReturnIndex)) / (1 + Exp(IntervalDischarge(ReturnIndex) + CurReturn.tDist * pSaveStdError(ReturnIndex)))
+        If Me.UsePredInts Then
+          StepName = "Compute Probability - e^Value/(1 + e^Value)"
+          pSaveStdError(ReturnIndex) = Sqr(lVariance)
+          pSavePredInts(1, ReturnIndex) = Exp(IntervalDischarge(ReturnIndex) - CurReturn.tDist * pSaveStdError(ReturnIndex)) / (1 + Exp(IntervalDischarge(ReturnIndex) - CurReturn.tDist * pSaveStdError(ReturnIndex)))
+          pSavePredInts(2, ReturnIndex) = Exp(IntervalDischarge(ReturnIndex) + CurReturn.tDist * pSaveStdError(ReturnIndex)) / (1 + Exp(IntervalDischarge(ReturnIndex) + CurReturn.tDist * pSaveStdError(ReturnIndex)))
+        End If
         IntervalDischarge(ReturnIndex) = Exp(IntervalDischarge(ReturnIndex)) / (1 + Exp(IntervalDischarge(ReturnIndex)))
       Else
         StepName = "If StateMetric <> Me.Project.Metric"
