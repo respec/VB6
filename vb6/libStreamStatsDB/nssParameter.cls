@@ -181,7 +181,7 @@ Public Function Add(ByVal Region As nssRegion, ByVal StatLabel As String, _
         Wend
         Me.ID = ID
         .AddNew
-        !RegionID = Region.ID
+        !Regionid = Region.ID
         !ParmID = ID
         !StatisticLabelID = statLabelCode
         'get long label name from STATLABEL table and assign to Parameter field
@@ -222,7 +222,7 @@ Public Function AddROIUserParm(ByVal Region As nssRegion, ByVal StatLabel As Str
     End If
     If .NoMatch Or .RecordCount = 0 Then
       .AddNew
-      !RegionID = Me.Region.ID
+      !Regionid = Me.Region.ID
       !ParmID = statLabelCode
       If IsNumeric(CorrelationType) Then !PosNegCorrelation = CorrelationType
       !SimVar = SimVar
@@ -241,7 +241,7 @@ Public Function Delete() As Boolean
   sql = "SELECT * FROM Parameters WHERE RegionID=" & Me.Region.ID
   Set myRec = Me.Region.DB.DB.OpenRecordset("Parameters", dbOpenDynaset)
   With myRec
-    .FindFirst "ID=" & Me.ID
+    .FindFirst "ParmID=" & Me.ID
     If Not .NoMatch Then
       .Delete
       Delete = True
