@@ -13,6 +13,12 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Option Explicit
 
+Private Type PerceptThreshType
+  SYear As Long
+  EYear As Long
+  LowerLimit As Single
+  UpperLimit As Single
+End Type
 Private pID As String
 Private pName As String
 Private pActive As Boolean
@@ -32,6 +38,7 @@ Private pLat As Single
 Private pLng As Single
 Private pPlotName As String
 Private pPlotMade As Boolean
+Private pPerceptThresh As FastCollection 'of type PerceptThreshType
 'the following are for storing comments for various specification records
 Private pComment As String
 Private pCGenSkew As String
@@ -284,6 +291,7 @@ End Property
 Public Function WriteSpecsVerbose() As String
 
   Dim s As String
+  Dim vPT As Variant
   Const pad As String = "     "
 
   If Len(pComment) > 0 Then
@@ -291,12 +299,18 @@ Public Function WriteSpecsVerbose() As String
   Else
     s = "Station " & pID & vbCrLf
   End If
-  If Len(pCBegYear) > 0 Then s = s & pad & pCBegYear & vbCrLf
-  If pBegYear > 0 Then s = s & pad & "BegYear " & CStr(pBegYear) & vbCrLf
-  If Len(pCEndYear) > 0 Then s = s & pad & pCEndYear & vbCrLf
-  If pEndYear > 0 Then s = s & pad & "EndYear " & CStr(pEndYear) & vbCrLf
-  If Len(pCHistoric) > 0 Then s = s & pad & pCHistoric & vbCrLf
-  If pHistoricPeriod > 0 Then s = s & pad & "HistPeriod " & CStr(pHistoricPeriod) & vbCrLf
+  If pPerceptThresh.Count > 0 Then 'using perception threshholds, not beg/end years and hist. period
+    For Each vPT In pPerceptThresh
+      s = s & "PCPT_THRESH " & vPT.SYear & " " & vPT.EYear & " " & vPT.LowerLimit & " " & vPT.UpperLimit & vbCrLf
+    Next
+  Else 'using beg/end years and hist. period
+    If Len(pCBegYear) > 0 Then s = s & pad & pCBegYear & vbCrLf
+    If pBegYear > 0 Then s = s & pad & "BegYear " & CStr(pBegYear) & vbCrLf
+    If Len(pCEndYear) > 0 Then s = s & pad & pCEndYear & vbCrLf
+    If pEndYear > 0 Then s = s & pad & "EndYear " & CStr(pEndYear) & vbCrLf
+    If Len(pCHistoric) > 0 Then s = s & pad & pCHistoric & vbCrLf
+    If pHistoricPeriod > 0 Then s = s & pad & "HistPeriod " & CStr(pHistoricPeriod) & vbCrLf
+  End If
   If Len(pCSkewOpt) > 0 Then s = s & pad & pCSkewOpt & vbCrLf
   s = s & pad & "SkewOpt " & SOText(pSkewOpt) & vbCrLf
   If Len(pCGenSkew) > 0 Then s = s & pad & pCGenSkew & vbCrLf
@@ -383,5 +397,6 @@ Private Sub Class_Initialize()
   SOText(-1) = "Station"
   SOText(0) = "Weighted"
   SOText(1) = "Generalized"
+  pPerceptThresh = New FastCollection
 
 End Sub

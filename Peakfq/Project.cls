@@ -601,6 +601,7 @@ End Sub
 
 Public Function Copy() As pfqProject
   Dim oldStation As Variant
+  Dim vPT As Variant
   Dim newStation As pfqStation
   Dim retval As New pfqProject
   With retval
@@ -637,6 +638,8 @@ Public Function Copy() As pfqProject
       Set newStation = New pfqStation
       With newStation
         .Active = oldStation.Active
+        For Each vPT In oldStation.PerceptThresh
+        Next
         .BegYear = oldStation.BegYear
         .EndYear = oldStation.EndYear
         .GageBaseDischarge = oldStation.GageBaseDischarge
