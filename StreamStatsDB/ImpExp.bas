@@ -89,9 +89,9 @@ Sub NWISImport(ImpFileName As String)
                 End If
                 'Convert degrees, minutes, seconds to decimal degrees if necessary
                 If value > 360 Then
-                  stationValues(2, 1, 7) = DMS2Decimal(value)
+                  stationValues(2, 1, 8) = DMS2Decimal(value)
                 Else
-                  stationValues(2, 1, 7) = value
+                  stationValues(2, 1, 8) = value
                 End If
               End If
             Case 4:
@@ -106,9 +106,9 @@ Sub NWISImport(ImpFileName As String)
                 'Convert degrees, minutes, seconds to decimal degrees if necessary
                 'always store longitude as negative (prh from kries, 5/2005)
                 If Abs(value) > 360 Then
-                  stationValues(2, 1, 8) = -Abs(DMS2Decimal(value))
+                  stationValues(2, 1, 9) = -Abs(DMS2Decimal(value))
                 Else
-                  stationValues(2, 1, 8) = -Abs(value)
+                  stationValues(2, 1, 9) = -Abs(value)
                 End If
               End If
             Case 5:
@@ -136,9 +136,9 @@ Sub NWISImport(ImpFileName As String)
               While Len(value) < 3
                 value = "0" & value
               Wend
-              stationValues(2, 1, 11) = value
+              stationValues(2, 1, 12) = value
             Case 9:  'HUC code
-              stationValues(2, 1, 9) = value
+              stationValues(2, 1, 14) = value
             Case 10:
               If Not IsNumeric(value) Then
                 If value <> "" Then bumFields = bumFields & vbCrLf & stationID & _
@@ -147,7 +147,7 @@ Sub NWISImport(ImpFileName As String)
                 bumFields = vbCrLf & stationID & " on row " & staCnt & _
                     " has a negative value for the drainage area."
               End If
-              dataValues(2, 3, 3) = "AREA"
+              dataValues(2, 3, 3) = "DRNAREA"
               dataValues(2, 3, 4) = value
               dataValues(2, 3, 7) = "Imported from NWIS file"
               dataValues(2, 1, 8) = "http://waterdata.usgs.gov/nwis/si"
@@ -180,13 +180,13 @@ Sub NWISImport(ImpFileName As String)
           GoTo nextSta
         End If
         Set myStation = New ssStation
-        Set myStation.Db = SSDB
+        Set myStation.DB = SSDB
         Set myStation.state = SSDB.States(stateFIPS)
         myStation.id = stationID
         myStation.Add stationValues(), 1, 1
         If myStation.Name <> "bad" Then
           Set myStatistic = New ssStatistic
-          Set myStatistic.Db = SSDB
+          Set myStatistic.DB = SSDB
           Set myStatistic.station = myStation
           For i = 1 To 4
             If dataValues(2, i, 4) <> "" Then myStatistic.Add dataValues(), i
@@ -320,7 +320,7 @@ Sub BCFImport(ImpFileName As String)
     staIndex = SSDB.state.Stations.IndexFromKey(stationValues(2, 1, 1))
     If staIndex = -1 Then 'Station does not exist - add it and its statistics
       Set myStation = New ssStation
-      Set myStation.Db = SSDB
+      Set myStation.DB = SSDB
       Set myStation.state = SSDB.state
       myStation.Add stationValues(), 1, 1
       myStation.id = stationValues(2, 1, 1)
@@ -328,7 +328,7 @@ Sub BCFImport(ImpFileName As String)
         'Retrieve the StatLabel based upon the BCF stat code
         Set myStatistic = New ssStatistic
         With myStatistic
-          Set .Db = SSDB
+          Set .DB = SSDB
           Set .station = myStation
           .Add dataValues(), i, 1
           If dataValues(2, i, 2) = "bad" Then
@@ -344,7 +344,7 @@ Sub BCFImport(ImpFileName As String)
         If attIndex = -1 Then 'Statistic does not exist
           Set myStatistic = New ssStatistic
           With myStatistic
-            Set .Db = SSDB
+            Set .DB = SSDB
             Set .station = myStation
             .Add dataValues(), i, 1
           End With
@@ -816,7 +816,7 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
   IPC.SendMonitorMessage "(PROGRESS 0)"
 
   'add user-entered Datasource
-  Set Src.Db = SSDB
+  Set Src.DB = SSDB
   Src.Add DataSource, SourceURL
 
   Set XLApp = New Excel.Application
@@ -853,7 +853,7 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
       ReDim ImportCol(lastCol)
       Set myStatistic = New ssStatistic
       For fldCnt = firstCol + 1 To lastCol
-        Set myStatistic.Db = SSDB
+        Set myStatistic.DB = SSDB
         ImportCol(fldCnt) = GetLabelID(Cells(header, fldCnt), SSDB)
         If ImportCol(fldCnt) > 0 Then
           nAtts = nAtts + 1
@@ -924,7 +924,7 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
         staIndex = SSDB.state.Stations.IndexFromKey(stationValues(2, 1, 1))
         If staIndex = -1 Then 'Station does not exist - add it and its statistics
           Set myStation = New ssStation
-          Set myStation.Db = SSDB
+          Set myStation.DB = SSDB
           Set myStation.state = SSDB.state
           myStation.Add stationValues(), 1, 1
           myStation.id = stationValues(2, 1, 1)
@@ -932,7 +932,7 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
             'Retrieve the StatLabel based upon the BCF stat code
             Set myStatistic = New ssStatistic
             With myStatistic
-              Set .Db = SSDB
+              Set .DB = SSDB
               Set .station = myStation
               .Add dataValues(), i, 1
             End With
@@ -947,7 +947,7 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
             If attIndex = -1 Then 'Statistic does not exist
               Set myStatistic = New ssStatistic
               With myStatistic
-                Set .Db = SSDB
+                Set .DB = SSDB
                 Set .station = myStation
                 .Add dataValues(), i, 1
               End With
