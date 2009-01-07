@@ -196,7 +196,7 @@ Private Function GetStatTypeCode(TypeName As String) As String
   End With
 End Function
 
-Private Function GetStatTypeID(TypeName As String) As Integer
+Public Function GetStatTypeID(TypeName As String) As Integer
   Dim myRec As Recordset
   
   Set myRec = pDB.DB.OpenRecordset("STATTYPE", dbOpenSnapshot)
