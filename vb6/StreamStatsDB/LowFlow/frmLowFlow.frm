@@ -383,7 +383,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   396
+         Rows            =   402
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -792,8 +792,8 @@ Private Sub cmdCancel_Click()
               Case 0: .TextMatrix(row - i, col) = SelParms(row - i).statTypeCode
               Case 1: .TextMatrix(row - i, col) = SelParms(row - i).Name
               Case 2: .TextMatrix(row - i, col) = SelParms(row - i).Abbrev
-              Case 3: .TextMatrix(row - i, col) = SelParms(row - i).GetMin(False)
-              Case 4: .TextMatrix(row - i, col) = SelParms(row - i).GetMax(False)
+              Case 3: .TextMatrix(row - i, col) = SelParms(row - i).GetMin(DB.State.Metric)
+              Case 4: .TextMatrix(row - i, col) = SelParms(row - i).GetMax(DB.State.Metric)
               Case 5: .TextMatrix(row - i, col) = CInt(SelParms(row - i).Units.id)
             End Select
           End With
@@ -1210,7 +1210,7 @@ Private Sub cmdExport_Click()
           str = MyRegion.Parameters.Count & " " & tmpCnt
         End If
         str = str & vbTab & MyParm.Abbrev & vbTab & MyParm.Name & vbTab & _
-            MyParm.GetMin(False) & " " & MyParm.GetMax(False) & " " & MyParm.Units.id
+            MyParm.GetMin(DB.State.Metric) & " " & MyParm.GetMax(DB.State.Metric) & " " & MyParm.Units.id
         Print #OutFile, str
       'End If
     Next j
@@ -1264,14 +1264,17 @@ Private Sub cmdExport_Click()
 nextRegion:
   Next i
   Close OutFile
-x:
-  Me.MousePointer = vbDefault
+  
   MsgBox "Completed Export to file " & filename, vbOKOnly, "SEE Export"
   If lstRegions.SelCount > 0 Then
     Set MyRegion = DB.State.Regions(lstRegions.List(lstRegions.ListIndex))
   Else
     Set MyRegion = Nothing
   End If
+
+x:
+  Me.MousePointer = vbDefault
+
 End Sub
 
 Private Function BldEqtn(MyComp As nssComponent) As String
@@ -2313,6 +2316,7 @@ Private Sub cmdSave_Click()
             End If
           Next k
         Else
+          Set MyParm.DB = DB
           MyParm.Edit grdParms.TextMatrix(i, 2), grdParms.TextMatrix(i, 3), _
               grdParms.TextMatrix(i, 4), UnitID
           'Write changes to DetailedLog table
@@ -2512,8 +2516,8 @@ Private Sub SetGrid(Table As String)
                 Case 0: .Text = SelParms(row).statTypeCode
                 Case 1: .Text = SelParms(row).Name
                 Case 2: .Text = SelParms(row).Abbrev
-                Case 3: .Text = SelParms(row).GetMin(False)
-                Case 4: .Text = SelParms(row).GetMax(False)
+                Case 3: .Text = SelParms(row).GetMin(DB.State.Metric)
+                Case 4: .Text = SelParms(row).GetMax(DB.State.Metric)
                 'Case 5: .Text = CInt(SelParms(row).Units.id)
                 Case 5:
                   If rdoUnits(0).Value Then
@@ -2933,18 +2937,18 @@ End Function
 Private Function GetCode(ByVal Parm As String) As Long
   Dim i&
   Dim takeLog As Boolean
-  Select Case Parm
-    Case "rural Dis": GetCode = -2
-    Case "rural DA": GetCode = -1
-    Case "none": GetCode = 0
-    Case "none-3": GetCode = -3
-    Case "none-4": GetCode = -4
+  Select Case UCase(Parm)
+    Case "RURAL DIS": GetCode = -2
+    Case "RURAL DA": GetCode = -1
+    Case "NONE": GetCode = 0
+    Case "NONE-3": GetCode = -3
+    Case "NONE-4": GetCode = -4
     Case Else:
-      If Left(Parm, 3) = "ln(" Then
+      If Left(UCase(Parm), 3) = "LN(" Then
         Parm = Mid(Parm, 4, Len(Parm) - 4)
         takeLog = True
       End If
-      If Left(Parm, 4) = "log(" Then
+      If Left(UCase(Parm), 4) = "LOG(" Then
         Parm = Mid(Parm, 5, Len(Parm) - 5)
         takeLog = True
       End If
@@ -3034,8 +3038,8 @@ Private Function ChangesMade() As Boolean
         oldStatType = tmpParm.statTypeCode
         oldVals(0) = tmpParm.Name
         oldVals(1) = tmpParm.Abbrev
-        oldVals(2) = tmpParm.GetMin(False)
-        oldVals(3) = tmpParm.GetMax(False)
+        oldVals(2) = tmpParm.GetMin(DB.State.Metric)
+        oldVals(3) = tmpParm.GetMax(DB.State.Metric)
         oldVals(4) = tmpParm.Units.id
       Else
         ReDim oldVals(ParmFlds)
