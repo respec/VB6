@@ -388,7 +388,7 @@ Public Sub PopulateStatsOnFile()
         "FROM STATTYPE INNER JOIN (STATLABEL INNER JOIN " & _
         "(([StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID]) " & _
         "INNER JOIN STATISTIC ON STATION.StaID = STATISTIC.StaID) " & _
-        "ON STATLABEL.StatisticLabelID = STATLABEL.StatisticLabelID) " & _
+        "ON STATLABEL.StatisticLabelID = STATISTIC.StatisticLabelID) " & _
         "ON STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode " & _
         "WHERE [StationState].[StateCode]='" & Me.Code & "' AND [StationState].[ROI]>0;"
     Set statRec = pDB.DB.OpenRecordset(sql)
