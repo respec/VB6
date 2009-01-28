@@ -192,7 +192,11 @@ Private Sub MergeStatLabels()
           If vStatLabel.id <> fld Then 'need to renumber this stat label
             Renumb.Add fld, vStatLabel.id 'store original stat label code as key
           End If
-          .Fields("StatisticTypeID") = vStatLabel.GetStatTypeID(vStatLabel.TypeName)
+          'this will get this ID, but would rather not have to make GetStatTypeID Public
+          '.Fields("StatisticTypeID") = vStatLabel.GetStatTypeID(vStatLabel.TypeName)
+          'THUS - just use ID from current StatType
+          'only question is whether this will handle a newly added StatType (code just above this loop)
+          .Fields("StatisticTypeID") = Adding.StationTypes(i).id
           .Fields("StatisticTypeCode") = vStatLabel.TypeCode
           .Fields("StatLabel") = vStatLabel.Code
           .Fields("StatisticLabel") = vStatLabel.Name
