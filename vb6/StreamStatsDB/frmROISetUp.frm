@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "*\A..\..\VBEXPE~2\ATCoCtl\ATCoCtl.vbp"
+Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmROISetUp 
    Caption         =   "Add New ROI"
    ClientHeight    =   6270
@@ -511,62 +511,62 @@ Private Sub cmdExit_Click()
 End Sub
 
 Private Sub cmdRHOFile_Click()
-  Dim Filename$, BinFile$
+  Dim filename$, BinFile$
   
   On Error GoTo x
 
   With frmCDLG.CDLG
     .DialogTitle = "Select the RHO flat file for import"
-    .Filename = ExePath & "*.rho"
+    .filename = ExePath & "*.rho"
     .Filter = "(*.rho)|*.rho|(*.txt)|*.txt|(All Files)|*.*"
     .filterIndex = 1
     .CancelError = True
     .ShowOpen
-    If Len(Dir(.Filename, vbDirectory)) > 1 Then
+    If Len(Dir(.filename, vbDirectory)) > 1 Then
       Me.MousePointer = vbHourglass
-      BinFile = MatrixToBinary(.Filename, 1, SSDB.state.Abbrev)
+      BinFile = MatrixToBinary(.filename, 1, SSDB.state.Abbrev)
       Me.MousePointer = vbDefault
       If Len(BinFile) > 0 Then
         MsgBox "RHO file stored in binary format as " & BinFile, vbInformation, "StreamStatsDB"
         SaveSetting "StreamStatsDB", "Defaults", SSDB.state.Abbrev & "_RHOImportFile", BinFile
-        .Filename = BinFile
+        .filename = BinFile
       Else
         MsgBox "Problem reading RHO flat file into binary format.", vbExclamation, "StreamStatsDB"
-        .Filename = ""
+        .filename = ""
       End If
     End If
-    txtRHOFile.Text = .Filename
+    txtRHOFile.Text = .filename
   End With
 x:
   Unload frmCDLG
 End Sub
 
 Private Sub cmdMConFile_Click()
-  Dim Filename$, BinFile$
+  Dim filename$, BinFile$
   
   On Error GoTo x
   
   With frmCDLG.CDLG
     .DialogTitle = "Select the MCon flat file for import"
-    .Filename = ExePath & "*.rec"
+    .filename = ExePath & "*.rec"
     .Filter = "(*.rec)|*.rec|(*.txt)|*.txt|(All Files)|*.*"
     .filterIndex = 1
     .CancelError = True
     .ShowOpen
-    If Len(Dir(.Filename, vbDirectory)) > 1 Then
+    If Len(Dir(.filename, vbDirectory)) > 1 Then
       Me.MousePointer = vbHourglass
-      BinFile = MatrixToBinary(.Filename, 2, SSDB.state.Abbrev)
+      BinFile = MatrixToBinary(.filename, 2, SSDB.state.Abbrev)
       Me.MousePointer = vbDefault
       If Len(BinFile) > 0 Then
         MsgBox "MCon file stored in binary format as " & BinFile, vbInformation, "StreamStatsDB"
         SaveSetting "StreamStatsDB", "Defaults", SSDB.state.Abbrev & "_MConImportFile", BinFile
-        .Filename = BinFile
+        .filename = BinFile
       Else
         MsgBox "Problem reading MCon flat file into binary format.", vbExclamation, "StreamStatsDB"
-        .Filename = ""
+        .filename = ""
       End If
     End If
-    txtMConFile.Text = .Filename
+    txtMConFile.Text = .filename
   End With
 x:
   Unload frmCDLG
@@ -618,16 +618,16 @@ NoChanges:
 End Sub
 
 Private Sub cmdStaData_Click()
-  Dim Filename$
+  Dim filename$
   Dim ff As ATCoFindFile
   
   On Error GoTo x
   
   ImportedNewData = False
-  Filename = GetSetting("StreamStatsDB", "Defaults", SSDB.state.Abbrev & "_StaDataImportFile")
+  filename = GetSetting("StreamStatsDB", "Defaults", SSDB.state.Abbrev & "_StaDataImportFile")
   With frmCDLG.CDLG
     .DialogTitle = "Select the Station Data file for import"
-    .Filename = Filename
+    .filename = filename
     .Filter = "(All Files)|*.*"
     .filterIndex = 1
     .CancelError = True
@@ -635,10 +635,10 @@ Private Sub cmdStaData_Click()
     
     On Error GoTo Errhand
     
-    txtStaDataFile.Text = .Filename
-    If Len(Dir(.Filename, vbDirectory)) > 1 Then
-      SaveSetting "StreamStatsDB", "Defaults", SSDB.state.Abbrev & "_StaDataImportFile", .Filename
-      frmImportStations.OpenDataFile .Filename
+    txtStaDataFile.Text = .filename
+    If Len(Dir(.filename, vbDirectory)) > 1 Then
+      SaveSetting "StreamStatsDB", "Defaults", SSDB.state.Abbrev & "_StaDataImportFile", .filename
+      frmImportStations.OpenDataFile .filename
       frmImportStations.Show vbModal, Me
       If ImportedNewData Then
         SSDB.state.StatsOnFile.Clear
@@ -751,7 +751,7 @@ Private Sub PopulateReturnPeriods()
       statAbbrev = SSDB.state.StatsOnFile(i).Abbrev
       If (SSDB.state.StatsOnFile(i).statTypeCode = "PFS" And _
           Left(statAbbrev, 1) = "P" And _
-          IsNumeric(Mid(statAbbrev, 2))) Then
+          IsNumeric(Mid(statAbbrev, 3))) Then
         .LeftItem(j) = statAbbrev
         .LeftItemData(j) = SSDB.state.StatsOnFile(i).code
         j = j + 1

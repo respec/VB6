@@ -231,7 +231,7 @@ Public Sub PopulateROIParameters()
         "Parameters.ParmID, Parameters.Min, Parameters.Max, Parameters.UnitID " & _
         "FROM (ROIUserParms INNER JOIN " & _
         "(STATTYPE INNER JOIN STATLABEL ON STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode) " & _
-        "ON ROIUserParms.ParmID = STATLABEL.StatisticLabelID) " & _
+        "ON ROIUserParms.StatisticLabelID = STATLABEL.StatisticLabelID) " & _
         "INNER JOIN [Parameters] ON STATLABEL.StatisticLabelID = Parameters.StatisticLabelID " & _
         "WHERE Parameters.RegionID=" & pID & " AND ROIUserParms.RegionID=" & pID & ";"
     Set parmRec = pDB.DB.OpenRecordset(sql)
@@ -400,10 +400,10 @@ Public Function Add(ByVal RegType As Long, ByVal RegName As String, ByVal Urban 
     If .NoMatch Or .RecordCount = 0 Then
       'find an unused ID
       .MoveLast
-      ID = !RegionID
+      ID = !Regionid
       .FindFirst "RegionID=" & ID
       While Not .NoMatch
-        ID = !RegionID + 1
+        ID = !Regionid + 1
         .FindFirst "RegionID=" & ID
       Wend
     Else
@@ -446,7 +446,7 @@ Public Function Add(ByVal RegType As Long, ByVal RegName As String, ByVal Urban 
     End If
     .AddNew
     !StateCode = DB.State.Code
-    !RegionID = ID
+    !Regionid = ID
     !RegionName = RegName
     !Urban = Urban
     !UrbanNeedsRural = -RuralInput
