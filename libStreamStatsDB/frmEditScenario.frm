@@ -494,7 +494,7 @@ Private Sub cmdOk_Click()
     If Not vRegion.Region.PredInt Then pScenario.UsePredInts = False
     If vRegion.Region.LowFlowRegnID = 0 Then pScenario.LowFlow = False '<= 0 Then pScenario.LowFlow = False
     If vRegion.Region.LowFlowRegnID >= 0 Then pScenario.ProbEqtn = False
-    If vRegion.Region.ROIRegnID >= 0 Then
+    If vRegion.Region.ROIRegnID <> 0 Then
       pScenario.ROI = True
       pScenario.UsePredInts = True 'ROI always uses prediction intervals
     End If

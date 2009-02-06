@@ -218,12 +218,12 @@ Public Function AddROIUserParm(ByVal Region As nssRegion, ByVal StatLabel As Str
   Set myRec = Region.DB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     If .RecordCount > 0 Then
-      .FindFirst "ParmID=" & statLabelCode
+      .FindFirst "StatisticLabelID=" & statLabelCode
     End If
     If .NoMatch Or .RecordCount = 0 Then
       .AddNew
       !Regionid = Me.Region.ID
-      !ParmID = statLabelCode
+      !StatisticLabelID = statLabelCode
       If IsNumeric(CorrelationType) Then !PosNegCorrelation = CorrelationType
       !SimVar = SimVar
       !RegVar = RegVar

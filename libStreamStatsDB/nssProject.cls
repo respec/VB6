@@ -234,7 +234,7 @@ Public Property Let XML(newValue As String)
             If newRegion.Region.LowFlowRegnID <> 0 Then newScenario.LowFlow = True
             If newRegion.Region.LowFlowRegnID < 0 Then newScenario.ProbEqtn = True
             If newRegion.Region.PredInt Then newScenario.UsePredInts = True
-            If newRegion.Region.ROIRegnID >= 0 Then
+            If newRegion.Region.ROIRegnID <> 0 Then
               newScenario.ROI = True
               newScenario.UsePredInts = True 'ROI always uses prediction intervals
             End If
