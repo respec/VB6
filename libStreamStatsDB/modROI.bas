@@ -11,7 +11,7 @@ Private INDX() As Integer       'dim(StaCnt) ranks Distance Distance(INDX(1)) = 
 Private Mcon As Variant         '2-d from StateMatrices table
 Private Rhoc As Variant         '2-d from RHO table for NC, calculated for TX
 Private CF As Variant           '2-d from ClimateFactor table
-Private Const MaxSites& = 50    'maximum number of sites that can be selected
+Private Const MaxSites& = 60    'maximum number of sites that can be selected
 Private Const MaxInd& = 10      'maximum number of independent variables including the regression constant
 Private AkColl As FastCollection 'of constants that apply to return periods
 Private PkLabColl As FastCollection 'of labels for return periods
@@ -100,6 +100,18 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
       SimVarCnt = SimVarCnt + 1
     End If
     If tmpParm.RegressionVar Then
+      If uRegion.Region.State.Code = "47" Then
+        'may need to make adjustments to TN ROI parameters
+        If tmpParm.LabelCode = 7 Then
+          'change Latitude to TN Physiographic factor
+          tmpParm.Abbrev = "TNPHYSFAC"
+          tmpParm.LabelCode = 1223
+        ElseIf tmpParm.LabelCode = 8 Then
+          'change Longitude to TN 2-year climate factor
+          tmpParm.Abbrev = "TNCLFACT2"
+          tmpParm.LabelCode = 1195
+        End If
+      End If
       RegParms.Add vParm, tmpParm.Abbrev
       RegVarCnt = RegVarCnt + 1
     End If
@@ -165,13 +177,13 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     i = i + 1
     UserSimVars(i) = Log10(uParm.GetValue(pMetric))
   Next
-  i = 1
-  UserRegressVars(i) = 1#
-  For Each vParm In RegParms
-    Set uParm = uRegion.UserParms(vParm.Name)
-    i = i + 1
-    UserRegressVars(i) = Log10(uParm.GetValue(pMetric))
-  Next
+'  i = 1
+'  UserRegressVars(i) = 1#
+'  For Each vParm In RegParms
+'    Set uParm = uRegion.UserParms(vParm.Name)
+'    i = i + 1
+'    UserRegressVars(i) = Log10(uParm.GetValue(pMetric))
+'  Next
   If uRegion.Region.State.ROIDistance Or uRegion.Region.State.ROIClimateFactor Then 'need lat/lng
     Lat = uRegion.UserParms("Latitude").GetValue(False)
     Lng = uRegion.UserParms("Longitude").GetValue(False)
@@ -222,7 +234,12 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
       Sum(dimDist) = Sum(dimDist) + SimVars(i, dimDist)
     End If
     If uRegion.Region.State.ROIClimateFactor Then 'read in climate factors
-      SimVars(i, dimCF) = Log10(myStation.Statistics("68").Value)
+      If Scenario.Project.State.Code = "47" Then
+        'TN ROI uses its own CF2 values instead of traditional CF
+        SimVars(i, dimCF) = Log10(myStation.Statistics("1195").Value)
+      Else
+        SimVars(i, dimCF) = Log10(myStation.Statistics("68").Value)
+      End If
       Sum(dimCF) = Sum(dimCF) + SimVars(i, dimCF)
     End If
     'Read in SD across flows for each station, or calc if not stored
@@ -248,7 +265,10 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   icall = 0
   If uRegion.Region.State.ROIClimateFactor Then
     CFX icall, Lat, Lng  'calculates climate factor at user's site
-    If Cf25 > 0 Then UserSimVars(dimCF) = Log10(CDbl(Cf25))
+    If Scenario.Project.State.Code = "47" Then
+      If Cf2 > 0 Then UserSimVars(dimCF) = Log10(CDbl(Cf2))
+    ElseIf Cf25 > 0 Then UserSimVars(dimCF) = Log10(CDbl(Cf25))
+    End If
   End If
   icall = 1
 
@@ -259,8 +279,10 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
       Distance(i) = Distance(i) + ((UserSimVars(j) - SimVars(i, j)) / SimVarSDs(j)) ^ 2
     Next j
     Distance(i) = Distance(i) ^ 0.5
-    'Discount stations in other ROI Regions
-    Distance(i) = Distance(i) + Abs((roiRegion - roiRegions(i))) * 1000
+    If Scenario.Project.State.ROIUseRegions Then
+      'Discount stations in other ROI Regions
+      Distance(i) = Distance(i) + Abs((roiRegion - roiRegions(i))) * 1000
+    End If
   Next i
 
   'Rank distances
@@ -304,7 +326,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   'loop thru sites - calc avg StdDev for peak flows across all sites
   For i = 1 To Nsites
     'write values for this station to outfile
-    str = StaIDs(INDX(i)) & vbTab & Distance(INDX(i)) & vbTab & StaLats(INDX(i)) & vbTab & StaLngs(INDX(i)) & vbTab
+    str = StaIDs(INDX(i)) & vbTab & Distance(INDX(i)) & vbTab & Format(StaLats(INDX(i)), "#0.0000") & vbTab & Format(StaLngs(INDX(i)), "#0.0000") & vbTab
     For j = 1 To NumPeaks
       str = str & Format(Flows(INDX(i), j), "#0.0000") & vbTab
     Next j
@@ -344,7 +366,20 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     For Each vParm In RegParms
       Set uParm = uRegion.UserParms(vParm.Name)
       i = i + 1
-      UserRegressVars(i) = Log10(uParm.GetValue(pMetric))
+      If Scenario.Project.State.Code = "47" Then 'may need to set special TN parm values
+        If vParm.Abbrev = "TNPHYSFAC" Then 'use TN formulae to compute PF
+          If uRegion.Region.ROIRegnID = 1 Then UserRegressVars(i) = -0.213 + 0.0626 * UserRegressVars(1)
+          If uRegion.Region.ROIRegnID = 2 Then UserRegressVars(i) = 0.0168 + 0.0353 * UserRegressVars(1)
+          If uRegion.Region.ROIRegnID = 3 Then UserRegressVars(i) = 0.2319 - 0.0242 * UserRegressVars(1)
+          If uRegion.Region.ROIRegnID = 4 Then UserRegressVars(i) = 0.3044 - 0.1541 * UserRegressVars(1)
+        ElseIf vParm.Abbrev = "TNCLFACT2" Then 'use TN 2-year climate factor
+          UserRegressVars(i) = Log10(CDbl(Cf2))
+        Else
+          UserRegressVars(i) = Log10(uParm.GetValue(pMetric))
+        End If
+      Else
+        UserRegressVars(i) = Log10(uParm.GetValue(pMetric))
+      End If
       Correlation(i) = vParm.CorrelationType
     Next
     'Reset station parameters in case of backward-step regression
@@ -1051,9 +1086,9 @@ Private Sub OutPut(IOUT As Long, IPK As Integer, pru As Single, _
       hatdigtest As Single, cooktest As Single, tstat As Single, tv4 As Single, _
       varres As Single, vpu As Single, asep As Single, splus As Single, _
       sminu As Single
-  Dim work1(50, 1) As Single, work2(10, 1) As Single, work3(10, 50) As Single, _
-      xo(1, 10) As Single, xot(10, 1) As Single, ccc(1, 1) As Single, _
-      hat(50, 50) As Single, hats(50, 50) As Single
+  Dim work1(MaxSites, 1) As Single, work2(MaxInd, 1) As Single, work3(MaxInd, MaxSites) As Single, _
+      xo(1, 10) As Single, xot(MaxInd, 1) As Single, ccc(1, 1) As Single, _
+      hat(MaxSites, MaxSites) As Single, hats(MaxSites, MaxSites) As Single
   Dim i As Integer, j As Integer, l As Integer, ndf As Long
 
   If (IOUT > 0) Then
