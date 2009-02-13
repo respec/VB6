@@ -2,14 +2,51 @@ VERSION 5.00
 Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmROISetUp 
    Caption         =   "Add New ROI"
-   ClientHeight    =   6270
+   ClientHeight    =   6780
    ClientLeft      =   45
    ClientTop       =   270
    ClientWidth     =   8415
    LinkTopic       =   "Form1"
-   ScaleHeight     =   6270
+   ScaleHeight     =   6780
    ScaleWidth      =   8415
    StartUpPosition =   3  'Windows Default
+   Begin VB.OptionButton rdoFlowType 
+      Caption         =   "Low/Duration"
+      BeginProperty Font 
+         Name            =   "MS Sans Serif"
+         Size            =   8.25
+         Charset         =   0
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   255
+      Index           =   1
+      Left            =   2280
+      TabIndex        =   29
+      Top             =   120
+      Width           =   1695
+   End
+   Begin VB.OptionButton rdoFlowType 
+      Caption         =   "Peak"
+      BeginProperty Font 
+         Name            =   "MS Sans Serif"
+         Size            =   8.25
+         Charset         =   0
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   255
+      Index           =   0
+      Left            =   1200
+      TabIndex        =   28
+      Top             =   120
+      Value           =   -1  'True
+      Width           =   975
+   End
    Begin VB.Frame fraImportFiles 
       Caption         =   "Import Files"
       BeginProperty Font 
@@ -24,7 +61,7 @@ Begin VB.Form frmROISetUp
       Height          =   1500
       Left            =   40
       TabIndex        =   12
-      Top             =   40
+      Top             =   525
       Width           =   8295
       Begin VB.CommandButton cmdRHOFile 
          Caption         =   "Browse"
@@ -176,7 +213,7 @@ Begin VB.Form frmROISetUp
       Height          =   2130
       Left            =   40
       TabIndex        =   7
-      Top             =   1600
+      Top             =   2085
       Width           =   8295
       Begin VB.ListBox lstRegions 
          Height          =   1815
@@ -293,7 +330,7 @@ Begin VB.Form frmROISetUp
       Height          =   375
       Left            =   6600
       TabIndex        =   6
-      Top             =   5880
+      Top             =   6360
       Width           =   735
    End
    Begin VB.CommandButton cmdExit 
@@ -310,7 +347,7 @@ Begin VB.Form frmROISetUp
       Height          =   372
       Left            =   7605
       TabIndex        =   5
-      Top             =   5880
+      Top             =   6360
       Width           =   735
    End
    Begin VB.Frame fraAnalysisOptions 
@@ -327,7 +364,7 @@ Begin VB.Form frmROISetUp
       Height          =   1785
       Left            =   4680
       TabIndex        =   1
-      Top             =   3840
+      Top             =   4320
       Width           =   3660
       Begin ATCoCtl.ATCoText atxSimStations 
          Height          =   255
@@ -451,7 +488,7 @@ Begin VB.Form frmROISetUp
       Height          =   2440
       Left            =   40
       TabIndex        =   0
-      Top             =   3840
+      Top             =   4320
       Width           =   4620
       Begin StreamStatsDB.ATCoSelectListSortByProp lstReturnPeriods 
          Height          =   2175
@@ -465,6 +502,23 @@ Begin VB.Form frmROISetUp
          LeftLabel       =   "Available:"
       End
    End
+   Begin VB.Label lblFlowType 
+      Caption         =   "Flow Type:"
+      BeginProperty Font 
+         Name            =   "MS Sans Serif"
+         Size            =   8.25
+         Charset         =   0
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   255
+      Left            =   120
+      TabIndex        =   27
+      Top             =   120
+      Width           =   1215
+   End
 End
 Attribute VB_Name = "frmROISetUp"
 Attribute VB_GlobalNameSpace = False
@@ -472,6 +526,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
+Private lFlowType As Integer '0 - Peak, 1 - Low/Duration
 Private CurRegion As nssRegion
 Private SelectStatsOnFile() As ssStatistic
 Private ExistingRegions As New FastCollection 'of nssRegion
@@ -742,19 +797,30 @@ End Sub
 Private Sub PopulateReturnPeriods()
   Dim vRetPd As Variant
   Dim i As Long, j As Long
+  Dim StatType As String
   Dim statAbbrev As String
-  
+  Dim LFFDTypes As Variant
+  LFFDTypes = "LFS,FDS,AFS,SFS,MFS,FPS"
+
   With lstReturnPeriods
     .ClearRight
     .ClearLeft
     For i = 1 To SSDB.state.StatsOnFile.Count
+      StatType = SSDB.state.StatsOnFile(i).statTypeCode
       statAbbrev = SSDB.state.StatsOnFile(i).Abbrev
-      If (SSDB.state.StatsOnFile(i).statTypeCode = "PFS" And _
-          Left(statAbbrev, 1) = "P" And _
-          IsNumeric(Mid(statAbbrev, 3))) Then
-        .LeftItem(j) = statAbbrev
-        .LeftItemData(j) = SSDB.state.StatsOnFile(i).code
-        j = j + 1
+      If lFlowType = 0 Then 'only list peakflow stats
+        If (StatType = "PFS" And Left(statAbbrev, 1) = "P" And IsNumeric(Mid(statAbbrev, 3))) Then
+          .LeftItem(j) = statAbbrev
+          .LeftItemData(j) = SSDB.state.StatsOnFile(i).code
+          j = j + 1
+        End If
+      Else 'only list lowflow/duration stats (and weed out Std Dev and Std Err stats)
+        If (Len(StatType) > 2 And InStr(LFFDTypes, StatType) > 0 And _
+            InStr(statAbbrev, "SE") = 0 And InStr(statAbbrev, "SD") = 0) Then
+          .LeftItem(j) = statAbbrev
+          .LeftItemData(j) = SSDB.state.StatsOnFile(i).code
+          j = j + 1
+        End If
       End If
     Next i
     For Each vRetPd In SSDB.state.ROIPeakFlows
@@ -1140,4 +1206,10 @@ End Function
 Private Sub lstRegions_Click()
   Set CurRegion = SSDB.state.Regions(lstRegions.List(lstRegions.ListIndex))
   PopulateGrid
+End Sub
+
+Private Sub rdoFlowType_Click(Index As Integer)
+
+  lFlowType = Index
+  PopulateReturnPeriods
 End Sub
