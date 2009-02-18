@@ -88,6 +88,7 @@ End Property
 
 Private Sub PopulateStates()
   Dim newState As nssState
+  Dim lROIData As nssROI
   Dim myRec As Recordset
   Dim sql$
   
@@ -100,17 +101,25 @@ Private Sub PopulateStates()
   Set myRec = pnssDB.OpenRecordset(sql, dbOpenForwardOnly)
   While Not myRec.EOF
     Set newState = New nssState
+    Set lROIData = New nssROI
     With newState
       Set .DB = Me
       .Name = myRec.Fields("State")
       .Abbrev = myRec.Fields("St")
       .Code = myRec.Fields("StateCode")
       .Metric = myRec.Fields("Metric")
-      .ROIClimateFactor = myRec.Fields("ROIClimateFactor")
-      .ROIDistance = myRec.Fields("ROIDistance")
-      .ROIRegress = myRec.Fields("ROIBackStepRegression")
-      .ROIUseRegions = myRec.Fields("ROIRegions")
-      .ROISimStations = myRec.Fields("ROISimStations")
+      lROIData.StateCode = .Code
+      Set lROIData.DB = Me
+      lROIData.ClimateFactor = myRec.Fields("ROIClimateFactor")
+      lROIData.Distance = myRec.Fields("ROIDistance")
+      lROIData.Regress = myRec.Fields("ROIBackStepRegression")
+      lROIData.UseRegions = myRec.Fields("ROIRegions")
+      lROIData.SimStations = myRec.Fields("ROISimStations")
+      If CInt(.Code) > 10000 Then 'low flow ROI data
+        Set .ROILowData = lROIData
+      Else
+        Set .ROIPeakData = lROIData
+      End If
       States.Add newState, .Code
     End With
     Set newState = Nothing

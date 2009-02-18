@@ -32,14 +32,17 @@ Private pSelStation As ssStation
 Private pSelStations As FastCollection   'of selected ssStation
 Private pRegions As FastCollection       'of nssRegion
 Private pStatsOnFile As FastCollection   'of nssParameter
-Private pROIClimateFactor As Boolean
-Private pROIDistance As Boolean
-Private pROIRegress As Boolean
-Private pROIUseRegions As Boolean
-Private pROISimStations As Integer       'number of similar stations to use
-Private pROIParms As FastCollection      'of nssparameter
-Private pROIStations As FastCollection   'of ssStation
-Private pROIPeakFlows As FastCollection  'of ssStatistic
+Private pROIPeakData As nssROI
+Private pROILowData As nssROI
+
+'Private pROIClimateFactor As Boolean
+'Private pROIDistance As Boolean
+'Private pROIRegress As Boolean
+'Private pROIUseRegions As Boolean
+'Private pROISimStations As Integer       'number of similar stations to use
+'Private pROIParms As FastCollection      'of nssparameter
+'Private pROIStations As FastCollection   'of ssStation
+'Private pROIPeakFlows As FastCollection  'of ssStatistic
 
 Public Property Get Name() As String
   Name = pName
@@ -77,40 +80,54 @@ Public Property Let Metric(ByVal newValue As Boolean)
   pMetric = newValue
 End Property
 
-Public Property Get ROIClimateFactor() As Boolean
-  ROIClimateFactor = pROIClimateFactor
+Public Property Get ROIPeakData() As nssROI
+  Set ROIPeakData = pROIPeakData
 End Property
-Public Property Let ROIClimateFactor(ByVal newValue As Boolean)
-  pROIClimateFactor = newValue
-End Property
-
-Public Property Get ROIDistance() As Boolean
-  ROIDistance = pROIDistance
-End Property
-Public Property Let ROIDistance(ByVal newValue As Boolean)
-  pROIDistance = newValue
+Public Property Set ROIPeakData(newValue As nssROI)
+  Set pROIPeakData = newValue
 End Property
 
-Public Property Get ROIRegress() As Boolean
-  ROIRegress = pROIRegress
+Public Property Get ROILowData() As nssROI
+  Set ROILowData = pROILowData
 End Property
-Public Property Let ROIRegress(ByVal newValue As Boolean)
-  pROIRegress = newValue
-End Property
-
-Public Property Get ROIUseRegions() As Boolean
-  ROIUseRegions = pROIUseRegions
-End Property
-Public Property Let ROIUseRegions(ByVal newValue As Boolean)
-  pROIUseRegions = newValue
+Public Property Set ROILowData(newValue As nssROI)
+  Set pROILowData = newValue
 End Property
 
-Public Property Get ROISimStations() As Integer
-  ROISimStations = pROISimStations
-End Property
-Public Property Let ROISimStations(ByVal newValue As Integer)
-  pROISimStations = newValue
-End Property
+'Public Property Get ROIClimateFactor() As Boolean
+'  ROIClimateFactor = pROIClimateFactor
+'End Property
+'Public Property Let ROIClimateFactor(ByVal newValue As Boolean)
+'  pROIClimateFactor = newValue
+'End Property
+'
+'Public Property Get ROIDistance() As Boolean
+'  ROIDistance = pROIDistance
+'End Property
+'Public Property Let ROIDistance(ByVal newValue As Boolean)
+'  pROIDistance = newValue
+'End Property
+'
+'Public Property Get ROIRegress() As Boolean
+'  ROIRegress = pROIRegress
+'End Property
+'Public Property Let ROIRegress(ByVal newValue As Boolean)
+'  pROIRegress = newValue
+'End Property
+'
+'Public Property Get ROIUseRegions() As Boolean
+'  ROIUseRegions = pROIUseRegions
+'End Property
+'Public Property Let ROIUseRegions(ByVal newValue As Boolean)
+'  pROIUseRegions = newValue
+'End Property
+'
+'Public Property Get ROISimStations() As Integer
+'  ROISimStations = pROISimStations
+'End Property
+'Public Property Let ROISimStations(ByVal newValue As Integer)
+'  pROISimStations = newValue
+'End Property
 
 Public Property Get Statebasin() As ssStateBasin
   Set Statebasin = pStatebasin
@@ -410,51 +427,51 @@ Public Sub PopulateStatsOnFile()
   End If
 End Sub
 
-Public Property Set ROIParms(ByRef newValue As FastCollection)
-  Set pROIParms = newValue
-End Property
-Public Property Get ROIParms() As FastCollection
-  If pROIParms Is Nothing Then PopulateROIParms
-  Set ROIParms = pROIParms
-End Property
-Private Sub PopulateROIParms()
-  Dim newParm As nssParameter
-  Dim parmRec As Recordset
-  Dim sql$
-  Dim i&
-
-  Set pROIParms = New FastCollection
-  If pDB Is Nothing Then
-    ssMessageBox "Cannot read ROIParms" & vbCr & "DB not set."
-  Else
-    sql = "SELECT STATLABEL.StatisticLabelID, STATLABEL.StatLabel, " & _
-        "STATLABEL.StatisticLabel, STATTYPE.StatisticTypeCode, STATTYPE.StatisticType, " & _
-        "ROIUserParms.PosNegCorrelation, ROIUserParms.SimVar, ROIUserParms.RegVar " & _
-        "FROM ROIUserParms " & _
-        "INNER JOIN (STATTYPE INNER JOIN STATLABEL ON STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode) " & _
-        "ON ROIUserParms.ParmID = STATLABEL.StatisticLabelID " & _
-        "Where ROIUserParms.StateID='" & pCode & "' " & _
-        "ORDER BY STATLABEL.StatisticLabelID;"
-    Set parmRec = pDB.DB.OpenRecordset(sql)
-    While Not parmRec.EOF
-      Set newParm = New nssParameter
-      With newParm
-        If Not IsNull(parmRec("StatisticLabelID")) Then .LabelCode = parmRec("StatisticLabelID")
-        If Not IsNull(parmRec("StatLabel")) Then .Abbrev = parmRec("StatLabel")
-        If Not IsNull(parmRec("StatisticLabel")) Then .Name = parmRec("StatisticLabel")
-        If Not IsNull(parmRec("StatisticTypeCode")) Then .StatTypeCode = parmRec("StatisticTypeCode")
-        If Not IsNull(parmRec("StatisticType")) Then .StatType = parmRec("StatisticType")
-        If Not IsNull(parmRec("PosNegCorrelation")) Then .CorrelationType = CSng(parmRec("PosNegCorrelation"))
-        If Not IsNull(parmRec("SimVar")) Then .SimulationVar = parmRec("SimVar")
-        If Not IsNull(parmRec("RegVar")) Then .RegressionVar = parmRec("RegVar")
-      End With
-      pROIParms.Add newParm, CStr(newParm.LabelCode)
-      Set newParm = Nothing
-      parmRec.MoveNext
-    Wend
-    parmRec.Close
-  End If
-End Sub
+'Public Property Set ROIParms(ByRef newValue As FastCollection)
+'  Set pROIParms = newValue
+'End Property
+'Public Property Get ROIParms() As FastCollection
+'  If pROIParms Is Nothing Then PopulateROIParms
+'  Set ROIParms = pROIParms
+'End Property
+'Private Sub PopulateROIParms()
+'  Dim newParm As nssParameter
+'  Dim parmRec As Recordset
+'  Dim sql$
+'  Dim i&
+'
+'  Set pROIParms = New FastCollection
+'  If pDB Is Nothing Then
+'    ssMessageBox "Cannot read ROIParms" & vbCr & "DB not set."
+'  Else
+'    sql = "SELECT STATLABEL.StatisticLabelID, STATLABEL.StatLabel, " & _
+'        "STATLABEL.StatisticLabel, STATTYPE.StatisticTypeCode, STATTYPE.StatisticType, " & _
+'        "ROIUserParms.PosNegCorrelation, ROIUserParms.SimVar, ROIUserParms.RegVar " & _
+'        "FROM ROIUserParms " & _
+'        "INNER JOIN (STATTYPE INNER JOIN STATLABEL ON STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode) " & _
+'        "ON ROIUserParms.ParmID = STATLABEL.StatisticLabelID " & _
+'        "Where ROIUserParms.StateID='" & pCode & "' " & _
+'        "ORDER BY STATLABEL.StatisticLabelID;"
+'    Set parmRec = pDB.DB.OpenRecordset(sql)
+'    While Not parmRec.EOF
+'      Set newParm = New nssParameter
+'      With newParm
+'        If Not IsNull(parmRec("StatisticLabelID")) Then .LabelCode = parmRec("StatisticLabelID")
+'        If Not IsNull(parmRec("StatLabel")) Then .Abbrev = parmRec("StatLabel")
+'        If Not IsNull(parmRec("StatisticLabel")) Then .Name = parmRec("StatisticLabel")
+'        If Not IsNull(parmRec("StatisticTypeCode")) Then .StatTypeCode = parmRec("StatisticTypeCode")
+'        If Not IsNull(parmRec("StatisticType")) Then .StatType = parmRec("StatisticType")
+'        If Not IsNull(parmRec("PosNegCorrelation")) Then .CorrelationType = CSng(parmRec("PosNegCorrelation"))
+'        If Not IsNull(parmRec("SimVar")) Then .SimulationVar = parmRec("SimVar")
+'        If Not IsNull(parmRec("RegVar")) Then .RegressionVar = parmRec("RegVar")
+'      End With
+'      pROIParms.Add newParm, CStr(newParm.LabelCode)
+'      Set newParm = Nothing
+'      parmRec.MoveNext
+'    Wend
+'    parmRec.Close
+'  End If
+'End Sub
 
 Public Property Get SelStation() As ssStation
   Set SelStation = pSelStation
@@ -529,7 +546,7 @@ Public Sub PopulateRegions()
   End If
 End Sub
 Public Sub Edit(ByVal PeakFlows As String, ByVal CF As Boolean, ByVal Distance As Boolean, _
-                ByVal regress As Boolean, ByVal Regions As Boolean, ByVal SimStations As Integer)
+                ByVal Regress As Boolean, ByVal Regions As Boolean, ByVal SimStations As Integer)
   Dim myRec As Recordset
   Dim sql$
   
@@ -540,7 +557,7 @@ Public Sub Edit(ByVal PeakFlows As String, ByVal CF As Boolean, ByVal Distance A
     !ROIPeakFlows = PeakFlows
     !ROIClimateFactor = CF
     !ROIDistance = Distance
-    !ROIBackStepRegression = regress
+    !ROIBackStepRegression = Regress
     !roiRegions = Regions
     If IsNumeric(SimStations) Then !ROISimStations = SimStations
     .Update
@@ -614,98 +631,98 @@ Public Sub ClearState(DVTable As String)
   Set Me.Regions = Nothing
 End Sub
 
-Public Property Set ROIStations(ByRef newValue As FastCollection)
-  Set pROIStations = newValue
-End Property
-Public Property Get ROIStations() As FastCollection
-  If pROIStations Is Nothing Then PopulateROIStations
-  Set ROIStations = pROIStations
-End Property
-Public Sub PopulateROIStations()
-  Dim newStation As ssStation
-  Dim stationRec As Recordset
-  Dim sql$
-  
-  Set pROIStations = New FastCollection
-  If pDB Is Nothing Then
-    ssMessageBox "Cannot read Stations" & vbCr & "DB not set."
-  Else
-'    sql = "SELECT STATION.* FROM STATION " & _
-'        "WHERE STATION.StateCode='" & Me.code & _
-'        "' ORDER BY STATION.ROI;"
-    
-    sql = "SELECT STATION.* " & _
-          "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
-          "WHERE [StationState].[StateCode]='" & Me.Code & "' " & _
-          "AND [StationState].[ROI]>0 ORDER BY [StationState].[ROI];"
-    Set stationRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
-    While Not stationRec.EOF
-      Set newStation = New ssStation
-      With newStation
-        Set .DB = pDB
-        Set .State = Me
-        .ID = stationRec("StaID")
-        If Not IsNull(stationRec("StationName")) Then .Name = stationRec("StationName")
-        If Not IsNull(stationRec("StationName")) Then .Label = stationRec("StationName")
-        If Not IsNull(stationRec("StationTypeCode")) Then Set .StationType = GetStationType(stationRec("StationTypeCode"))
-        If Not IsNull(stationRec("IsRegulated")) Then .IsRegulated = stationRec("IsRegulated")
-        If Not IsNull(stationRec("PeriodOfRecord")) Then .Period = stationRec("PeriodOfRecord")
-        If Not IsNull(stationRec("StationRemarks")) Then .Remarks = stationRec("StationRemarks")
-        If Not IsNull(stationRec("Latitude")) Then .Latitude = stationRec("Latitude")
-        If Not IsNull(stationRec("Longitude")) Then .Longitude = stationRec("Longitude")
-        If Not IsNull(stationRec("HUC")) Then .HUCCode = stationRec("HUC")
-        If Not IsNull(stationRec("StatebasinCode")) Then .StatebasinCode = (stationRec("StatebasinCode"))
-        If Not IsNull(stationRec("CountyCode")) Then .CountyCode = stationRec("CountyCode")
-        If Not IsNull(stationRec("MCDCode")) Then .MCDCode = stationRec("MCDCode")
-        If Not IsNull(stationRec("Directions")) Then .Directions = stationRec("Directions")
-        'If Not IsNull(stationRec("HasData")) Then .HasData = stationRec("HasData")
-        Set .State = Me
-        .IsNew = False
-      End With
-      pROIStations.Add newStation, newStation.ID
-      Set newStation = Nothing
-      stationRec.MoveNext
-    Wend
-    stationRec.Close
-  End If
-End Sub
-
-Public Property Set ROIPeakFlows(ByVal newValue As FastCollection)
-  Set pROIPeakFlows = newValue
-End Property
-Public Property Get ROIPeakFlows() As FastCollection
-  If pROIPeakFlows Is Nothing Then PopulateROIPeakFlows
-  Set ROIPeakFlows = pROIPeakFlows
-End Property
-Private Sub PopulateROIPeakFlows()
-  Dim newParm As ssStatLabel
-  Dim myRec As Recordset, statRec As Recordset
-  Dim sql$, str$, thisRetPd$
-  
-  Set pROIPeakFlows = New FastCollection
-  If pDB Is Nothing Then
-    ssMessageBox "Cannot read ROIPeakFlows" & vbCr & "DB not set."
-  Else
-    'Read StatisticLabelCodes from STATES table
-    sql = "SELECT ROIPeakFlows FROM [STATES] " & _
-          "WHERE StateCode='" & Me.Code & "';"
-    Set myRec = pDB.DB.OpenRecordset(sql)
-    If Not IsNull(myRec.Fields("ROIPeakFlows")) Then _
-        str = myRec.Fields("ROIPeakFlows")
-    'Match StatisticLabelCodes with statistics
-    Set statRec = pDB.DB.OpenRecordset("STATLABEL")
-    Set Me.DB.StatType = Me.DB.StatisticTypes("PFS")
-    While Not Len(Trim(str)) = 0
-      thisRetPd = StrSplit(str, ",", "")
-      Set newParm = Me.DB.StatType.StatLabels(thisRetPd)
-      pROIPeakFlows.Add newParm, newParm.Code
-      Set newParm = Nothing
-      statRec.MoveNext
-    Wend
-    statRec.Close
-    myRec.Close
-  End If
-End Sub
+'Public Property Set ROIStations(ByRef newValue As FastCollection)
+'  Set pROIStations = newValue
+'End Property
+'Public Property Get ROIStations() As FastCollection
+'  If pROIStations Is Nothing Then PopulateROIStations
+'  Set ROIStations = pROIStations
+'End Property
+'Public Sub PopulateROIStations()
+'  Dim newStation As ssStation
+'  Dim stationRec As Recordset
+'  Dim sql$
+'
+'  Set pROIStations = New FastCollection
+'  If pDB Is Nothing Then
+'    ssMessageBox "Cannot read Stations" & vbCr & "DB not set."
+'  Else
+''    sql = "SELECT STATION.* FROM STATION " & _
+''        "WHERE STATION.StateCode='" & Me.code & _
+''        "' ORDER BY STATION.ROI;"
+'
+'    sql = "SELECT STATION.* " & _
+'          "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
+'          "WHERE [StationState].[StateCode]='" & Me.Code & "' " & _
+'          "AND [StationState].[ROI]>0 ORDER BY [StationState].[ROI];"
+'    Set stationRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
+'    While Not stationRec.EOF
+'      Set newStation = New ssStation
+'      With newStation
+'        Set .DB = pDB
+'        Set .State = Me
+'        .ID = stationRec("StaID")
+'        If Not IsNull(stationRec("StationName")) Then .Name = stationRec("StationName")
+'        If Not IsNull(stationRec("StationName")) Then .Label = stationRec("StationName")
+'        If Not IsNull(stationRec("StationTypeCode")) Then Set .StationType = GetStationType(stationRec("StationTypeCode"))
+'        If Not IsNull(stationRec("IsRegulated")) Then .IsRegulated = stationRec("IsRegulated")
+'        If Not IsNull(stationRec("PeriodOfRecord")) Then .Period = stationRec("PeriodOfRecord")
+'        If Not IsNull(stationRec("StationRemarks")) Then .Remarks = stationRec("StationRemarks")
+'        If Not IsNull(stationRec("Latitude")) Then .Latitude = stationRec("Latitude")
+'        If Not IsNull(stationRec("Longitude")) Then .Longitude = stationRec("Longitude")
+'        If Not IsNull(stationRec("HUC")) Then .HUCCode = stationRec("HUC")
+'        If Not IsNull(stationRec("StatebasinCode")) Then .StatebasinCode = (stationRec("StatebasinCode"))
+'        If Not IsNull(stationRec("CountyCode")) Then .CountyCode = stationRec("CountyCode")
+'        If Not IsNull(stationRec("MCDCode")) Then .MCDCode = stationRec("MCDCode")
+'        If Not IsNull(stationRec("Directions")) Then .Directions = stationRec("Directions")
+'        'If Not IsNull(stationRec("HasData")) Then .HasData = stationRec("HasData")
+'        Set .State = Me
+'        .IsNew = False
+'      End With
+'      pROIStations.Add newStation, newStation.ID
+'      Set newStation = Nothing
+'      stationRec.MoveNext
+'    Wend
+'    stationRec.Close
+'  End If
+'End Sub
+'
+'Public Property Set ROIPeakFlows(ByVal newValue As FastCollection)
+'  Set pROIPeakFlows = newValue
+'End Property
+'Public Property Get ROIPeakFlows() As FastCollection
+'  If pROIPeakFlows Is Nothing Then PopulateROIPeakFlows
+'  Set ROIPeakFlows = pROIPeakFlows
+'End Property
+'Private Sub PopulateROIPeakFlows()
+'  Dim newParm As ssStatLabel
+'  Dim myRec As Recordset, statRec As Recordset
+'  Dim sql$, str$, thisRetPd$
+'
+'  Set pROIPeakFlows = New FastCollection
+'  If pDB Is Nothing Then
+'    ssMessageBox "Cannot read ROIPeakFlows" & vbCr & "DB not set."
+'  Else
+'    'Read StatisticLabelCodes from STATES table
+'    sql = "SELECT ROIPeakFlows FROM [STATES] " & _
+'          "WHERE StateCode='" & Me.Code & "';"
+'    Set myRec = pDB.DB.OpenRecordset(sql)
+'    If Not IsNull(myRec.Fields("ROIPeakFlows")) Then _
+'        str = myRec.Fields("ROIPeakFlows")
+'    'Match StatisticLabelCodes with statistics
+'    Set statRec = pDB.DB.OpenRecordset("STATLABEL")
+'    Set Me.DB.StatType = Me.DB.StatisticTypes("PFS")
+'    While Not Len(Trim(str)) = 0
+'      thisRetPd = StrSplit(str, ",", "")
+'      Set newParm = Me.DB.StatType.StatLabels(thisRetPd)
+'      pROIPeakFlows.Add newParm, newParm.Code
+'      Set newParm = Nothing
+'      statRec.MoveNext
+'    Wend
+'    statRec.Close
+'    myRec.Close
+'  End If
+'End Sub
 
 Private Sub Class_Initialize()
   pAbbrev = "XX"

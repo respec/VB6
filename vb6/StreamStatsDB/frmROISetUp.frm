@@ -527,6 +527,7 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 Private lFlowType As Integer '0 - Peak, 1 - Low/Duration
+Private lROIData As nssROI
 Private CurRegion As nssRegion
 Private SelectStatsOnFile() As ssStatistic
 Private ExistingRegions As New FastCollection 'of nssRegion
@@ -649,7 +650,11 @@ Private Sub cmdSave_Click()
       str = str & lstReturnPeriods.RightItem(row - 1) & ","
     End If
   Next row
-  SSDB.state.Edit str, -chkCF.value, -chkDistance.value, -chkRegress.value, -chkUseRegions.value, atxSimStations.value 'useRegions
+  If lFlowType = 0 Then 'peak flow ROI, just edit ROI fields on standard State table record
+    SSDB.state.Edit str, -chkCF.value, -chkDistance.value, -chkRegress.value, -chkUseRegions.value, atxSimStations.value 'useRegions
+  Else 'Low/Dur ROI, add 2nd record (if needed) for state that will contain low/dur ROI info in fields
+  
+  End If
   For regionCnter = 1 To lstRegions.ListCount
     Set CurRegion = ExistingRegions(regionCnter)
     CurRegion.ClearROIUserparms
@@ -715,6 +720,13 @@ Private Sub Form_Load()
   Dim statAbbrev As String
 
   Me.Caption = "Add new ROI data for " & SSDB.state.Name
+  rdoFlowType(0).value = False
+  rdoFlowType(1).value = False
+  If Not SSDB.state.ROIPeakData.Stations Is Nothing Then
+    rdoFlowType(0).value = True
+  ElseIf Not SSDB.state.ROILowData.Stations Is Nothing Then
+    rdoFlowType(1).value = True
+  End If
   'Retrieve name of station data import file from registry
   txtStaDataFile.Text = GetSetting("StreamStatsDB", "Defaults", SSDB.state.Abbrev & "_StaDataImportFile")
 ImportedData:
@@ -738,12 +750,12 @@ ImportedData:
   Next ParmCnt
 
   'set number of similar stations to use
-  If SSDB.state.ROISimStations > 0 Then atxSimStations.value = SSDB.state.ROISimStations
+  If lROIData.SimStations > 0 Then atxSimStations.value = lROIData.SimStations
   'Select appropriate check boxes
-  If SSDB.state.ROIDistance Then chkDistance.value = 1 Else chkDistance.value = 0
-  If SSDB.state.ROIClimateFactor Then chkCF.value = 1 Else chkCF.value = 0
-  If SSDB.state.ROIRegress Then chkRegress.value = 1 Else chkRegress.value = 0
-  If SSDB.state.ROIUseRegions Then chkUseRegions.value = 1 Else chkUseRegions.value = 0
+  If lROIData.Distance Then chkDistance.value = 1 Else chkDistance.value = 0
+  If lROIData.ClimateFactor Then chkCF.value = 1 Else chkCF.value = 0
+  If lROIData.Regress Then chkRegress.value = 1 Else chkRegress.value = 0
+  If lROIData.UseRegions Then chkUseRegions.value = 1 Else chkUseRegions.value = 0
 
   'Fill in ROI regions, if there are any
   For regnCnter = 1 To SSDB.state.Regions.Count
@@ -823,7 +835,7 @@ Private Sub PopulateReturnPeriods()
         End If
       End If
     Next i
-    For Each vRetPd In SSDB.state.ROIPeakFlows
+    For Each vRetPd In lROIData.FlowStats
       For i = 0 To .LeftCount - 1
         If vRetPd.code = .LeftItem(i) Then
           .MoveRight (i)
@@ -1211,5 +1223,11 @@ End Sub
 Private Sub rdoFlowType_Click(Index As Integer)
 
   lFlowType = Index
+  If Index = 0 Then 'peak flow
+    Set lROIData = SSDB.state.ROIPeakData
+  Else
+    Set lROIData = SSDB.state.ROILowData
+  End If
   PopulateReturnPeriods
+
 End Sub
