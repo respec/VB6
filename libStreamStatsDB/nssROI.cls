@@ -6,7 +6,7 @@ BEGIN
   DataSourceBehavior  = 0  'vbNone
   MTSTransactionMode  = 0  'NotAnMTSObject
 END
-Attribute VB_Name = "nssState"
+Attribute VB_Name = "nssROI"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = False
@@ -14,7 +14,7 @@ Attribute VB_Exposed = True
 Option Explicit
 'Copyright 2001 by AQUA TERRA Consultants
 
-Private pType As String               '"P" or "L" (peak or low)
+Private pFlowType As String               '"P" or "L" (peak or low)
 Private pClimateFactor As Boolean
 Private pDistance As Boolean
 Private pRegress As Boolean
@@ -24,11 +24,11 @@ Private pParms As FastCollection      'of nssparameter
 Private pStations As FastCollection   'of ssStation
 Private pFlowStats As FastCollection  'of ssStatistic
 
-Public Property Get Type() As String
-  Type = pType
+Public Property Get FlowType() As String
+  FlowType = pFlowType
 End Property
-Public Property Let Type(ByVal newValue As String)
-  pType = newValue
+Public Property Let FlowType(ByVal newValue As String)
+  pFlowType = newValue
 End Property
 
 Public Property Get ClimateFactor() As Boolean
