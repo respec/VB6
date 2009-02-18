@@ -50,10 +50,11 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   Dim retval() As Double
   Dim Correlation() As Single, CorrelationLimit As Single
   Dim uParm As userParameter, vParm As Variant, tmpParm As nssParameter
-  Dim uRegion As userRegion
+  Dim uRegion As New userRegion
   Dim myStation As ssStation
   Dim myDB As nssDatabase
   Dim Scenario As nssScenario
+  Dim lROIData As nssROI
   
   Dim Lat As Double           'Ungaged station latitude
   Dim Lng As Double           'Ungaged station longitude
@@ -80,9 +81,17 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   RegName = uRegion.Region.Name
   Set myDB = uRegion.Region.DB
 
+  If Scenario.LowFlow Then 'load Lowflow ROI data
+    Set lROIData = uRegion.Region.State.ROILowData
+  Else
+    Set lROIData = uRegion.Region.State.ROIPeakData
+  End If
+  
   'Check whether enough stations to perform calc
-  StaCnt = uRegion.Region.State.ROIStations.Count
-  Nsites = uRegion.Region.State.ROISimStations
+  StaCnt = lROIData.Stations.Count
+  Nsites = lROIData.SimStations
+'  StaCnt = uRegion.Region.State.ROIStations.Count
+'  Nsites = uRegion.Region.State.ROISimStations
   If StaCnt < Nsites Then
     ssMessageBox "Not enough stations in this ROI region to perform calculation"
     Exit Function
@@ -100,7 +109,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
       SimVarCnt = SimVarCnt + 1
     End If
     If tmpParm.RegressionVar Then
-      If uRegion.Region.State.Code = "47" Then
+      If lROIData.StateCode = "47" Then
         'may need to make adjustments to TN ROI parameters
         If tmpParm.LabelCode = 7 Then
           'change Latitude to TN Physiographic factor
@@ -118,21 +127,23 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   Next vParm
   RegVarCnt = RegVarCnt + 1
   
-  If uRegion.Region.State.ROIClimateFactor Then SimVarCnt = SimVarCnt + 1
-  If uRegion.Region.State.ROIDistance Then SimVarCnt = SimVarCnt + 1
+'  If uRegion.Region.State.ROIClimateFactor Then SimVarCnt = SimVarCnt + 1
+'  If uRegion.Region.State.ROIDistance Then SimVarCnt = SimVarCnt + 1
+  If lROIData.ClimateFactor Then SimVarCnt = SimVarCnt + 1
+  If lROIData.Distance Then SimVarCnt = SimVarCnt + 1
   'Set dimensions for Climate Factor and Distance in SimVars array
-  If uRegion.Region.State.ROIClimateFactor Then
+  If lROIData.ClimateFactor Then
     dimCF = SimVarCnt
-    If uRegion.Region.State.ROIDistance Then dimDist = SimVarCnt - 1
+    If lROIData.Distance Then dimDist = SimVarCnt - 1
   Else
-    If uRegion.Region.State.ROIDistance Then dimDist = SimVarCnt
+    If lROIData.Distance Then dimDist = SimVarCnt
   End If
   
   'Initialize constants and labels
   Init
   
   'Set NumPeaks = # of peak-flow return periods
-  NumPeaks = Scenario.Project.State.ROIPeakFlows.Count
+  NumPeaks = lROIData.FlowStats.Count
   
   'Size following arrays to number of Peak Flows for this state
   ReDim retval(NumPeaks)      'contains output for NSS interface
@@ -143,9 +154,9 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   ReDim PkLab(NumPeaks)
   ReDim Ak(NumPeaks)
   For i = 1 To NumPeaks
-    j = InStr(Scenario.Project.State.ROIPeakFlows(i).Name, "_")
+    j = InStr(lROIData.FlowStats(i).Name, "_")
     If j > 0 Then
-      str = Left(Scenario.Project.State.ROIPeakFlows(i).Name, j - 1)
+      str = Left(lROIData.FlowStats(i).Name, j - 1)
       PkLab(i) = PkLabColl(str)
       Ak(i) = AkColl(str)
     End If
@@ -184,21 +195,21 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
 '    i = i + 1
 '    UserRegressVars(i) = Log10(uParm.GetValue(pMetric))
 '  Next
-  If uRegion.Region.State.ROIDistance Or uRegion.Region.State.ROIClimateFactor Then 'need lat/lng
+  If lROIData.Distance Or lROIData.ClimateFactor Then 'need lat/lng
     Lat = uRegion.UserParms("Latitude").GetValue(False)
     Lng = uRegion.UserParms("Longitude").GetValue(False)
   End If
-  If uRegion.Region.State.ROIDistance Then 'distance to self is 0
+  If lROIData.Distance Then 'distance to self is 0
     UserSimVars(dimDist) = 0
   End If
   
   'Read in State Matrix, Climate Factor arrays; and for NC, RHO matrix from DB
   Mcon = Scenario.Matrix  '~4 secs for NC, ~15 secs for TX
-  If uRegion.Region.State.ROIClimateFactor Then CF = Scenario.CF
+  If lROIData.ClimateFactor Then CF = Scenario.CF
 
   'Read in station attributes from STATION/STATISTIC tables: ~5 secs for NC
   For i = 1 To StaCnt
-    Set myStation = uRegion.Region.State.ROIStations(i)
+    Set myStation = lROIData.Stations(i)
     StaIDs(i) = myStation.ID
     StaLats(i) = myStation.Latitude
     StaLngs(i) = myStation.Longitude
@@ -209,7 +220,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     End If
     'Read in the peak-flow periods for this station
     j = 0
-    For Each vParm In Scenario.Project.State.ROIPeakFlows
+    For Each vParm In lROIData.FlowStats
       j = j + 1
       Flows(i, j) = Log10(myStation.Statistics(CStr(vParm.ID)).Value)
     Next vParm
@@ -227,14 +238,14 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
       j = j + 1
       RegVars(i, j) = Log10(myStation.Statistics(CStr(vParm.LabelCode)).Value)
     Next vParm
-    If uRegion.Region.State.ROIDistance Then 'read in distance from site to station
+    If lROIData.Distance Then 'read in distance from site to station
       SimVars(i, dimDist) = TASKER_DISTANCE(Lat, StaLats(i), Lng, StaLngs(i))
       'Convert miles into kilometers if necessary
       If pMetric Then SimVars(i, dimDist) = SimVars(i, dimDist) * 1.609344
       Sum(dimDist) = Sum(dimDist) + SimVars(i, dimDist)
     End If
-    If uRegion.Region.State.ROIClimateFactor Then 'read in climate factors
-      If Scenario.Project.State.Code = "47" Then
+    If lROIData.ClimateFactor Then 'read in climate factors
+      If lROIData.StateCode = "47" Then
         'TN ROI uses its own CF2 values instead of traditional CF
         SimVars(i, dimCF) = Log10(myStation.Statistics("1195").Value)
       Else
@@ -263,9 +274,9 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
 
   'Compute climate factor from lat and long coordinates
   icall = 0
-  If uRegion.Region.State.ROIClimateFactor Then
+  If lROIData.ClimateFactor Then
     CFX icall, Lat, Lng  'calculates climate factor at user's site
-    If Scenario.Project.State.Code = "47" Then
+    If lROIData.StateCode = "47" Then
       If Cf2 > 0 Then UserSimVars(dimCF) = Log10(CDbl(Cf2))
     ElseIf Cf25 > 0 Then UserSimVars(dimCF) = Log10(CDbl(Cf25))
     End If
@@ -279,7 +290,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
       Distance(i) = Distance(i) + ((UserSimVars(j) - SimVars(i, j)) / SimVarSDs(j)) ^ 2
     Next j
     Distance(i) = Distance(i) ^ 0.5
-    If Scenario.Project.State.ROIUseRegions Then
+    If lROIData.UseRegions Then
       'Discount stations in other ROI Regions
       Distance(i) = Distance(i) + Abs((roiRegion - roiRegions(i))) * 1000
     End If
@@ -310,15 +321,15 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
         & "LAT" & vbTab _
         & "LNG" & vbTab
   For i = 1 To NumPeaks
-    str = str & "LOG(" & Scenario.Project.State.ROIPeakFlows(i).Code & ")" & vbTab
+    str = str & "LOG(" & lROIData.FlowStats(i).Code & ")" & vbTab
   Next i
   For Each vParm In SimParms
     str = str & "LOG(" & vParm.Abbrev & ")" & vbTab
   Next vParm
-  If uRegion.Region.State.ROIDistance Then 'write distance header
+  If lROIData.Distance Then 'write distance header
     str = str & "Distance" & vbTab
   End If
-  If uRegion.Region.State.ROIClimateFactor Then 'write climate factor header
+  If lROIData.ClimateFactor Then 'write climate factor header
     str = str & "LOG(CF25)" & vbTab
   End If
   Print #OutFile, str
@@ -346,13 +357,13 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     str = ""
   End If
   str = vbCrLf & "For " & StaName & str
-  If uRegion.Region.State.ROIClimateFactor Then _
+  If lROIData.ClimateFactor Then _
       str = str & "    : cf25 = " & Format(Cf25, "#0.00")
   str = str & vbCrLf & vbCrLf & "RI" & vbTab & " PREDICTED(cfs)" & _
         vbTab & "- SE (%)" & vbTab & "+ SE (%)" & vbTab & "90% PRED INT (cfs)" & vbCrLf
   Print #OutFile, str
         
-  If Scenario.Project.State.Code = "48" Then 'build matrix on the fly for Texas
+  If lROIData.StateCode = "48" Then 'build matrix on the fly for Texas
     BuildMatrix
   Else 'most states have their own matrix
     Rhoc = Scenario.RHO
@@ -366,7 +377,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     For Each vParm In RegParms
       Set uParm = uRegion.UserParms(vParm.Name)
       i = i + 1
-      If Scenario.Project.State.Code = "47" Then 'may need to set special TN parm values
+      If lROIData.StateCode = "47" Then 'may need to set special TN parm values
         If vParm.Abbrev = "TNPHYSFAC" Then 'use TN formulae to compute PF
           If uRegion.Region.ROIRegnID = 1 Then UserRegressVars(i) = -0.213 + 0.0626 * UserRegressVars(1)
           If uRegion.Region.ROIRegnID = 2 Then UserRegressVars(i) = 0.0168 + 0.0353 * UserRegressVars(1)
@@ -411,7 +422,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
       For j = 1 To i
         Years = Mcon(INDX(i), INDX(j)) _
                 / (Mcon(INDX(i), INDX(i)) * Mcon(INDX(j), INDX(j)))
-        If Scenario.Project.State.Code = "48" Then 'use run-time RHO matrix
+        If lROIData.StateCode = "48" Then 'use run-time RHO matrix
           RHO = Rhoc(i, j)
         Else
           RHO = Rhoc(INDX(i), INDX(j))
@@ -432,10 +443,10 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     Next i
     
     iStep = 0
-regress:
+Regress:
     'do regression
     Secant
-    If Scenario.Project.State.ROIRegress Then
+    If lROIData.Regress Then
       iStep = iStep + 1
       
       OutPut iStep, jpeak, yhat, OutFile, retval(jpeak), _
@@ -478,7 +489,7 @@ regress:
       If iSave = RegVarCnt Then
         'want to drop last independent variable - ignore last column of X
         RegVarCnt = RegVarCnt - 1
-        GoTo regress
+        GoTo Regress
       ElseIf iSave < RegVarCnt Then
         '# of independent variable decrements by one and shifts
         RegVarCnt = RegVarCnt - 1
@@ -494,7 +505,7 @@ regress:
           UserRegressVars(j) = UserRegressVars(j + 1)
           Correlation(j) = Correlation(j + 1)
         Next j
-        GoTo regress
+        GoTo Regress
       End If
     End If
 

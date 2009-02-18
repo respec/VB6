@@ -21,10 +21,10 @@ Private pUrban As Boolean, pUrbanNeedsRural As Boolean, pIsNew As Boolean
 Private pROIRegnID As String
 Private pLowFlowRegnID As String
 Private pPredInt As Boolean
-Private pParameters As FastCollection   'of ssStatistic
-Private pROIParameters As FastCollection   'of ssStatistic
-Private pDepVars As FastCollection      'of nssDepVar
-Private pROIStations As FastCollection  'of ssStation
+Private pParameters As FastCollection    'of nssParameter
+Private pROIParameters As FastCollection 'of nssParameter
+Private pDepVars As FastCollection       'of nssDepVar
+'Private pROIStations As FastCollection   'of ssStation
 Private pState As nssState
 
 Public Property Get Name() As String
@@ -367,20 +367,20 @@ Public Sub PopulateDepVars()
   End If
 End Sub
 
-Public Property Set ROIStations(ByRef newValue As FastCollection)
-  'Set pROIStations = newValue
-  ssMessageBox "This property is no longer valid - now in nssState class."
-End Property
-Public Property Get ROIStations() As FastCollection
-  'this property is no longer functional as PopulateROIStations is now done in nssState.cls
-  'If pROIStations Is Nothing Then PopulateROIStations
-  ssMessageBox "This property is no longer valid - now in nssState class."
-  'Set ROIStations = pROIStations
-End Property
-
-Public Sub PopulateROIStations()
-  'this sub is no longer functional as PopulateROIStations is now done in nssState.cls
-End Sub
+'Public Property Set ROIStations(ByRef newValue As FastCollection)
+'  'Set pROIStations = newValue
+'  ssMessageBox "This property is no longer valid - now in nssState class."
+'End Property
+'Public Property Get ROIStations() As FastCollection
+'  'this property is no longer functional as PopulateROIStations is now done in nssState.cls
+'  'If pROIStations Is Nothing Then PopulateROIStations
+'  ssMessageBox "This property is no longer valid - now in nssState class."
+'  'Set ROIStations = pROIStations
+'End Property
+'
+'Public Sub PopulateROIStations()
+'  'this sub is no longer functional as PopulateROIStations is now done in nssState.cls
+'End Sub
 
 Public Function Add(ByVal RegType As Long, ByVal RegName As String, ByVal Urban As Boolean, _
     ByVal RuralInput As Long, ByVal PredInt As Long, ByVal ROIRegnID As Long, Optional NoWarnFlg As Boolean) As Boolean
