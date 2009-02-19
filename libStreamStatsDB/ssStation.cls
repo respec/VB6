@@ -232,15 +232,21 @@ Public Property Let DistrictCode(ByVal newValue As String)
   pDistrictCode = newValue
 End Property
 
-Public Sub Add(ByRef NewValues() As String, StaIndex As Long, Optional ImportFlg As Long)
+Public Sub Add(ByRef NewValues() As String, StaIndex As Long, _
+               Optional ImportFlg As Long, Optional ROIRegionID As Long = 0)
   Dim myRec As Recordset
   Dim fld&, ROIIndex As Long
   Dim sql$
   
   On Error Resume Next
   
-  If StaIndex < 0 Then 'actually passing ROI station index
-    ROIIndex = Abs(StaIndex)
+  'instead of negative SatIndex kluge for indicating ROI station, just use IsROI property
+  'prh, 2/2009
+  'If StaIndex < 0 Then 'actually passing ROI station index
+  If Me.IsROI Then
+    'ROIIndex = Abs(StaIndex)
+    'no need for negative StaIndex
+    ROIIndex = StaIndex
     StaIndex = 1
   Else
     ROIIndex = 0
@@ -316,7 +322,11 @@ AddStateStationReference:
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     If .RecordCount > 0 Then 'check to see if station with this ID or name already exists
-      .FindFirst "StaID='" & NewValues(2, StaIndex, 1) & "'"
+      If ROIRegionID <> 0 Then
+        .FindFirst "StaID='" & NewValues(2, StaIndex, 1) & "' AND ROIRegionID=0"
+      Else
+        .FindFirst "StaID='" & NewValues(2, StaIndex, 1) & "'"
+      End If
     End If
     If .NoMatch Or .RecordCount <= 0 Then 'add this station for this state
       .AddNew
@@ -327,10 +337,12 @@ AddStateStationReference:
       Else
         .Fields("ROI") = Me.IsROI
       End If
+      .Fields("ROIRegionID") = ROIRegionID 'link this station's record to a specific ROI region
       .Update
     ElseIf Not .NoMatch And ROIIndex > 0 Then 'importing ROI, update ROI field
       .Edit
       .Fields("ROI") = ROIIndex
+      .Fields("ROIRegionID") = ROIRegionID 'link this station's record to a specific ROI region
       .Update
     End If
   End With
@@ -496,3 +508,6 @@ Private Function GetStateCode(StateAbbrev As String) As String
   End With
 End Function
 
+Private Sub Class_Initialize()
+  IsROI = False
+End Sub

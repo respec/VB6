@@ -2,58 +2,21 @@ VERSION 5.00
 Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmImportStations 
    Caption         =   "Import Stations"
-   ClientHeight    =   3705
+   ClientHeight    =   3360
    ClientLeft      =   60
    ClientTop       =   345
    ClientWidth     =   8550
    LinkTopic       =   "Form1"
-   ScaleHeight     =   3705
+   ScaleHeight     =   3360
    ScaleWidth      =   8550
    StartUpPosition =   3  'Windows Default
-   Begin VB.OptionButton rdoFlowType 
-      Caption         =   "Low Flow"
-      BeginProperty Font 
-         Name            =   "MS Sans Serif"
-         Size            =   8.25
-         Charset         =   0
-         Weight          =   700
-         Underline       =   0   'False
-         Italic          =   0   'False
-         Strikethrough   =   0   'False
-      EndProperty
-      Height          =   375
-      Index           =   1
-      Left            =   1920
-      TabIndex        =   6
-      Top             =   0
-      Width           =   2055
-   End
-   Begin VB.OptionButton rdoFlowType 
-      Caption         =   "Peak Flow"
-      BeginProperty Font 
-         Name            =   "MS Sans Serif"
-         Size            =   8.25
-         Charset         =   0
-         Weight          =   700
-         Underline       =   0   'False
-         Italic          =   0   'False
-         Strikethrough   =   0   'False
-      EndProperty
-      Height          =   375
-      Index           =   0
-      Left            =   120
-      TabIndex        =   5
-      Top             =   0
-      Value           =   -1  'True
-      Width           =   2055
-   End
    Begin VB.Frame fraButtons 
       BorderStyle     =   0  'None
       Caption         =   "Frame3"
       Height          =   372
       Left            =   120
       TabIndex        =   1
-      Top             =   3240
+      Top             =   2880
       Width           =   7095
       Begin VB.CommandButton cmdLastRow 
          Cancel          =   -1  'True
@@ -114,7 +77,7 @@ Begin VB.Form frmImportStations
       Height          =   2655
       Left            =   0
       TabIndex        =   0
-      Top             =   480
+      Top             =   120
       Width           =   7335
       _ExtentX        =   12938
       _ExtentY        =   4683
@@ -123,7 +86,7 @@ Begin VB.Form frmImportStations
       AllowEditHeader =   0   'False
       AllowLoad       =   0   'False
       AllowSorting    =   0   'False
-      Rows            =   80
+      Rows            =   86
       Cols            =   2
       ColWidthMinimum =   300
       gridFontBold    =   0   'False
@@ -526,6 +489,7 @@ Sub Import()
   Dim takeLog() As Boolean
   Dim pcols As Long, col As Long
   Dim roiRegnCount As Long
+  Dim curRegionIndex As Long
   Dim attribAbbrev As String
   Dim FlowType As Integer
 
@@ -538,6 +502,13 @@ Sub Import()
   IPC.SendMonitorMessage "(MSG1 Importing Station file)"
   IPC.SendMonitorMessage "(PROGRESS 0)"
   
+  curRegionIndex = 0
+  If InStr(Me.Caption, "Peak") > 0 Then 'peak flow stations
+    FlowType = 0
+  Else 'lowflow/duration stations
+    FlowType = 1
+  End If
+
 '  Set myCitation.Db = SSDB
 '  myCitation.Add "Imported from station file " & FilenameNoPath(NameDataFile)
   roiRegnCount = 0
@@ -649,6 +620,7 @@ Stat:
                     ROIImportRegnIDs(roiRegnCount) = parsed(col)
                   End If
                 End If
+                curRegionIndex = roiRegnCount
               End If
               dataValues(2, attCnt, 2) = GetLabelID(attribAbbrev, SSDB)
               dataValues(2, attCnt, 3) = attribAbbrev
@@ -664,11 +636,14 @@ Stat:
     Next
     
     If fileline = DataFileLines - SkipDataLinesEnd - SkipDataLinesStart Then  'Add ROI region(s) to database
-      If rdoFlowType(0).value = True Then FlowType = 0 Else FlowType = 1
       If roiRegnCount = 0 Then  'no regions specified; assume single statewide region
         Set myRegion = New nssRegion
         Set myRegion.DB = SSDB
-        myRegion.Add FlowType, "ROI_Statewide", False, 0, 0, 1, True
+        If FlowType = 1 Then 'peak
+          myRegion.Add FlowType, "ROI_Statewide", False, 0, 0, 1, True
+        Else 'low, negative region id indicates low/duration ROI region
+          myRegion.Add FlowType, "ROI_Statewide", False, 0, 0, -1, True
+        End If
       Else
         SortIntegerArray 1, UBound(ROIImportRegnIDs), ROIImportRegnIDs, ROIImportRegnIDs
         MsgBox "The import file had " & UBound(ROIImportRegnIDs) & " ROI regions identified only by indices." & vbCrLf & "Fill out the following form to assign names to these ROI regions.", , "ROI Region Names"
@@ -676,12 +651,17 @@ Stat:
         For roiRegnCount = 1 To UBound(ROIImportRegnIDs)
           Set myRegion = New nssRegion
           Set myRegion.DB = SSDB
-          myRegion.Add FlowType, ROIImportRegnNames(roiRegnCount), False, 0, 0, ROIImportRegnIDs(roiRegnCount), True
+          If FlowType = 1 Then 'peak
+            myRegion.Add FlowType, ROIImportRegnNames(roiRegnCount), False, 0, 0, ROIImportRegnIDs(roiRegnCount), True
+          Else 'low, negative region ID indicates low/duration ROI region
+            myRegion.Add FlowType, ROIImportRegnNames(roiRegnCount), False, 0, 0, -ROIImportRegnIDs(roiRegnCount), True
+          End If
         Next
       End If
     End If
     If Len(stationValues(2, 1, 1)) > 0 Then 'If there is a station ID, try adding to database
       ImportedNewData = True
+      If curRegionIndex = 0 Then curRegionIndex = 1 'no unique regions, just set to 1 for statewide
       staCnt = staCnt + 1
       staIndex = SSDB.state.Stations.IndexFromKey(stationValues(2, 1, 1))
       If staIndex = -1 Then 'Station does not exist - add it and its statistics
@@ -689,7 +669,11 @@ Stat:
         Set myStation.DB = SSDB
         Set myStation.state = SSDB.state
         myStation.IsROI = True
-        myStation.Add stationValues(), -staCnt, 1 'use -stacnt as ROI station index
+        If FlowType = 0 Then 'peak
+          myStation.Add stationValues(), staCnt, 1, curRegionIndex
+        Else 'low/duration, -curRegion indicates low flow ROI region
+          myStation.Add stationValues(), staCnt, 1, -curRegionIndex
+        End If
         myStation.id = stationValues(2, 1, 1)
         For i = 1 To attCnt
           Set myStatistic = New ssStatistic
@@ -708,7 +692,11 @@ Stat:
         'make sure station is marked for ROI
         myStation.IsROI = True
         'this Add will only update the ROI field on the Station State table
-        myStation.Add stationValues(), -staCnt, 1 'use -stacnt as ROI station index
+        If FlowType = 0 Then 'peak
+          myStation.Add stationValues(), staCnt, 1, curRegionIndex
+        Else 'low/duration, -curRegion indicates low flow ROI region
+          myStation.Add stationValues(), staCnt, 1, -curRegionIndex
+        End If
         For i = 1 To attCnt
           attIndex = myStation.Statistics.IndexFromKey(dataValues(2, i, 2))
           If attIndex = -1 Then 'Statistic does not exist
