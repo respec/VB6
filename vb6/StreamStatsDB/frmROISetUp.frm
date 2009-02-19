@@ -288,7 +288,7 @@ Begin VB.Form frmROISetUp
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   4
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -528,7 +528,7 @@ Attribute VB_Exposed = False
 Option Explicit
 Private lFlowType As String 'Peak, Low
 Private lROIData As nssROI
-Private CurRegion As nssRegion
+Private curRegion As nssRegion
 Private SelectStatsOnFile() As ssStatistic
 Private ExistingRegions As New FastCollection 'of nssRegion
 
@@ -536,8 +536,8 @@ Private Sub cmdAddVar_Click()
   Dim col As Long
   Dim newParm As New nssParameter
 
-  Set newParm.Region = CurRegion
-  CurRegion.ROIParameters.Add newParm
+  Set newParm.Region = curRegion
+  curRegion.ROIParameters.Add newParm
   With grdROIParms
     For col = 0 To .Cols - 1
       .ColEditable(col) = True
@@ -549,15 +549,15 @@ Private Sub cmdAddVar_Click()
 End Sub
 
 Private Sub cmdCancel_Click()
-  CurRegion.ROIParameters.Clear
-  Set CurRegion.ROIParameters = Nothing
+  curRegion.ROIParameters.Clear
+  Set curRegion.ROIParameters = Nothing
   PopulateGrid
 End Sub
 
 Private Sub cmdDelVar_Click()
   With grdROIParms
     If .Rows = 0 Then Exit Sub
-    If .row <= CurRegion.ROIParameters.Count Then CurRegion.ROIParameters.RemoveByIndex .row
+    If .row <= curRegion.ROIParameters.Count Then curRegion.ROIParameters.RemoveByIndex .row
     .DeleteRow .row
   End With
 End Sub
@@ -656,21 +656,21 @@ Private Sub cmdSave_Click()
   
   End If
   For regionCnter = 1 To lstRegions.ListCount
-    Set CurRegion = ExistingRegions(regionCnter)
-    CurRegion.ClearROIUserparms
-    For ParmCnter = 1 To CurRegion.ROIParameters.Count
-      Set myparm = CurRegion.ROIParameters(ParmCnter)
+    Set curRegion = ExistingRegions(regionCnter)
+    curRegion.ClearROIUserparms
+    For ParmCnter = 1 To curRegion.ROIParameters.Count
+      Set myparm = curRegion.ROIParameters(ParmCnter)
       If myparm.Name <> "Not Assigned" Then
-        Set myparm.Region = CurRegion
-        myparm.Add CurRegion, myparm.Abbrev, myparm.GetMin(False), _
+        Set myparm.Region = curRegion
+        myparm.Add curRegion, myparm.Abbrev, myparm.GetMin(False), _
             myparm.GetMax(False), myparm.Units.id
-        myparm.AddROIUserParm CurRegion, myparm.Abbrev, _
+        myparm.AddROIUserParm curRegion, myparm.Abbrev, _
             myparm.CorrelationType, myparm.SimulationVar, myparm.RegressionVar
       End If
     Next ParmCnter
     For row = 1 To lstReturnPeriods.RightCount
       Set MyDepVar = New nssDepVar
-      MyDepVar.Add True, CurRegion, lstReturnPeriods.RightItem(row - 1)
+      MyDepVar.Add True, curRegion, lstReturnPeriods.RightItem(row - 1)
     Next row
   Next regionCnter
 NoChanges:
@@ -866,7 +866,7 @@ Private Sub grdROIParms_CommitChange(ChangeFromRow As Long, ChangeToRow As Long,
   Dim str$, statTypeCode$
   Dim myparm As nssParameter
   
-  Set myparm = CurRegion.ROIParameters(ChangeFromRow)
+  Set myparm = curRegion.ROIParameters(ChangeFromRow)
   'Adjust appropriate columns in row when a field is edited
   Select Case ChangeFromCol
     Case 0:
@@ -904,10 +904,10 @@ Private Sub grdROIParms_CommitChange(ChangeFromRow As Long, ChangeToRow As Long,
           If .TextMatrix(ChangeFromRow, ChangeFromCol) = SelectStatsOnFile(i).Name Then Exit For
         Next i
         If SSDB.Parameters.KeyExists(SelectStatsOnFile(i).Abbrev) Then
-          Set CurRegion.ROIParameters(ChangeFromRow).Units = SelectStatsOnFile(i).Units
-          CurRegion.ROIParameters(ChangeFromRow).LabelCode = SelectStatsOnFile(i).code
-          CurRegion.ROIParameters(ChangeFromRow).Abbrev = SelectStatsOnFile(i).Abbrev
-          CurRegion.ROIParameters(ChangeFromRow).Name = SelectStatsOnFile(i).Name
+          Set curRegion.ROIParameters(ChangeFromRow).Units = SelectStatsOnFile(i).Units
+          curRegion.ROIParameters(ChangeFromRow).LabelCode = SelectStatsOnFile(i).code
+          curRegion.ROIParameters(ChangeFromRow).Abbrev = SelectStatsOnFile(i).Abbrev
+          curRegion.ROIParameters(ChangeFromRow).Name = SelectStatsOnFile(i).Name
         End If
       End With
   End Select
@@ -915,38 +915,38 @@ Private Sub grdROIParms_CommitChange(ChangeFromRow As Long, ChangeToRow As Long,
   With grdROIParms
     Select Case ChangeFromCol
       Case 0:
-        CurRegion.ROIParameters(ChangeFromRow).Name = .TextMatrix(ChangeFromRow, ChangeFromCol)
+        curRegion.ROIParameters(ChangeFromRow).Name = .TextMatrix(ChangeFromRow, ChangeFromCol)
       Case 1:
         If IsNumeric(.TextMatrix(ChangeFromRow, ChangeFromCol)) Then
-          CurRegion.ROIParameters(ChangeFromRow).SetMin CDbl(.TextMatrix(ChangeFromRow, ChangeFromCol)), False
+          curRegion.ROIParameters(ChangeFromRow).SetMin CDbl(.TextMatrix(ChangeFromRow, ChangeFromCol)), False
         End If
       Case 2:
         If IsNumeric(.TextMatrix(ChangeFromRow, ChangeFromCol)) Then
-          CurRegion.ROIParameters(ChangeFromRow).SetMax .TextMatrix(ChangeFromRow, ChangeFromCol), False
+          curRegion.ROIParameters(ChangeFromRow).SetMax .TextMatrix(ChangeFromRow, ChangeFromCol), False
         End If
       Case 3:
-        CurRegion.ROIParameters(ChangeFromRow).SimulationVar = .TextMatrix(ChangeToRow, ChangeFromCol)
+        curRegion.ROIParameters(ChangeFromRow).SimulationVar = .TextMatrix(ChangeToRow, ChangeFromCol)
       Case 4:
-        CurRegion.ROIParameters(ChangeFromRow).RegressionVar = .TextMatrix(ChangeToRow, ChangeFromCol)
+        curRegion.ROIParameters(ChangeFromRow).RegressionVar = .TextMatrix(ChangeToRow, ChangeFromCol)
         If .TextMatrix(ChangeFromRow, ChangeFromCol) = "False" Then
           .TextMatrix(ChangeFromRow, ChangeFromCol + 1) = ""
         End If
       Case Else
         If IsNumeric(.TextMatrix(ChangeFromRow, 6)) Then
           Select Case LCase(.TextMatrix(ChangeFromRow, 5))
-            Case "positive only": CurRegion.ROIParameters(ChangeFromRow).CorrelationType = .TextMatrix(ChangeFromRow, 6)
+            Case "positive only": curRegion.ROIParameters(ChangeFromRow).CorrelationType = .TextMatrix(ChangeFromRow, 6)
             Case "negative only": 'make sure resulting value is negative
               If .TextMatrix(ChangeFromRow, 6) > 0 Then
-                CurRegion.ROIParameters(ChangeFromRow).CorrelationType = -.TextMatrix(ChangeFromRow, 6)
+                curRegion.ROIParameters(ChangeFromRow).CorrelationType = -.TextMatrix(ChangeFromRow, 6)
               Else
-                CurRegion.ROIParameters(ChangeFromRow).CorrelationType = .TextMatrix(ChangeFromRow, 6)
+                curRegion.ROIParameters(ChangeFromRow).CorrelationType = .TextMatrix(ChangeFromRow, 6)
               End If
-            Case "positive or negative": CurRegion.ROIParameters(ChangeFromRow).CorrelationType = 1000 * Abs(.TextMatrix(ChangeFromRow, 6))
+            Case "positive or negative": curRegion.ROIParameters(ChangeFromRow).CorrelationType = 1000 * Abs(.TextMatrix(ChangeFromRow, 6))
             Case Else
-              CurRegion.ROIParameters(ChangeFromRow).CorrelationType = 0
+              curRegion.ROIParameters(ChangeFromRow).CorrelationType = 0
           End Select
         Else
-          CurRegion.ROIParameters(ChangeFromRow).CorrelationType = 0
+          curRegion.ROIParameters(ChangeFromRow).CorrelationType = 0
         End If
     End Select
   End With
@@ -1009,8 +1009,8 @@ Private Sub PopulateGrid()
   With grdROIParms
     .ClearData
     .Rows = 0
-    For i = 1 To CurRegion.ROIParameters.Count
-      Set myparm = CurRegion.ROIParameters(i)
+    For i = 1 To curRegion.ROIParameters.Count
+      Set myparm = curRegion.ROIParameters(i)
       .TextMatrix(i, 0) = myparm.Name
       .TextMatrix(i, 1) = myparm.GetMin(False)
       .TextMatrix(i, 2) = myparm.GetMax(False)
@@ -1231,7 +1231,7 @@ Private Function MatrixToBinary(FName As String, MatrixType As Integer, stName A
 End Function
 
 Private Sub lstRegions_Click()
-  Set CurRegion = SSDB.state.Regions(lstRegions.List(lstRegions.ListIndex))
+  Set curRegion = SSDB.state.Regions(lstRegions.List(lstRegions.ListIndex))
   PopulateGrid
 End Sub
 
@@ -1242,11 +1242,11 @@ Private Sub rdoFlowType_Click(Index As Integer)
     Set lROIData = SSDB.state.ROIPeakData
   Else
     lFlowType = "Low"
-    Dim lkey As String
-    lkey = CStr(10000 + CInt(SSDB.state.code))
-    Set lROIData = SSDB.States(lkey).ROILowData
+    Dim lKey As String
+    lKey = CStr(10000 + CInt(SSDB.state.code))
+    Set lROIData = SSDB.States(lKey).ROILowData
   End If
-  If lROIData.Stations Is Nothing Then
+  If lROIData.Stations.Count = 0 Then
     MsgBox "There are no ROI " & lFlowType & " station data on file." & vbCrLf & vbCrLf & _
         "You must import station data for " & SSDB.state.Name & vbCrLf & _
         "before specifying the ROI parameters.", , "Need station data"
