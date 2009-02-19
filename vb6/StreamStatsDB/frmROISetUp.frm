@@ -288,7 +288,7 @@ Begin VB.Form frmROISetUp
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   2
+         Rows            =   1
          Cols            =   4
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -526,7 +526,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
-Private lFlowType As Integer '0 - Peak, 1 - Low/Duration
+Private lFlowType As String 'Peak, Low
 Private lROIData As nssROI
 Private CurRegion As nssRegion
 Private SelectStatsOnFile() As ssStatistic
@@ -650,7 +650,7 @@ Private Sub cmdSave_Click()
       str = str & lstReturnPeriods.RightItem(row - 1) & ","
     End If
   Next row
-  If lFlowType = 0 Then 'peak flow ROI, just edit ROI fields on standard State table record
+  If lFlowType = "Peak" Then 'just edit ROI fields on standard State table record
     SSDB.state.Edit str, -chkCF.value, -chkDistance.value, -chkRegress.value, -chkUseRegions.value, atxSimStations.value 'useRegions
   Else 'Low/Dur ROI, add 2nd record (if needed) for state that will contain low/dur ROI info in fields
   
@@ -684,9 +684,9 @@ Private Sub cmdStaData_Click()
   On Error GoTo x
   
   ImportedNewData = False
-  filename = GetSetting("StreamStatsDB", "Defaults", SSDB.state.Abbrev & "_StaDataImportFile")
+  filename = GetSetting("StreamStatsDB", "Defaults", SSDB.state.Abbrev & "_" & lFlowType & "_StaDataImportFile")
   With frmCDLG.CDLG
-    .DialogTitle = "Select the Station Data file for import"
+    .DialogTitle = "Select the Station Data file for ROI " & lFlowType & " station import"
     .filename = filename
     .Filter = "(All Files)|*.*"
     .filterIndex = 1
@@ -697,7 +697,8 @@ Private Sub cmdStaData_Click()
     
     txtStaDataFile.Text = .filename
     If Len(Dir(.filename, vbDirectory)) > 1 Then
-      SaveSetting "StreamStatsDB", "Defaults", SSDB.state.Abbrev & "_StaDataImportFile", .filename
+      SaveSetting "StreamStatsDB", "Defaults", SSDB.state.Abbrev & "_" & lFlowType & "_StaDataImportFile", .filename
+      frmImportStations.Caption = "Import ROI " & lFlowType & " Stations"
       frmImportStations.OpenDataFile .filename
       frmImportStations.Show vbModal, Me
       If ImportedNewData Then
@@ -718,6 +719,7 @@ End Sub
 Private Sub Form_Load()
   Dim i As Long, ParmCnt As Long, regnCnter As Long, height As Long
   Dim statAbbrev As String
+  Dim lmsg As ATCoMessage
 
   Me.Caption = "Add new ROI data for " & SSDB.state.Name
   rdoFlowType(0).value = False
@@ -726,9 +728,21 @@ Private Sub Form_Load()
     rdoFlowType(0).value = True
   ElseIf Not SSDB.state.ROILowData.Stations Is Nothing Then
     rdoFlowType(1).value = True
+  Else
+    i = myMsgBox.Show("There are no ROI data on file for " & SSDB.state.Name & "." & vbCrLf & vbCrLf & _
+                      "Do you want to import ROI station data for Peak flow or Low Flow/Duration?", _
+                      "ROI Setup", "+&Peak", "-&Low")
+    If i = 1 Then lFlowType = "Peak" Else lFlowType = "Low"
+    cmdStaData_Click
+    If ImportedNewData Then  'reset all region data in state
+      SSDB.state.Regions.Clear
+      Set SSDB.state.Regions = Nothing
+    Else
+      Exit Sub
+    End If
   End If
   'Retrieve name of station data import file from registry
-  txtStaDataFile.Text = GetSetting("StreamStatsDB", "Defaults", SSDB.state.Abbrev & "_StaDataImportFile")
+  txtStaDataFile.Text = GetSetting("StreamStatsDB", "Defaults", SSDB.state.Abbrev & "_" & lFlowType & "_StaDataImportFile")
 ImportedData:
   grdROIParms.Rows = 0
   ReDim SelectStatsOnFile(0)
@@ -792,7 +806,8 @@ ImportedData:
   txtRHOFile.Text = GetSetting("StreamStatsDB", "Defaults", SSDB.state.Abbrev & "_RHOImportFile")
   txtMConFile.Text = GetSetting("StreamStatsDB", "Defaults", SSDB.state.Abbrev & "_MConImportFile")
   
-  PopulateReturnPeriods
+  'this is now done by setting the flow type radio option above
+  'PopulateReturnPeriods
   
   With grdROIParms
     .Rows = 0
@@ -820,7 +835,7 @@ Private Sub PopulateReturnPeriods()
     For i = 1 To SSDB.state.StatsOnFile.Count
       StatType = SSDB.state.StatsOnFile(i).statTypeCode
       statAbbrev = SSDB.state.StatsOnFile(i).Abbrev
-      If lFlowType = 0 Then 'only list peakflow stats
+      If lFlowType = "Peak" Then 'only list peakflow stats
         If (StatType = "PFS" And Left(statAbbrev, 1) = "P" And IsNumeric(Mid(statAbbrev, 3))) Then
           .LeftItem(j) = statAbbrev
           .LeftItemData(j) = SSDB.state.StatsOnFile(i).code
@@ -835,7 +850,7 @@ Private Sub PopulateReturnPeriods()
         End If
       End If
     Next i
-    For Each vRetPd In lROIData.FlowStats
+    For Each vRetPd In lROIData.flowstats
       For i = 0 To .LeftCount - 1
         If vRetPd.code = .LeftItem(i) Then
           .MoveRight (i)
@@ -1222,11 +1237,24 @@ End Sub
 
 Private Sub rdoFlowType_Click(Index As Integer)
 
-  lFlowType = Index
   If Index = 0 Then 'peak flow
+    lFlowType = "Peak"
     Set lROIData = SSDB.state.ROIPeakData
   Else
-    Set lROIData = SSDB.state.ROILowData
+    lFlowType = "Low"
+    Dim lkey As String
+    lkey = CStr(10000 + CInt(SSDB.state.code))
+    Set lROIData = SSDB.States(lkey).ROILowData
+  End If
+  If lROIData.Stations Is Nothing Then
+    MsgBox "There are no ROI " & lFlowType & " station data on file." & vbCrLf & vbCrLf & _
+        "You must import station data for " & SSDB.state.Name & vbCrLf & _
+        "before specifying the ROI parameters.", , "Need station data"
+    cmdStaData_Click
+    If ImportedNewData Then  'reset all region data in state
+      SSDB.state.Regions.Clear
+      Set SSDB.state.Regions = Nothing
+    End If
   End If
   PopulateReturnPeriods
 
