@@ -288,7 +288,7 @@ Begin VB.Form frmROISetUp
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   2
+         Rows            =   1
          Cols            =   4
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -763,30 +763,25 @@ ImportedData:
     End Select
   Next ParmCnt
 
-  'set number of similar stations to use
-  If lROIData.SimStations > 0 Then atxSimStations.value = lROIData.SimStations
-  'Select appropriate check boxes
-  If lROIData.Distance Then chkDistance.value = 1 Else chkDistance.value = 0
-  If lROIData.ClimateFactor Then chkCF.value = 1 Else chkCF.value = 0
-  If lROIData.Regress Then chkRegress.value = 1 Else chkRegress.value = 0
-  If lROIData.UseRegions Then chkUseRegions.value = 1 Else chkUseRegions.value = 0
+  PopulateParms
 
   'Fill in ROI regions, if there are any
-  For regnCnter = 1 To SSDB.state.Regions.Count
-    If SSDB.state.Regions(regnCnter).ROIRegnID > 0 Then
-      If height = 0 Then
-        height = 255
-      Else
-        height = height + 195
-      End If
-      lstRegions.AddItem SSDB.state.Regions(regnCnter).Name
-      ExistingRegions.Add SSDB.state.Regions(regnCnter)
-    End If
-  Next regnCnter
-  If height > 1815 Then height = 1815
+  PopulateRegions
+'  For regnCnter = 1 To SSDB.state.Regions.Count
+'    If SSDB.state.Regions(regnCnter).ROIRegnID > 0 Then
+'      If height = 0 Then
+'        height = 255
+'      Else
+'        height = height + 195
+'      End If
+'      lstRegions.AddItem SSDB.state.Regions(regnCnter).Name
+'      ExistingRegions.Add SSDB.state.Regions(regnCnter)
+'    End If
+'  Next regnCnter
+'  If height > 1815 Then height = 1815
   If lstRegions.ListCount > 0 Then
     ImportedNewData = True
-    lstRegions.height = height
+'    lstRegions.height = height
     lstRegions.Selected(0) = True
   Else
     lstRegions.height = 255
@@ -819,6 +814,18 @@ ImportedData:
   End With
   lstRegions_Click
   
+End Sub
+
+Private Sub PopulateParms()
+
+  'set number of similar stations to use
+  If lROIData.SimStations > 0 Then atxSimStations.value = lROIData.SimStations
+  'Select appropriate check boxes
+  If lROIData.Distance Then chkDistance.value = 1 Else chkDistance.value = 0
+  If lROIData.ClimateFactor Then chkCF.value = 1 Else chkCF.value = 0
+  If lROIData.Regress Then chkRegress.value = 1 Else chkRegress.value = 0
+  If lROIData.UseRegions Then chkUseRegions.value = 1 Else chkUseRegions.value = 0
+
 End Sub
 
 Private Sub PopulateReturnPeriods()
@@ -858,6 +865,22 @@ Private Sub PopulateReturnPeriods()
       Next i
     Next vRetPd
   End With
+End Sub
+
+Private Sub PopulateRegions()
+
+  Dim i As Integer
+
+  lstRegions.Clear
+
+  For i = 1 To SSDB.state.Regions.Count
+    If (lFlowType = "Peak" And SSDB.state.Regions(i).ROIRegnID > 0) Or _
+       (lFlowType = "Low" And SSDB.state.Regions(i).ROIRegnID < 0) Then
+      lstRegions.AddItem SSDB.state.Regions(i).Name
+      ExistingRegions.Add SSDB.state.Regions(i)
+    End If
+  Next i
+
 End Sub
 
 Private Sub grdROIParms_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, _
@@ -1256,6 +1279,10 @@ Private Sub rdoFlowType_Click(Index As Integer)
       Set SSDB.state.Regions = Nothing
     End If
   End If
+  PopulateParms
+  PopulateRegions
   PopulateReturnPeriods
-
+  lstRegions.Selected(0) = True
+  lstRegions_Click
+  
 End Sub

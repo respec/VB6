@@ -232,7 +232,7 @@ Public Property Let DistrictCode(ByVal newValue As String)
   pDistrictCode = newValue
 End Property
 
-Public Sub Add(ByRef NewValues() As String, StaIndex As Long, _
+Public Sub Add(ByRef NewValues() As String, ByVal StaIndex As Long, _
                Optional ImportFlg As Long, Optional ROIRegionID As Long = 0)
   Dim myRec As Recordset
   Dim fld&, ROIIndex As Long
