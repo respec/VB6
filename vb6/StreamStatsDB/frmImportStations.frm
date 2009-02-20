@@ -86,7 +86,7 @@ Begin VB.Form frmImportStations
       AllowEditHeader =   0   'False
       AllowLoad       =   0   'False
       AllowSorting    =   0   'False
-      Rows            =   86
+      Rows            =   87
       Cols            =   2
       ColWidthMinimum =   300
       gridFontBold    =   0   'False
@@ -651,7 +651,7 @@ Stat:
         For roiRegnCount = 1 To UBound(ROIImportRegnIDs)
           Set myRegion = New nssRegion
           Set myRegion.DB = SSDB
-          If FlowType = 1 Then 'peak
+          If FlowType = 0 Then 'peak
             myRegion.Add FlowType, ROIImportRegnNames(roiRegnCount), False, 0, 0, ROIImportRegnIDs(roiRegnCount), True
           Else 'low, negative region ID indicates low/duration ROI region
             myRegion.Add FlowType, ROIImportRegnNames(roiRegnCount), False, 0, 0, -ROIImportRegnIDs(roiRegnCount), True

@@ -147,11 +147,17 @@ Public Sub PopulateStations()
 '    sql = "SELECT STATION.* FROM STATION " & _
 '        "WHERE STATION.StateCode='" & Me.code & _
 '        "' ORDER BY STATION.ROI;"
-    
-    sql = "SELECT STATION.* " & _
-          "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
-          "WHERE [StationState].[StateCode]='" & StateCode & "' " & _
-          "AND [StationState].[ROI]>0 ORDER BY [StationState].[ROI];"
+    If StateCode > 10000 Then 'low flow ROI stations
+      sql = "SELECT STATION.* " & _
+            "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
+            "WHERE [StationState].[StateCode]='" & Right(StateCode, 2) & "' " & _
+            "AND [StationState].[ROI]>0 AND [StationState].ROIRegionID<0 ORDER BY [StationState].[ROI];"
+    Else
+      sql = "SELECT STATION.* " & _
+            "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
+            "WHERE [StationState].[StateCode]='" & StateCode & "' " & _
+            "AND [StationState].[ROI]>0 ORDER BY [StationState].[ROI];"
+    End If
     Set stationRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
     While Not stationRec.EOF
       Set newStation = New ssStation
