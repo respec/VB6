@@ -196,7 +196,8 @@ Private Sub MergeStatLabels()
           '.Fields("StatisticTypeID") = vStatLabel.GetStatTypeID(vStatLabel.TypeName)
           'THUS - just use ID from current StatType
           'only question is whether this will handle a newly added StatType (code just above this loop)
-          .Fields("StatisticTypeID") = Adding.StationTypes(i).id
+          '.Fields("StatisticTypeID") = Adding.StationTypes(i).id
+          .Fields("StatisticTypeID") = Adding.StatisticTypes(i).id
           .Fields("StatisticTypeCode") = vStatLabel.TypeCode
           .Fields("StatLabel") = vStatLabel.Code
           .Fields("StatisticLabel") = vStatLabel.Name
@@ -232,10 +233,12 @@ Private Sub MergeStations()
   Dim myMsgBox As New ATCoMessage
   Dim rsp As Long, Ind As Long, ImportFg As Long
   Dim AddIt As Boolean
+  Dim lExists As Boolean
 
   rsp = 0
   For Each vStation In Adding.State.Stations
     AddIt = False 'assume not adding station
+    lExists = False 'assume station does not exist
     Set Stn = vStation
     If Len(Stn.id) = 7 Then 'add preceeding 0 to make consistent with 8 digit ids
       StnID = "0" & Stn.id
@@ -246,14 +249,16 @@ Private Sub MergeStations()
     sql = "SELECT * FROM [StationState] WHERE StaID='" & StnID & "'"
     Set myRec = Master.DB.OpenRecordset(sql, dbOpenDynaset)
     With myRec
-      If .RecordCount > 0 Then 'station exists
+      If .RecordCount > 0 Then 'station exists, check for this state
         .FindFirst "StateCode='" & Master.State.Code & "'"
-        If .NoMatch Then 'add to station state table
+        If .NoMatch Then 'station doesn't exist for this state, add to station state table
           .AddNew
           .Fields("StaID") = StnID
           .Fields("StateCode") = Master.State.Code
           .Fields("ROI") = Stn.ROIIndex
           .Update
+        Else 'station exists for this state
+          lExists = True
         End If
         'see what user wants to do
         If rsp = 0 Then
@@ -292,7 +297,7 @@ Private Sub MergeStations()
         End If
         Stn.id = StnID 'update to 8-digit name for adding/editing stats
         Set Stn.DB = Master 'change to update master
-        If .RecordCount > 0 Then 'edit station
+        If lExists Then 'edit station
           Stn.Edit vals, 1
         Else 'add station
           If Stn.IsROI Then
