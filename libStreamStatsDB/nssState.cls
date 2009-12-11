@@ -363,7 +363,9 @@ Private Sub PopulateStations()
         End If
         .IsNew = False
       End With
-      pStations.Add newStation, newStation.ID
+      'NOTE: This conditional handles the issue of having the same station twice
+      '      for a state that has both High and Low flow ROI apps; PRH, 7/2009
+      If Not pStations.KeyExists(newStation.ID) Then pStations.Add newStation, newStation.ID
       Set newStation = Nothing
       stationRec.MoveNext
     Wend

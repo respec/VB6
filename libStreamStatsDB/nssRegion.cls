@@ -450,7 +450,7 @@ Public Function Add(ByVal RegType As Long, ByVal RegName As String, ByVal Urban 
     !RegionName = RegName
     !Urban = Urban
     !UrbanNeedsRural = -RuralInput
-    !ROI = ROIRegnID
+    !ROIRegionID = ROIRegnID
     !LowFlow = lowFlowID
     !PredInt = -PredInt
     .Update

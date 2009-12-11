@@ -89,6 +89,7 @@ End Property
 Private Sub PopulateStates()
   Dim newState As nssState
   Dim lROIData As nssROI
+  Dim lCode As String
   Dim myRec As Recordset
   Dim sql$
   
@@ -97,7 +98,7 @@ Private Sub PopulateStates()
   'builds fastCollection of state objects
   sql = "SELECT STATES.* FROM [STATES] " & _
         "WHERE StateCode <> '00' " & _
-        "ORDER BY StateCode;"
+        "ORDER BY Len(StateCode), StateCode;"
   Set myRec = pnssDB.OpenRecordset(sql, dbOpenForwardOnly)
   While Not myRec.EOF
     Set newState = New nssState
@@ -108,19 +109,30 @@ Private Sub PopulateStates()
       .Abbrev = myRec.Fields("St")
       .Code = myRec.Fields("StateCode")
       .Metric = myRec.Fields("Metric")
-      lROIData.StateCode = .Code
       Set lROIData.DB = Me
+      lROIData.StateCode = .Code
       lROIData.ClimateFactor = myRec.Fields("ROIClimateFactor")
       lROIData.Distance = myRec.Fields("ROIDistance")
       lROIData.Regress = myRec.Fields("ROIBackStepRegression")
       lROIData.UseRegions = myRec.Fields("ROIRegions")
       lROIData.SimStations = myRec.Fields("ROISimStations")
-      If CInt(.Code) > 10000 Then 'low flow ROI data
-        Set .ROILowData = lROIData
-      Else
-        Set .ROIPeakData = lROIData
+      lCode = Right(.Code, 2)
+      If States.KeyExists(lCode) Then
+        'just add other ROI data from this 2nd occurrence
+        If CInt(.Code) > 10000 Then
+          Set States(lCode).ROILowData = lROIData
+        Else
+          Set States(lCode).ROIPeakData = lROIData
+        End If
+      Else 'add state (and this ROI data) to collection
+        If CInt(.Code) > 10000 Then 'low flow ROI data
+          .Code = lCode
+          Set .ROILowData = lROIData
+        Else
+          Set .ROIPeakData = lROIData
+        End If
+        States.Add newState, lCode
       End If
-      States.Add newState, .Code
     End With
     Set newState = Nothing
     myRec.MoveNext

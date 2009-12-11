@@ -414,7 +414,7 @@ AddFlows:
     Next
     'include label for combined results
     retval = retval & Scenario.Name & " - Area-Averaged Estimates" & vbCrLf
-  Else
+  ElseIf Not Scenario.ROI Then
     retval = retval & BuildEquations(Scenario)
   End If
   retval = retval & Scenario.EstimateString & vbCrLf & vbCrLf & vbCrLf

@@ -36,6 +36,7 @@ Private pCF As Variant
 Private pParmOutOfRange As Boolean
 Private pErrorDescription As String
 Private pExtrapolated As Boolean
+Private pZeroAdjusted() As Boolean
 
 Public Function ErrorDescription() As String
   ErrorDescription = pErrorDescription
@@ -674,7 +675,7 @@ Public Function Discharges() As Double()
   On Error GoTo ErrHand
   
   If ROI Then
-    IntervalDischarge = ComputeROIdischarge(Me, pSaveEquivYears, pSaveStdError, pSaveStdErrorPlus, pSavePredInts)
+    IntervalDischarge = ComputeROIdischarge(Me, pSaveEquivYears, pSaveStdError, pSaveStdErrorPlus, pSavePredInts, pZeroAdjusted)
   Else
   
     If pUserRegions.Count = 0 Then
@@ -1075,6 +1076,7 @@ Private Sub Class_Initialize()
   Set pWeight = New nssWeight
   ReDim pSaveEquivYears(0)
   ReDim pSaveStdError(0)
+  ReDim pZeroAdjusted(0)
   pExtrapolated = False
 End Sub
 
@@ -1199,8 +1201,13 @@ Public Function EstimateString() As String
     If Me.ROI Then
 '      txt = "Recurrence     Peak,   Pred. Intervals   Standard Error    Equivalent" & vbCrLf _
 '          & "Interval, yrs   cfs       Low     High     (-%)    (+%)    Years"
-      txt = "              Value,   Pred. Intervals   Standard Error    Equivalent" & vbCrLf _
-          & "Statistic  " & lUnitStr & "      Low     High     (-%)    (+%)    Years"
+      If Me.LowFlow And Me.Project.State.Code = "47" Then
+        txt = "              Value,   Pred. Intervals   Adjusted for" & vbCrLf _
+            & "Statistic  " & lUnitStr & "      Low     High   Prob. of Zero"
+      Else
+        txt = "              Value,   Pred. Intervals   Standard Error    Equivalent" & vbCrLf _
+            & "Statistic  " & lUnitStr & "      Low     High     (-%)    (+%)    Years"
+      End If
       Flows = Me.Discharges
       StdErrorPlus = Me.StdErrorPlus
       StdError = Me.StdError
@@ -1275,8 +1282,15 @@ Public Function EstimateString() As String
     ReDim YearsText(nIntervals)
     YearsOn = False 'assume no equivalent years to display
     For Index = 1 To nIntervals
-      
-      IntervalText(Index) = Me.UserRegions(1).Region.DepVars(Index).Name
+      If Me.ROI Then
+        If Me.LowFlow Then
+          IntervalText(Index) = Me.UserRegions(1).Region.State.ROILowData.FlowStats(Index).Code
+        Else
+          IntervalText(Index) = Me.UserRegions(1).Region.State.ROIPeakData.FlowStats(Index).Code
+        End If
+      Else 'get name from DepVars collection populated from database query
+        IntervalText(Index) = Me.UserRegions(1).Region.DepVars(Index).Name
+      End If
       If IsNumeric(IntervalText(Index)) Then
         IntervalText(Index) = SignificantDigits(Me.UserRegions(1).Region.DepVars(Index).Name, 3)
       ElseIf Len(IntervalText(Index)) < 7 Then
@@ -1350,11 +1364,19 @@ Public Function EstimateString() As String
     End If
     For Index = 1 To nIntervals
       If Me.UsePredInts And Me.Weight.WeightType = 0 Then
-        txt = txt & vbCrLf & IntervalText(Index) & "  " _
-                           & FlowText(Index) _
-                           & PredIntsText(Index) _
-                           & PredIntsText2(Index) & Space(2) _
-                           & StdErrText(Index)
+        If Me.LowFlow And Me.Project.State.Code = "47" Then
+          txt = txt & vbCrLf & IntervalText(Index) & "  " _
+                             & FlowText(Index) _
+                             & PredIntsText(Index) _
+                             & PredIntsText2(Index) & Space(5) _
+                             & pZeroAdjusted(Index)
+        Else
+          txt = txt & vbCrLf & IntervalText(Index) & "  " _
+                             & FlowText(Index) _
+                             & PredIntsText(Index) _
+                             & PredIntsText2(Index) & Space(2) _
+                             & StdErrText(Index)
+        End If
       Else
         txt = txt & vbCrLf & IntervalText(Index) & "  " _
                            & FlowText(Index) _
