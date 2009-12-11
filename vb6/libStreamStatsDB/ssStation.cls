@@ -35,6 +35,7 @@ Private pRegion As nssRegion
 Private pDirections As String
 Private pIsROI As Boolean
 Private pROIIndex As Long
+Private pROIRegionID As Long
 Private pIsNew As Boolean
 'Private pHasData As Boolean
 Private pStateCode As String
@@ -202,6 +203,13 @@ Public Property Get ROIIndex() As Long
 End Property
 Public Property Let ROIIndex(ByVal newValue As Long)
   pROIIndex = newValue
+End Property
+
+Public Property Get ROIRegionID() As Long
+  ROIRegionID = pROIRegionID
+End Property
+Public Property Let ROIRegionID(ByVal newValue As Long)
+  pROIRegionID = newValue
 End Property
 
 Public Property Get IsNew() As Boolean
@@ -490,6 +498,9 @@ Private Function GetStationTypeCode(TypeName As String) As String
   Set myRec = pDB.DB.OpenRecordset("STATIONTYPE", dbOpenSnapshot)
   With myRec
     .FindFirst "StationType='" & TypeName & "'"
+    If .NoMatch Then 'try matching StationTypeCode field
+      .FindFirst "StationTypeCode='" & TypeName & "'"
+    End If
     If Not .NoMatch Then
       GetStationTypeCode = .Fields("StationTypeCode")
     End If

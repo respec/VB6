@@ -147,16 +147,16 @@ Public Sub PopulateStations()
 '    sql = "SELECT STATION.* FROM STATION " & _
 '        "WHERE STATION.StateCode='" & Me.code & _
 '        "' ORDER BY STATION.ROI;"
-    If StateCode > 10000 Then 'low flow ROI stations
-      sql = "SELECT STATION.* " & _
+    If CInt(StateCode) > 10000 Then 'low flow ROI stations
+      sql = "SELECT STATION.*, StationState.ROIRegionID " & _
             "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
             "WHERE [StationState].[StateCode]='" & Right(StateCode, 2) & "' " & _
             "AND [StationState].[ROI]>0 AND [StationState].ROIRegionID<0 ORDER BY [StationState].[ROI];"
     Else
-      sql = "SELECT STATION.* " & _
+      sql = "SELECT STATION.*, StationState.ROIRegionID " & _
             "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
             "WHERE [StationState].[StateCode]='" & StateCode & "' " & _
-            "AND [StationState].[ROI]>0 ORDER BY [StationState].[ROI];"
+            "AND [StationState].[ROI]>0 AND [StationState].ROIRegionID>=0 ORDER BY [StationState].[ROI];"
     End If
     Set stationRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
     While Not stationRec.EOF
@@ -178,6 +178,7 @@ Public Sub PopulateStations()
         If Not IsNull(stationRec("CountyCode")) Then .CountyCode = stationRec("CountyCode")
         If Not IsNull(stationRec("MCDCode")) Then .MCDCode = stationRec("MCDCode")
         If Not IsNull(stationRec("Directions")) Then .Directions = stationRec("Directions")
+        If Not IsNull(stationRec("ROIRegionID")) Then .ROIRegionID = stationRec("ROIRegionID")
         'If Not IsNull(stationRec("HasData")) Then .HasData = stationRec("HasData")
         'Set .State = Me
         .IsNew = False
@@ -201,7 +202,14 @@ Private Sub PopulateFlowStats()
   Dim newParm As ssStatLabel
   Dim myRec As Recordset, statRec As Recordset
   Dim sql$, str$, thisRetPd$
-  
+  Dim lStatFound As Boolean
+  Dim lType As String
+  Dim lTypes As String
+  Dim PeakTypes As String
+  PeakTypes = "PFS"
+  Dim LFFDTypes As String
+  LFFDTypes = "LFS,FDS,AFS,SFS,MFS,FPS"
+
   Set pFlowStats = New FastCollection
   If pDB Is Nothing Then
     ssMessageBox "Cannot read ROIPeakFlows" & vbCr & "DB not set."
@@ -214,14 +222,34 @@ Private Sub PopulateFlowStats()
         str = myRec.Fields("ROIPeakFlows")
     'Match StatisticLabelCodes with statistics
     Set statRec = pDB.DB.OpenRecordset("STATLABEL")
-    Set Me.DB.StatType = Me.DB.StatisticTypes("PFS")
     While Not Len(Trim(str)) = 0
       thisRetPd = StrSplit(str, ",", "")
-      Set newParm = Me.DB.StatType.StatLabels(thisRetPd)
-      pFlowStats.Add newParm, newParm.Code
-      Set newParm = Nothing
-      statRec.MoveNext
+      If CInt(Me.StateCode) < 10000 Then 'loop thru peak types
+        lTypes = PeakTypes
+      Else
+        lTypes = LFFDTypes
+      End If
+      lStatFound = False
+      While Not lStatFound And Len(lTypes) > 0
+        lType = StrSplit(lTypes, ",", "")
+        Set Me.DB.StatType = Me.DB.StatisticTypes(lType)
+        If Me.DB.StatType.StatLabels.KeyExists(thisRetPd) Then
+          Set newParm = Me.DB.StatType.StatLabels(thisRetPd)
+          pFlowStats.Add newParm, newParm.Code
+          Set newParm = Nothing
+          lStatFound = True
+        End If
+      Wend
     Wend
+      
+'      Set Me.DB.StatType = Me.DB.StatisticTypes("PFS")
+'      While Not Len(Trim(str)) = 0
+'        thisRetPd = StrSplit(str, ",", "")
+'        Set newParm = Me.DB.StatType.StatLabels(thisRetPd)
+'        pFlowStats.Add newParm, newParm.Code
+'        Set newParm = Nothing
+'        statRec.MoveNext
+'      Wend
     statRec.Close
     myRec.Close
   End If

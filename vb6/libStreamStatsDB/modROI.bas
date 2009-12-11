@@ -2,6 +2,8 @@ Attribute VB_Name = "modROI"
 Option Explicit
 
 Private UserRegressVars() As Single  'user-entered values, not including lat/long
+Private RegVars() As Single     'gaged station values used in regression analysis
+Private Flows() As Single       'Flow values for each station
 Private RegVarCnt As Long       'number of elements used in regression
 Private StaLats() As Single     'Station latitudes
 Private StaLngs() As Single     'Station longitudes
@@ -38,7 +40,8 @@ Private Bhat(MaxInd, 1) As Single
 Private Gamasq!, Atse!, Atscov!
 
 Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Double, _
-                stdErrMinus() As Double, stdErrPlus() As Double, PredInts() As Double) As Double()
+                stdErrMinus() As Double, stdErrPlus() As Double, _
+                PredInts() As Double, ZeroAdjusted() As Boolean) As Double()
 'Program to estimate flood frequency in North Carolina
   Dim i&, j&, k&, iStep&, iSave&, roiRegion&, dimDist&, dimCF&
   Dim RHO As Single, ss As Single, Years As Single, yhat As Single, ysav As Single
@@ -55,9 +58,10 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   Dim myDB As nssDatabase
   Dim Scenario As nssScenario
   Dim lROIData As nssROI
-  
+
   Dim Lat As Double           'Ungaged station latitude
   Dim Lng As Double           'Ungaged station longitude
+  Dim lArea As Double
   Dim StaName$                'ungaged station name
   Dim RegName$                'name of user-selected region
   Dim UserSimVars() As Single 'ungaged station values used in similarity calcs
@@ -65,13 +69,11 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   Dim StaCnt As Long          'number of stations in state
   Dim SimVarCnt As Long       'number of parameters used in similarity calcs
   Dim StaIDs() As String      'Station ID numbers
-  Dim RegVars() As Single     'gaged station values used in regression analysis
   Dim SimVars() As Single     'gaged station values used in similarity calcs
   Dim SimVarSDs() As Single   'Standard Deviation of SimVars
   Dim Distance() As Single    'dim(StaCnt) "distance" measurement calculated to ungaged station
   Dim RegParms As FastCollection 'nssParameters
   Dim SimParms As FastCollection 'nssParameters
-  Dim Flows() As Single       'Flow values for each station
 
   Set Scenario = Incoming
   Set uRegion = Scenario.UserRegions(1)
@@ -109,7 +111,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
       SimVarCnt = SimVarCnt + 1
     End If
     If tmpParm.RegressionVar Then
-      If lROIData.StateCode = "47" Then
+      If Right(lROIData.StateCode, 2) = "47" Then
         'may need to make adjustments to TN ROI parameters
         If tmpParm.LabelCode = 7 Then
           'change Latitude to TN Physiographic factor
@@ -151,14 +153,19 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   ReDim stdErrMinus(NumPeaks) 'standard error of estimation (low)
   ReDim stdErrPlus(NumPeaks)  'standard error of estimation (high)
   ReDim PredInts(2, NumPeaks) 'low/high 90% prediction intervals
+  ReDim ZeroAdjusted(NumPeaks) 'indicates whether values adjusted for zero-flow probability
   ReDim PkLab(NumPeaks)
   ReDim Ak(NumPeaks)
   For i = 1 To NumPeaks
-    j = InStr(lROIData.FlowStats(i).Name, "_")
-    If j > 0 Then
-      str = Left(lROIData.FlowStats(i).Name, j - 1)
-      PkLab(i) = PkLabColl(str)
-      Ak(i) = AkColl(str)
+    If Scenario.LowFlow Then
+      PkLab(i) = ReplaceString(lROIData.FlowStats(i).Name, "_", " ")
+    Else 'use predefined peak labels
+      j = InStr(lROIData.FlowStats(i).Name, "_")
+      If j > 0 Then
+        str = Left(lROIData.FlowStats(i).Name, j - 1)
+        PkLab(i) = PkLabColl(str)
+        Ak(i) = AkColl(str)
+      End If
     End If
   Next i
   
@@ -213,7 +220,10 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     StaIDs(i) = myStation.ID
     StaLats(i) = myStation.Latitude
     StaLngs(i) = myStation.Longitude
-    If myStation.Statistics.KeyExists("25") Then
+    If myStation.ROIRegionID <> 0 Then
+      'ROI Region should come from Station State, but older ROIs use the Parm in the next "elseif"
+      roiRegions(i) = myStation.ROIRegionID
+    ElseIf myStation.Statistics.KeyExists("25") Then 'ROI region
       roiRegions(i) = myStation.Statistics("25").Value
     Else 'just assign to user region
       roiRegions(i) = roiRegion
@@ -228,7 +238,12 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     'Read in current station's stat values used in similarity calcs
     For Each vParm In SimParms
       j = j + 1
-      SimVars(i, j) = Log10(myStation.Statistics(CStr(vParm.LabelCode)).Value)
+      '******* temporary CONDITIONAL - BE SURE TO REMOVE ***********
+      If myStation.Statistics.KeyExists(CStr(vParm.LabelCode)) Then
+        SimVars(i, j) = Log10(myStation.Statistics(CStr(vParm.LabelCode)).Value)
+      Else
+        MsgBox "for " & myStation.ID & " no statlabel=" & vParm.LabelCode
+      End If
       'Keep running tally of vars for ensuing stat calcs
       Sum(j) = Sum(j) + SimVars(i, j)
     Next vParm
@@ -236,7 +251,12 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     'Read in current station's stat values used in regression analysis
     For Each vParm In RegParms
       j = j + 1
-      RegVars(i, j) = Log10(myStation.Statistics(CStr(vParm.LabelCode)).Value)
+      '******* temporary CONDITIONAL - BE SURE TO REMOVE ***********
+      If myStation.Statistics.KeyExists(CStr(vParm.LabelCode)) Then
+        RegVars(i, j) = Log10(myStation.Statistics(CStr(vParm.LabelCode)).Value)
+      Else
+        RegVars(i, j) = RegVars(i - 1, j)
+      End If
     Next vParm
     If lROIData.Distance Then 'read in distance from site to station
       SimVars(i, dimDist) = TASKER_DISTANCE(Lat, StaLats(i), Lng, StaLngs(i))
@@ -245,7 +265,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
       Sum(dimDist) = Sum(dimDist) + SimVars(i, dimDist)
     End If
     If lROIData.ClimateFactor Then 'read in climate factors
-      If lROIData.StateCode = "47" Then
+      If Right(lROIData.StateCode, 2) = "47" Then
         'TN ROI uses its own CF2 values instead of traditional CF
         SimVars(i, dimCF) = Log10(myStation.Statistics("1195").Value)
       Else
@@ -253,30 +273,44 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
       End If
       Sum(dimCF) = Sum(dimCF) + SimVars(i, dimCF)
     End If
-    'Read in SD across flows for each station, or calc if not stored
-    If myStation.Statistics.IndexFromKey("227") > 0 Then 'SD is in DB
-      FlowSDs(i) = myStation.Statistics("227").Value
-    Else
-      'Calc estimate of SD of peaks if not kept on DB
-      FlowSDs(i) = (Flows(i, 6) - Flows(i, 1)) / Ak(6)
+    If Not Scenario.LowFlow Then
+      'Read in SD across flows for each station, or calc if not stored
+      If myStation.Statistics.IndexFromKey("227") > 0 Then 'SD is in DB
+        FlowSDs(i) = myStation.Statistics("227").Value
+      Else
+        'Calc estimate of SD of peaks if not kept on DB
+        FlowSDs(i) = (Flows(i, 6) - Flows(i, 1)) / Ak(6)
+      End If
     End If
   Next i
 
-  'Compute St. Dev. of independent variables used in similarity calcs
-  For i = 1 To SimVarCnt
-    SimVarSDs(i) = Sum(i) / StaCnt  'actually calcing avg of variable here
-    Sum(i) = 0
-    For j = 1 To StaCnt
-      Sum(i) = Sum(i) + (SimVars(j, i) - SimVarSDs(i)) ^ 2
-    Next j
-    SimVarSDs(i) = (Sum(i) / (StaCnt - 1)) ^ 0.5
-  Next i
+  If lROIData.StateCode = "10047" Then
+    'TEMPORARY CODE TO EMULATE TN LF FORTRAN CODE
+    If Abs(roiRegion) = 1 Then 'central+east
+      SimVarSDs(1) = 0.32
+      SimVarSDs(2) = 0.12
+      SimVarSDs(3) = 0.008
+    Else 'west
+      SimVarSDs(1) = 0.348
+      SimVarSDs(2) = 0.2
+      SimVarSDs(3) = 0.01
+    End If
+  Else 'Compute St. Dev. of independent variables used in similarity calcs
+    For i = 1 To SimVarCnt
+      SimVarSDs(i) = Sum(i) / StaCnt  'actually calcing avg of variable here
+      Sum(i) = 0
+      For j = 1 To StaCnt
+        Sum(i) = Sum(i) + (SimVars(j, i) - SimVarSDs(i)) ^ 2
+      Next j
+      SimVarSDs(i) = (Sum(i) / (StaCnt - 1)) ^ 0.5
+    Next i
+  End If
 
   'Compute climate factor from lat and long coordinates
   icall = 0
   If lROIData.ClimateFactor Then
     CFX icall, Lat, Lng  'calculates climate factor at user's site
-    If lROIData.StateCode = "47" Then
+    If Right(lROIData.StateCode, 2) = "47" Then
       If Cf2 > 0 Then UserSimVars(dimCF) = Log10(CDbl(Cf2))
     ElseIf Cf25 > 0 Then UserSimVars(dimCF) = Log10(CDbl(Cf25))
     End If
@@ -316,16 +350,17 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   str = str & vbCrLf & "Data used for ROI Method:" & vbCrLf
   Print #OutFile, str
 
-  str = "StaID" & vbTab _
+  str = "StaID" & vbTab & vbTab _
         & "Dist" & vbTab _
         & "LAT" & vbTab _
         & "LNG" & vbTab
+  For Each vParm In SimParms
+    str = str & "LOG(" & vParm.Abbrev & ")" & vbTab
+    'str = str & vParm.Abbrev & vbTab
+  Next vParm
   For i = 1 To NumPeaks
     str = str & "LOG(" & lROIData.FlowStats(i).Code & ")" & vbTab
   Next i
-  For Each vParm In SimParms
-    str = str & "LOG(" & vParm.Abbrev & ")" & vbTab
-  Next vParm
   If lROIData.Distance Then 'write distance header
     str = str & "Distance" & vbTab
   End If
@@ -337,33 +372,61 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   'loop thru sites - calc avg StdDev for peak flows across all sites
   For i = 1 To Nsites
     'write values for this station to outfile
-    str = StaIDs(INDX(i)) & vbTab & Distance(INDX(i)) & vbTab & Format(StaLats(INDX(i)), "#0.0000") & vbTab & Format(StaLngs(INDX(i)), "#0.0000") & vbTab
-    For j = 1 To NumPeaks
-      str = str & Format(Flows(INDX(i), j), "#0.0000") & vbTab
-    Next j
+    str = StaIDs(INDX(i)) & vbTab & Format(Distance(INDX(i)), "#0.00") & vbTab & Format(StaLats(INDX(i)), "#0.0") & vbTab & Format(StaLngs(INDX(i)), "#0.0") & vbTab
     For j = 1 To SimVarCnt
-      str = str & Format(SimVars(INDX(i), j), "####0.0000") & vbTab
+      'str = str & Format(10 ^ SimVars(INDX(i), j), "####0.0") & vbTab
+      str = str & Format(SimVars(INDX(i), j), "####0.00") & vbTab
+    Next j
+    For j = 1 To NumPeaks
+      str = str & Format(Flows(INDX(i), j), "#0.000") & vbTab
     Next j
     Print #OutFile, str
     sig = sig + FlowSDs(INDX(i))
   Next i
   sig = sig / Nsites  ' = avg StDev of peak flows across all stations
   
-  If RegParms.KeyExists("CONTDA") Then
-    str = vbCrLf & "area = " & uRegion.UserParms("Contributing_Drainage_Area").GetValue(False)
-  ElseIf RegParms.KeyExists("DRNAREA") Then
-    str = vbCrLf & "area = " & uRegion.UserParms("Drainage_Area").GetValue(False)
-  Else
-    str = ""
-  End If
-  str = vbCrLf & "For " & StaName & str
-  If lROIData.ClimateFactor Then _
-      str = str & "    : cf25 = " & Format(Cf25, "#0.00")
+  i = 1
+  str = vbCrLf
+  For Each vParm In RegParms
+    i = i + 1
+    Set uParm = uRegion.UserParms(vParm.Name)
+    If lROIData.StateCode = "47" Then 'may need to set special parm values for TN ROI peak estimates
+      If vParm.Abbrev = "TNPHYSFAC" Then 'use TN formulae to compute PF
+        If uRegion.Region.ROIRegnID = 1 Then UserRegressVars(i) = -0.213 + 0.0626 * UserRegressVars(2)
+        If uRegion.Region.ROIRegnID = 2 Then UserRegressVars(i) = 0.0168 + 0.0353 * UserRegressVars(2)
+        If uRegion.Region.ROIRegnID = 3 Then UserRegressVars(i) = 0.2319 - 0.0242 * UserRegressVars(2)
+        If uRegion.Region.ROIRegnID = 4 Then UserRegressVars(i) = 0.3044 - 0.1541 * UserRegressVars(2)
+      ElseIf vParm.Abbrev = "TNCLFACT2" Then 'use TN 2-year climate factor
+        UserRegressVars(i) = Log10(CDbl(Cf2))
+      Else
+        UserRegressVars(i) = Log10(uParm.GetValue(pMetric))
+      End If
+    Else
+      UserRegressVars(i) = Log10(uParm.GetValue(pMetric))
+    End If
+    str = str & vParm.Abbrev & " = " & 10 ^ UserRegressVars(i) & vbCrLf
+  Next
+  
+'  If RegParms.KeyExists("CONTDA") Then
+'    str = vbCrLf & "area = " & uRegion.UserParms("Contributing_Drainage_Area").GetValue(False)
+'  ElseIf RegParms.KeyExists("DRNAREA") Then
+'    str = vbCrLf & "area = " & uRegion.UserParms("Drainage_Area").GetValue(False)
+'  Else
+'    str = ""
+'  End If
+'  str = vbCrLf & "For " & StaName & str
+'  If lROIData.ClimateFactor Then
+'    If lROIData.StateCode = "47" Then
+'      str = str & "    : cf2 = " & Format(Cf2, "#0.00")
+'    Else
+'      str = str & "    : cf25 = " & Format(Cf25, "#0.00")
+'    End If
+'  End If
   str = str & vbCrLf & vbCrLf & "RI" & vbTab & " PREDICTED(cfs)" & _
         vbTab & "- SE (%)" & vbTab & "+ SE (%)" & vbTab & "90% PRED INT (cfs)" & vbCrLf
   Print #OutFile, str
         
-  If lROIData.StateCode = "48" Then 'build matrix on the fly for Texas
+  If Right(lROIData.StateCode, 2) = "48" Then 'build matrix on the fly for Texas
     BuildMatrix
   Else 'most states have their own matrix
     Rhoc = Scenario.RHO
@@ -377,12 +440,12 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     For Each vParm In RegParms
       Set uParm = uRegion.UserParms(vParm.Name)
       i = i + 1
-      If lROIData.StateCode = "47" Then 'may need to set special TN parm values
+      If lROIData.StateCode = "47" Then 'may need to set special parm values for TN ROI peak estimates
         If vParm.Abbrev = "TNPHYSFAC" Then 'use TN formulae to compute PF
-          If uRegion.Region.ROIRegnID = 1 Then UserRegressVars(i) = -0.213 + 0.0626 * UserRegressVars(1)
-          If uRegion.Region.ROIRegnID = 2 Then UserRegressVars(i) = 0.0168 + 0.0353 * UserRegressVars(1)
-          If uRegion.Region.ROIRegnID = 3 Then UserRegressVars(i) = 0.2319 - 0.0242 * UserRegressVars(1)
-          If uRegion.Region.ROIRegnID = 4 Then UserRegressVars(i) = 0.3044 - 0.1541 * UserRegressVars(1)
+          If uRegion.Region.ROIRegnID = 1 Then UserRegressVars(i) = -0.213 + 0.0626 * UserRegressVars(2)
+          If uRegion.Region.ROIRegnID = 2 Then UserRegressVars(i) = 0.0168 + 0.0353 * UserRegressVars(2)
+          If uRegion.Region.ROIRegnID = 3 Then UserRegressVars(i) = 0.2319 - 0.0242 * UserRegressVars(2)
+          If uRegion.Region.ROIRegnID = 4 Then UserRegressVars(i) = 0.3044 - 0.1541 * UserRegressVars(2)
         ElseIf vParm.Abbrev = "TNCLFACT2" Then 'use TN 2-year climate factor
           UserRegressVars(i) = Log10(CDbl(Cf2))
         Else
@@ -393,134 +456,144 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
       End If
       Correlation(i) = vParm.CorrelationType
     Next
-    'Reset station parameters in case of backward-step regression
-    For i = 1 To Nsites
-      'build the X matrix
-      X(i, 1) = 1#
-      For j = 2 To RegVarCnt
-        X(i, j) = RegVars(INDX(i), j - 1)
-      Next j
-      'build the Xt-transpose matrix
-      For j = 1 To RegVarCnt
-        Xt(j, i) = X(i, j)
-      Next j
-    Next i
     
-    'Compute regional average standard deviation for each return period
-    Sum(0) = 0#
-    ss = 0#
-    For i = 1 To Nsites
-      Y(i, 1) = Flows(INDX(i), jpeak)
-      Sum(0) = Sum(0) + Y(i, 1)
-      ss = ss + Y(i, 1) ^ 2
-    Next i
-    Yvar = (ss - Sum(0) ^ 2 / Nsites) / (Nsites - 1#)
-    'Compute time sampling error, sta(i), for each site
-    Atse = 0#
-    Atscov = 0#
-    For i = 1 To Nsites
-      For j = 1 To i
-        Years = Mcon(INDX(i), INDX(j)) _
-                / (Mcon(INDX(i), INDX(i)) * Mcon(INDX(j), INDX(j)))
-        If lROIData.StateCode = "48" Then 'use run-time RHO matrix
-          RHO = Rhoc(i, j)
-        Else
-          RHO = Rhoc(INDX(i), INDX(j))
-        End If
-        Cov(i, j) = RHO * sig ^ 2 * (1 + RHO * 0.5 * Ak(jpeak) ^ 2) * Years
-        If Cov(i, j) < 0 Then
-          ssMessageBox "ERROR--Cholesky Decomp requires >= 0", vbCritical, "Bad Value"
-          Exit Function
-        End If
-        Cov(j, i) = Cov(i, j)
-        If (i = j) Then
-          Sta(i) = Cov(i, i)
-          Atse = Atse + Sta(i)
-        Else
-          Atscov = Atscov + Cov(i, j)
-        End If
-      Next j
-    Next i
-    
-    iStep = 0
-Regress:
-    'do regression
-    Secant
-    If lROIData.Regress Then
-      iStep = iStep + 1
+    If lROIData.StateCode = "10047" Then
+      'TN low flow ROI
+      TNLFFD Abs(roiRegion) - 1, jpeak, ZeroAdjusted(jpeak), retval(jpeak), PredInts(1, jpeak), PredInts(2, jpeak)
+      Print #OutFile, PkLab(jpeak) _
+            & vbTab & Format(retval(jpeak), "#####0") _
+            & vbTab & vbTab & Trim(Format(PredInts(1, jpeak), "######0")) _
+            & " - " & Trim(Format(PredInts(2, jpeak), "######0"))
+    Else
+      'Reset station parameters in case of backward-step regression
+      For i = 1 To Nsites
+        'build the X matrix
+        X(i, 1) = 1#
+        For j = 2 To RegVarCnt
+          X(i, j) = RegVars(INDX(i), j - 1)
+        Next j
+        'build the Xt-transpose matrix
+        For j = 1 To RegVarCnt
+          Xt(j, i) = X(i, j)
+        Next j
+      Next i
       
+      'Compute regional average standard deviation for each return period
+      Sum(0) = 0#
+      ss = 0#
+      For i = 1 To Nsites
+        Y(i, 1) = Flows(INDX(i), jpeak)
+        Sum(0) = Sum(0) + Y(i, 1)
+        ss = ss + Y(i, 1) ^ 2
+      Next i
+      Yvar = (ss - Sum(0) ^ 2 / Nsites) / (Nsites - 1#)
+      'Compute time sampling error, sta(i), for each site
+      Atse = 0#
+      Atscov = 0#
+      For i = 1 To Nsites
+        For j = 1 To i
+          Years = Mcon(INDX(i), INDX(j)) _
+                  / (Mcon(INDX(i), INDX(i)) * Mcon(INDX(j), INDX(j)))
+          If Right(lROIData.StateCode, 2) = "48" Then 'use run-time RHO matrix
+            RHO = Rhoc(i, j)
+          Else
+            RHO = Rhoc(INDX(i), INDX(j))
+          End If
+          Cov(i, j) = RHO * sig ^ 2 * (1 + RHO * 0.5 * Ak(jpeak) ^ 2) * Years
+          If Cov(i, j) < 0 Then
+            ssMessageBox "ERROR--Cholesky Decomp requires >= 0", vbCritical, "Bad Value"
+            Exit Function
+          End If
+          Cov(j, i) = Cov(i, j)
+          If (i = j) Then
+            Sta(i) = Cov(i, i)
+            Atse = Atse + Sta(i)
+          Else
+            Atscov = Atscov + Cov(i, j)
+          End If
+        Next j
+      Next i
+      
+      iStep = 0
+Regress:
+      'do regression
+      Secant
+      If lROIData.Regress Then
+        iStep = iStep + 1
+        
+        OutPut iStep, jpeak, yhat, OutFile, retval(jpeak), _
+               stdErrMinus(jpeak), stdErrPlus(jpeak), EquivYears(jpeak), _
+               PredInts(1, jpeak), PredInts(2, jpeak)
+    
+       'Compute T for each Beta in model
+       '   do step-backward by dropping all variables with T < 2,
+       '   which is a p-value of about 0.30 or smaller depending upon
+       '   degrees of freedom on the T-distribution.  Tsave is used to insure
+       '   that in the case where two or more variables have T < 2, then the
+       '   variable having the smallest T is preferentially dropped first.
+        tSave = 2#
+        iSave = 100
+        'Loop through all variables successive to drainage area
+        For i = 2 To RegVarCnt  'check through variables for correlations
+          If Correlation(i) <> 0 Then 'variable has a correlation of some kind
+            sdbeta = XtXinv(i, i) ^ 0.5
+            If Correlation(i) > 100 Then 'pos or negative correlation
+              tbeta = Abs(Bhat(i, 1) / sdbeta)
+              CorrelationLimit = Abs(Correlation(i) / 1000)
+            Else
+              If Correlation(i) < 0 Then
+                tbeta = -Bhat(i, 1) / sdbeta
+              ElseIf Correlation(i) > 0 Then
+                tbeta = Bhat(i, 1) / sdbeta
+              End If
+              CorrelationLimit = Abs(Correlation(i))
+            End If
+            'Besides looking to drop Tbetas less than 2, we also want the smallest
+            'Tbeta less than 2 for each step in the step-wise regression.
+            If tbeta < CorrelationLimit And tbeta < tSave Then
+              tSave = tbeta
+              iSave = i
+            End If
+          End If
+        Next i
+    
+        'Exclude variable with lowest Tbeta, if value is less than 2
+        If iSave = RegVarCnt Then
+          'want to drop last independent variable - ignore last column of X
+          RegVarCnt = RegVarCnt - 1
+          GoTo Regress
+        ElseIf iSave < RegVarCnt Then
+          '# of independent variable decrements by one and shifts
+          RegVarCnt = RegVarCnt - 1
+          'remove dropped variable from X matrix and its transpose
+          For i = 1 To Nsites
+            For j = iSave To RegVarCnt
+              X(i, j) = X(i, j + 1)
+              Xt(j, i) = X(i, j)
+            Next j
+          Next i
+          'Shift ungaged site parameters to account for dropped parameter
+          For j = iSave To RegVarCnt
+            UserRegressVars(j) = UserRegressVars(j + 1)
+            Correlation(j) = Correlation(j + 1)
+          Next j
+          GoTo Regress
+        End If
+      End If
+
+      'output final regression summary
+      iStep = 99
       OutPut iStep, jpeak, yhat, OutFile, retval(jpeak), _
              stdErrMinus(jpeak), stdErrPlus(jpeak), EquivYears(jpeak), _
              PredInts(1, jpeak), PredInts(2, jpeak)
-  
-     'Compute T for each Beta in model
-     '   do step-backward by dropping all variables with T < 2,
-     '   which is a p-value of about 0.30 or smaller depending upon
-     '   degrees of freedom on the T-distribution.  Tsave is used to insure
-     '   that in the case where two or more variables have T < 2, then the
-     '   variable having the smallest T is preferentially dropped first.
-      tSave = 2#
-      iSave = 100
-      'Loop through all variables successive to drainage area
-      For i = 2 To RegVarCnt  'check through variables for correlations
-        If Correlation(i) <> 0 Then 'variable has a correlation of some kind
-          sdbeta = XtXinv(i, i) ^ 0.5
-          If Correlation(i) > 100 Then 'pos or negative correlation
-            tbeta = Abs(Bhat(i, 1) / sdbeta)
-            CorrelationLimit = Abs(Correlation(i) / 1000)
-          Else
-            If Correlation(i) < 0 Then
-              tbeta = -Bhat(i, 1) / sdbeta
-            ElseIf Correlation(i) > 0 Then
-              tbeta = Bhat(i, 1) / sdbeta
-            End If
-            CorrelationLimit = Abs(Correlation(i))
-          End If
-          'Besides looking to drop Tbetas less than 2, we also want the smallest
-          'Tbeta less than 2 for each step in the step-wise regression.
-          If tbeta < CorrelationLimit And tbeta < tSave Then
-            tSave = tbeta
-            iSave = i
-          End If
-        End If
-      Next i
-  
-      'Exclude variable with lowest Tbeta, if value is less than 2
-      If iSave = RegVarCnt Then
-        'want to drop last independent variable - ignore last column of X
-        RegVarCnt = RegVarCnt - 1
-        GoTo Regress
-      ElseIf iSave < RegVarCnt Then
-        '# of independent variable decrements by one and shifts
-        RegVarCnt = RegVarCnt - 1
-        'remove dropped variable from X matrix and its transpose
-        For i = 1 To Nsites
-          For j = iSave To RegVarCnt
-            X(i, j) = X(i, j + 1)
-            Xt(j, i) = X(i, j)
-          Next j
-        Next i
-        'Shift ungaged site parameters to account for dropped parameter
-        For j = iSave To RegVarCnt
-          UserRegressVars(j) = UserRegressVars(j + 1)
-          Correlation(j) = Correlation(j + 1)
-        Next j
-        GoTo Regress
+      'check to see if predicted value is greater than previous prediction
+      If (yhat < ysav) Then
+        ssMessageBox "CAUTION: Predicted T-year flow is smaller" & vbCrLf & _
+               "than T-Year flow with lower recurrence interval." & vbCrLf & _
+               "See output."
       End If
+      ysav = yhat
     End If
-
-    'output final regression summary
-    iStep = 99
-    OutPut iStep, jpeak, yhat, OutFile, retval(jpeak), _
-           stdErrMinus(jpeak), stdErrPlus(jpeak), EquivYears(jpeak), _
-           PredInts(1, jpeak), PredInts(2, jpeak)
-    'check to see if predicted value is greater than previous prediction
-    If (yhat < ysav) Then
-      ssMessageBox "CAUTION: Predicted T-year flow is smaller" & vbCrLf & _
-             "than T-Year flow with lower recurrence interval." & vbCrLf & _
-             "See output."
-    End If
-    ysav = yhat
   Next jpeak
   Close OutFile
   ComputeROIdischarge = retval
@@ -1407,42 +1480,697 @@ Next5:
       Y = X + 0.5 * X ^ 2
       If X > 0.002 Then Y = Exp(X) - 1#
       STUTX = ((FN * Y) ^ 0.5) * sign
-  End Function
+End Function
   
-  Private Function GausAB(CUMPRB As Single) As Single
-  'GAUSSIAN PROBABILITY FUNCTIONS   W.KIRBY  JUNE 71
-  'GAUSEX=VALUE EXCEEDED WITH PROB EXPROB
-  'GAUSCF MODIFIED 740906 WK -- REPLACED ERF FCN REF BY RATIONAL APPR
-  'ALSO REMOVED DOUBLE PRECISION FROM GAUSEX AND GAUSAB.
-  '76-05-04 WK -- TRAP UNDERFLOWS IN EXP IN GUASCF AND DY.
-  '02-07-17 R.Dusenbury -- converted from FORTRAN to VB (DOES NOT WORK PROPERLY!!!)
+Private Function GausAB(CUMPRB As Single) As Single
+'GAUSSIAN PROBABILITY FUNCTIONS   W.KIRBY  JUNE 71
+'GAUSEX=VALUE EXCEEDED WITH PROB EXPROB
+'GAUSCF MODIFIED 740906 WK -- REPLACED ERF FCN REF BY RATIONAL APPR
+'ALSO REMOVED DOUBLE PRECISION FROM GAUSEX AND GAUSAB.
+'76-05-04 WK -- TRAP UNDERFLOWS IN EXP IN GUASCF AND DY.
+'02-07-17 R.Dusenbury -- converted from FORTRAN to VB (DOES NOT WORK PROPERLY!!!)
 
-    Dim p As Single, pr As Single, T As Single, c0 As Single, c1 As Single, _
-        C2 As Single, d1 As Single, d2 As Single, d3 As Single
-    Dim numerat!, denom!
+  Dim p As Single, pr As Single, T As Single, c0 As Single, c1 As Single, _
+      C2 As Single, d1 As Single, d2 As Single, d3 As Single
+  Dim numerat!, denom!
 
-    On Error GoTo 0
-    
-    c0 = 2.515517
-    c1 = 0.802853
-    C2 = 0.010328
-    d1 = 1.432788
-    d2 = 0.189269
-    d3 = 0.001308
-    GausAB = 0#
-    p = 1# - CUMPRB
-    If p >= 1# Then 'set to minimum
-      GausAB = -10#
-    ElseIf p <= 0# Then 'set to maximum
-      GausAB = 10#
-    Else 'compute value
-      pr = p
-      If p > 0.5 Then pr = 1# - pr
-      T = (-2# * Log10(pr)) ^ 0.5
-      T = (-2# * Log(pr)) ^ 0.5
-      numerat = (c0 + T * (c1 + T * C2))
-      denom = (1# + T * (d1 + T * (d2 + T * d3)))
-      GausAB = T - numerat / denom
-      If p > 0.5 Then GausAB = -GausAB
+  On Error GoTo 0
+  
+  c0 = 2.515517
+  c1 = 0.802853
+  C2 = 0.010328
+  d1 = 1.432788
+  d2 = 0.189269
+  d3 = 0.001308
+  GausAB = 0#
+  p = 1# - CUMPRB
+  If p >= 1# Then 'set to minimum
+    GausAB = -10#
+  ElseIf p <= 0# Then 'set to maximum
+    GausAB = 10#
+  Else 'compute value
+    pr = p
+    If p > 0.5 Then pr = 1# - pr
+    T = (-2# * Log10(pr)) ^ 0.5
+    T = (-2# * Log(pr)) ^ 0.5
+    numerat = (c0 + T * (c1 + T * C2))
+    denom = (1# + T * (d1 + T * (d2 + T * d3)))
+    GausAB = T - numerat / denom
+    If p > 0.5 Then GausAB = -GausAB
+  End If
+End Function
+
+Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
+                   ByRef ZeroAdjust As Boolean, ByRef pred As Double, _
+                   ByRef cl90 As Double, ByRef cu90 As Double)
+
+  Dim i As Long
+  Dim k As Long
+  Dim probz7 As Single
+  Dim probz30 As Single
+  Dim probzd As Single
+  Dim sesav(4, 17) As Single
+  Dim q(1050, 17) As Single
+  Dim pv4(4, 17) As Single
+  Dim tbeta(4, 17) As Single
+  Dim bsav(4, 17) As Single
+  Dim mxt As Single
+  Dim myt As Single
+  Dim A As Single
+  Dim B As Single
+  Dim xL As Single
+  Dim sumx As Single
+  Dim sumy As Single
+  Dim sumxx As Single
+  Dim sumyy As Single
+  Dim sumxy As Single
+  Dim xv(50, 10) As Single
+  Dim xvt(10, 50) As Single
+  Dim XtXinv(10, 10) As Single
+  Dim xtx(10, 10) As Single
+  Dim Bhat(10, 1) As Single
+  Dim yv(50, 1) As Single
+  Dim e(50, 1) As Single
+  Dim work(10, 50) As Single
+  Dim work2(1, 10) As Single
+  Dim xo(10, 1) As Single
+  Dim xot(1, 10) As Single
+  Dim hat(1, 1) As Single
+  Dim ey As Single
+  Dim sums As Single
+  Dim asig2 As Single
+  Dim eybing As Single
+  Dim tv4 As Single
+  Dim ptest As Single
+  Dim ne As Long
+  Dim ndf As Long
+  Dim ksav As Long
+  Dim nexp(17) As Long
+  Dim kdrop(2) As Long
+  Dim Area As Single
+  Dim gf As Single
+  Dim gfc As Single
+  Dim CF As Single
+  Dim sf As Single
+  Dim uss As Single
+  Dim pru As Double
+  Dim pruz7 As Single
+  Dim predz7 As Single
+  Dim cl90z7 As Single
+  Dim cu90z7 As Single
+  Dim pruz30 As Single
+  Dim predz30 As Single
+  Dim cl90z30 As Single
+  Dim cu90z30 As Single
+  Dim pruzd As Single
+  Dim predzd As Single
+  Dim cl90zd As Single
+  Dim cu90zd As Single
+  Dim altm As Single
+  Dim alts As Single
+  Dim altd As Single
+  Dim alnd As Single
+  Dim alnm As Single
+  Dim alns As Single
+  Dim logsf As Single
+  Dim lsf30 As Single
+  Dim logda As Single
+  Dim logcf As Single
+  Dim loggf As Single
+  Dim lgf30 As Single
+  Dim loguss As Single
+  Dim det As Single
+  Dim sumsq As Single
+  Dim df As Single
+  Dim se As Single
+  Dim sep As Single
+  Dim seb As Single
+  Dim tstat As Single
+  Dim pMax As Single
+  
+  logda = UserRegressVars(2)
+  loggf = UserRegressVars(3)
+  lgf30 = Log10(10 ^ loggf - 30)
+  logsf = UserRegressVars(4)
+  lsf30 = Log10(10 ^ logsf - 30)
+  
+  'Compute zero-flow probabilities
+  probz7 = Exp(-5.73545 + 1.52553 * logda + 3.4293 * loggf)
+  probz7 = 1# / (1# + probz7)
+  probz30 = Exp(-6.34833 + 1.56109 * logda + 4.46114 * loggf)
+  probz30 = 1# / (1# + probz30)
+  probzd = Exp(-0.737052 + 1.53054 * logda + 1.64762 * loggf)
+  probzd = 1# / (1# + probzd)
+
+' Set starting explanatory variables to da, gf30, sf
+
+  ne = 4
+
+  sums = 0#
+  For i = 1 To Nsites
+    xv(i, 1) = 1#
+    xvt(1, i) = 1#
+    'xv(i, 2) = v(INDX(i), 1)
+    xv(i, 2) = RegVars(INDX(i), 1)
+    xvt(2, i) = xv(i, 2)
+    'gfc=10**v(indx(i),2)
+    gfc = 10 ^ RegVars(INDX(i), 2)
+    xv(i, 3) = Log10(gfc - 30#)
+    xvt(3, i) = xv(i, 3)
+    'xv(i, 4) = v(INDX(i), 4)
+    xv(i, 4) = RegVars(INDX(i), 3)
+    xvt(4, i) = xv(i, 4)
+    'yv(i, 1) = q(INDX(i), jpeak)
+    yv(i, 1) = Flows(INDX(i), jpeak)
+    'next 2 lines only used for regional regression eqtns, prh 2/2009
+'        if jpeak = 1)sums=sums+v(indx(i),5)
+'        if jpeak = 2)sums=sums+v(indx(i),6)
+  Next i
+  xo(1, 1) = 1#
+'      xo(2, 1) = logda
+'      xo(3, 1) = lgf30
+'      xo(4, 1) = logsf
+  xo(2, 1) = UserRegressVars(2)
+  'gfc = Log10(UserRegressVars(3))
+  gfc = 10 ^ UserRegressVars(3)
+  xo(3, 1) = Log10(gfc - 30)
+  xo(4, 1) = UserRegressVars(4)
+  xot(1, 1) = xo(1, 1)
+  xot(1, 2) = xo(2, 1)
+  xot(1, 3) = xo(3, 1)
+  xot(1, 4) = xo(4, 1)
+  'next 2 lines only used for regional regression eqtns, prh 2/2009
+'      xL = Float(Nsites)
+'      if jpeak.le.2)asig2=(sums/xL)**2
+  Call mltply(xtx, xvt, xv, ne, Nsites, ne, 10, 10, 50)
+  Call invert(ne, 10, det, XtXinv, xtx)
+  Call mltply(work, XtXinv, xvt, ne, ne, Nsites, 10, 10, 10)
+  Call mltply(Bhat, work, yv, ne, Nsites, 1, 10, 10, 50)
+  Call mltply(e, xv, Bhat, Nsites, ne, 1, 50, 50, 10)
+  sumsq = 0#
+  For k = 1 To Nsites
+    sumsq = sumsq + (yv(k, 1) - e(k, 1)) ^ 2
+  Next k
+  df = Nsites - ne
+  Call mltply(work2, xot, XtXinv, 1, ne, ne, 1, 1, 10)
+  Call mltply(hat, work2, xo, 1, ne, 1, 1, 1, 10)
+  se = Sqr(sumsq / df)
+  seb = Sqr(1# + hat(1, 1))
+  sep = se * seb
+  tstat = 1.68 * sep
+
+'     Output final regression step
+  ndf = df
+  pMax = 0#
+  For k = 2 To ne
+    sesav(k, jpeak) = se * Sqr(XtXinv(k, k))
+    tbeta(k, jpeak) = Bhat(k, 1) / sesav(k, jpeak)
+    tv4 = Abs(tbeta(k, jpeak))
+    pv4(k, jpeak) = 2# * STUTP(-tv4, ndf)
+    If (pv4(k, jpeak) < 0.0001) Then pv4(k, jpeak) = 0.0001
+    bsav(1, jpeak) = Bhat(1, 1)
+    sesav(1, jpeak) = se * Sqr(XtXinv(1, 1))
+    tbeta(1, jpeak) = Bhat(1, 1) / sesav(1, jpeak)
+    tv4 = Abs(tbeta(1, jpeak))
+    pv4(1, jpeak) = 2# * STUTP(-tv4, ndf)
+    If (pv4(1, jpeak) < 0.0001) Then pv4(1, jpeak) = 0.0001
+    bsav(k, jpeak) = Bhat(k, 1)
+  Next k
+  nexp(jpeak) = ne - 1
+  pru = Bhat(1, 1) + Bhat(2, 1) * xot(1, 2) + Bhat(3, 1) * xot(1, 3) + Bhat(4, 1) * xot(1, 4)
+  cu90 = 10 ^ (tstat + pru)
+  cl90 = 10 ^ (-tstat + pru)
+  pred = 10 ^ pru
+
+  'Logistic zero-flow testing
+  Area = 10 ^ logda
+  gf = 10 ^ loggf
+  ZeroAdjust = False 'assume no zero flow adjustment
+  If jpeak = 1 Then 'Zero-flow-7Q10 transition West region
+      If jreg = 1 And Area < 50 And gf < 40 Or _
+         jreg = 1 And Area < 2.5 And gf < 60 Then
+          If probz7 >= 0.075 Then
+            pru = -6.1711 + 1.2383 * logda + 2.5665 * lsf30
+            pred = 10 ^ pru
+            cu90 = 10 ^ (tstat + pru)
+            cl90 = 10 ^ (-tstat + pru)
+            'p7meth = 1
+            ZeroAdjust = True
+          End If
+          If probz7 >= 0.1 Then
+            pred = 0#
+            cl90 = 0#
+          End If
+      End If
+      'Zero-flow-7Q10 transition Central+East region
+      If jreg = 0 And Area < 100 And gf < 40 Or _
+         jreg = 0 And Area < 2.5 And gf < 60 Then
+          If probz7 >= 0.075 Then
+            pru = -2.4432 + 0.133 * logda + 0.7604 * lgf30 + 0.6515 * logsf
+            pred = 10 ^ pru
+            cu90 = 10 ^ (tstat + pru)
+            cl90 = 10 ^ (-tstat + pru)
+            'p7meth = 1
+            ZeroAdjust = True
+          End If
+          If (probz7 >= 0.1) Then
+            pred = 0#
+            cl90 = 0#
+          End If
+      End If
+  End If
+
+      If (jpeak = 2) Then
+      'Zero-flow-30Q5 transition equation West region
+      If jreg = 1 And Area < 50 And gf < 40 Or _
+         jreg = 1 And Area < 2.5 And gf < 60 Then
+          If (probz7 >= 0.075 And probz30 >= 0.075) Then
+            pru = -4.7262 + 1.1254 * logda + 1.846 * lsf30
+            pred = 10 ^ pru
+            cu90 = 10 ^ (tstat + pru)
+            cl90 = 10 ^ (-tstat + pru)
+            'p30meth = 1
+            ZeroAdjust = True
+          End If
+          If (probz7 >= 0.1 And probz30 >= 0.175) Then
+            pred = 0#
+            cl90 = 0#
+          End If
+      End If
+      'Zero-flow-30Q5 transition Central+East region
+      If jreg = 0 And Area < 100 And gf < 40 Or _
+         jreg = 0 And Area < 2.5 And gf < 60 Then
+          If (probz7 >= 0.075 And probz30 >= 0.075) Then
+            pru = -2.1026 + 0.4918 * logda + 0.5746 * lgf30 + 0.4189 * logsf
+            pred = 10 ^ pru
+            cu90 = 10 ^ (tstat + pru)
+            cl90 = 10 ^ (-tstat + pru)
+            'p30meth = 1
+            ZeroAdjust = True
+          End If
+          If (probz7 >= 0.1 And probz30 >= 0.175) Then
+            pred = 0#
+            cl90 = 0#
+          End If
+      End If
+      End If
+      'Zero-flow-duration transition equation for West region
+      If jreg = 1 And Area < 50 And gf < 40 Or _
+         jreg = 1 And Area < 2.5 And gf < 60 Then
+      'D99.5
+      If (jpeak = 5) Then
+        If (probzd >= 0.00375) Then
+          pru = -6.0678 + 1.2098 * logda + 2.5093 * lsf30
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          ''pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.005) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+      'D99
+      If (jpeak = 6) Then
+        If (probzd >= 0.00375) Then
+          pru = -5.2298 + 1.1421 * logda + 2.0878 * lsf30
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.01) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+      'D98
+      If (jpeak = 7) Then
+        If (probzd >= 0.00375) Then
+          pru = -4.8427 + 1.1283 * logda + 1.8955 * lsf30
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.02) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+      'D95
+      If (jpeak = 8) Then
+        If (probzd >= 0.00375) Then
+          pru = -4.6096 + 1.1224 * logda + 1.7964 * lsf30
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.05) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+      'D90
+      If (jpeak = 9) Then
+        If (probzd >= 0.00375) Then
+          pru = -4.4253 + 1.1741 * logda + 1.6665 * lsf30
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.1) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+      'D80
+      If (jpeak = 10) Then
+        If (probzd >= 0.00375) Then
+          pru = -4.0544 + 1.2957 * logda + 1.3722 * lsf30
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.2) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+'D70
+      If (jpeak = 11) Then
+        If (probzd >= 0.00375) Then
+          pru = -3.6581 + 1.3536 * logda + 1.116 * lsf30
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.3) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+'D60
+      If (jpeak = 12) Then
+        If (probzd >= 0.00375) Then
+          pru = -2.5746 + 1.2535 * logda + 0.6026 * lsf30
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.4) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+'D50
+      If (jpeak = 13) Then
+        If (probzd >= 0.00375) Then
+          pru = -1.2838 + 1.0278 * logda + 0.1184 * lsf30
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.5) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+'D40
+      If (jpeak = 14) Then
+        If (probzd >= 0.00375) Then
+          pru = -0.5498 + 0.9582 * logda - 0.1216 * lsf30
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.6) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+'D30
+      If (jpeak = 15) Then
+        If (probzd >= 0.00375) Then
+          pru = -0.2352 + 0.9871 * logda - 0.1502 * lsf30
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.7) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+'D20
+      If (jpeak = 16) Then
+        If (probzd >= 0.00375) Then
+          pru = -0.2289 + 1.0303 * logda + 0.1307 * lsf30
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.8) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+'D10
+      If (jpeak = 17) Then
+        If (probzd >= 0.00375) Then
+          pru = 0.4276 + 0.9945 * logda - 0.00026 * lsf30
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.9) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+      End If
+      'Zero-flow-duration transition equation for Central+East region
+      If jreg = 0 And Area < 100 And gf < 40 Or _
+         jreg = 0 And Area < 2.5 And gf < 60 Then
+      'D99.5
+      If (jpeak = 5) Then
+        If probzd > 0.00375 Then
+          pru = -2.4813 + 0.2087 * logda + 0.7651 * lgf30 + 0.5961 * logsf
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.005) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+'D99
+      If (jpeak = 6) Then
+        If probzd > 0.00375 Then
+          pru = -2.3135 + 0.3469 * logda + 0.7091 * lgf30 + 0.482 * logsf
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.01) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+'D98
+      If (jpeak = 7) Then
+        If probzd > 0.00375 Then
+          pru = -2.2318 + 0.4259 * logda + 0.6299 * lgf30 + 0.48 * logsf
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.02) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+'D95
+      If (jpeak = 8) Then
+        If probzd > 0.00375 Then
+          pru = -1.9735 + 0.5576 * logda + 0.5192 * lgf30 + 0.3577 * logsf
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.05) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+'D90
+      If (jpeak = 9) Then
+        If probzd > 0.00375 Then
+          pru = -1.8975 + 0.748 * logda + 0.4782 * lgf30 + 0.2912 * logsf
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.1) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+'D80
+      If (jpeak = 10) Then
+        If probzd > 0.00375 Then
+          pru = -1.5125 + 0.9246 * logda + 0.2986 * lgf30 + 0.1813 * logsf
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.2) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+'D70
+      If (jpeak = 11) Then
+        If probzd > 0.00375 Then
+          pru = -1.0564 + 0.9812 * logda + 0.0436 * lgf30 + 0.1288 * logsf
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.3) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+'D60
+      If (jpeak = 12) Then
+        If probzd > 0.00375 Then
+          pru = -0.6306 + 1.00669 * logda - 0.1574 * lgf30 + 0.08886 * logsf
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.4) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+'D50
+      If (jpeak = 13) Then
+        If probzd > 0.00375 Then
+          pru = -0.2607 + 1.00574 * logda - 0.2719 * lgf30 + 0.07162 * logsf
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.5) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+'D40
+      If (jpeak = 14) Then
+        If probzd > 0.00375 Then
+          pru = -0.0496 + 1.01541 * logda - 0.26701 * lgf30 + 0.08017 * logsf
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.6) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+'D30
+      If (jpeak = 15) Then
+        If probzd > 0.00375 Then
+          pru = 0.18335 + 1.01168 * logda - 0.23826 * lgf30 + 0.05126 * logsf
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.7) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+'D20
+      If (jpeak = 16) Then
+        If probzd > 0.00375 Then
+          pru = 0.39862 + 1.01 * logda - 0.22086 * lgf30 + 0.0359 * logsf
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.8) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
+'D10
+      If (jpeak = 17) Then
+        If probzd > 0.00375 Then
+          pru = 0.65007 + 1.02589 * logda - 0.21643 * lgf30 + 0.0258 * logsf
+          pred = 10 ^ pru
+          cu90 = 10 ^ (tstat + pru)
+          cl90 = 10 ^ (-tstat + pru)
+          'pdmeth = 1
+            ZeroAdjust = True
+        End If
+        If (probz7 >= 0.1 And probzd >= 0.9) Then
+          pred = 0#
+          cl90 = 0#
+        End If
+      End If
     End If
-  End Function
+
+End Sub
