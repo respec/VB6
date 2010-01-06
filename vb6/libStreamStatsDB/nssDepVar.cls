@@ -34,6 +34,7 @@ Private pMAD As Double
 Private pExpDA As Double
 Private pIsNew As Boolean
 Private pUnits As nssUnits
+Private pEquation As String
 Private pComponents As FastCollection
 
 Public Property Get Name() As String
@@ -186,6 +187,13 @@ Public Property Get Units() As nssUnits
   Set Units = pUnits
 End Property
 
+Public Property Get Equation() As String
+  Equation = pEquation
+End Property
+Public Property Let Equation(ByVal newValue As String)
+  pEquation = newValue
+End Property
+
 Private Sub PopulateComponents()
   Dim newComp As nssComponent
   Dim comprec As Recordset
@@ -227,7 +235,8 @@ Public Function Add(IsReturn As Boolean, ByVal Region As nssRegion, _
     Optional ByVal eqyrs As String, Optional ByVal Constant As String, _
     Optional ByVal BCF As String, Optional ByVal tDist As String, _
     Optional ByVal Variance As String, _
-    Optional ByVal ExpDA As String) As Long
+    Optional ByVal ExpDA As String, _
+    Optional ByVal Equation As String) As Long
     'OPTIONAL ByVal Stations As String, OPTIONAL ByVal CoeffDet As String, OPTIONAL ByVal MAD As String) As Boolean
   Dim myRec As Recordset
   Dim ID&
@@ -272,9 +281,10 @@ Public Function Add(IsReturn As Boolean, ByVal Region As nssRegion, _
         If IsNumeric(eqyrs) Then !EquivYears = eqyrs
         If IsNumeric(Constant) Then !Constant = Constant
         If IsNumeric(BCF) Then !BCF = BCF
-        If IsNumeric(tDist) Then !T = tDist
+        If IsNumeric(tDist) Then !t = tDist
         If IsNumeric(Variance) Then !Variance = Variance
         If IsNumeric(ExpDA) Then !ExpDA = ExpDA
+        !Equation = Equation
   '      if isnumeric(Stations) then !Stas = Stations
   '      if isnumeric(CoeffDet) then !CoeffDet = CoeffDet
   '      if isnumeric(MAD) then !MAD = MAD
@@ -311,7 +321,8 @@ Public Sub Edit(ByVal Name As String, _
     Optional ByVal PreErr As String, Optional ByVal eqyrs As String, _
     Optional ByVal Constant As String, Optional ByVal BCF As String, _
     Optional ByVal tDist As String, Optional ByVal Variance As String, _
-    Optional ByVal ExpDA As String)
+    Optional ByVal ExpDA As String, _
+    Optional ByVal Equation As String)
     'ByVal Stations As String, ByVal CoeffDet As String, ByVal MAD As String) As Boolean
   Dim myRec As Recordset
   
@@ -331,9 +342,10 @@ Public Sub Edit(ByVal Name As String, _
       If IsNumeric(eqyrs) Then !EquivYears = eqyrs
       If IsNumeric(Constant) Then !Constant = Constant
       If IsNumeric(BCF) Then !BCF = BCF
-      If IsNumeric(tDist) Then !T = tDist
+      If IsNumeric(tDist) Then !t = tDist
       If IsNumeric(Variance) Then !Variance = Variance
       If IsNumeric(ExpDA) Then !ExpDA = ExpDA
+      !Equation = Equation
 '      if isnumeric(Stations) then !Stas = Stations
 '      if isnumeric(CoeffDet) then !CoeffDet = CoeffDet
 '      if isnumeric(MAD) then !MAD = MAD
@@ -422,11 +434,11 @@ Public Function ClearOldComponents() As Boolean
         .Delete
         ClearOldComponents = True
       Else
-        GoTo X
+        GoTo x
       End If
     Wend
   End With
-X:
+x:
   myRec.Close
   Set myRec = pDB.DB.OpenRecordset("Covariance", dbOpenDynaset)
   With myRec

@@ -59,7 +59,7 @@ Public Function Copy() As nssScenario
     .ProbEqtn = pProbEqtn
     .UsePredInts = pUsePredInts
     If Not IsEmpty(pRHO) Then .RHO = pRHO
-    If Not IsEmpty(pCF) Then .CF = pCF
+    If Not IsEmpty(pCF) Then .Cf = pCF
     Set .Project = pProject
     Set .Weight = pWeight
     If Not pRuralScenario Is Nothing Then Set .RuralScenario = pRuralScenario
@@ -269,7 +269,7 @@ Public Function EquivalentYears() As Double()
   Dim curval As Double
   Dim ExpVal As Double
   Dim dArea2overG As Double
-  Dim msg As String
+  Dim MSG As String
   
   If Me.ROI Then
     EquivalentYears = pSaveEquivYears 'this was computed in call to ComputeROIDischarge
@@ -295,9 +295,9 @@ Public Function EquivalentYears() As Double()
   '    Exit Function
   '  End If
     
-    msg = MismatchedRegions
-    If Len(msg) > 0 Then
-      ssMessageBox msg, vbOKOnly, "Cannot Compute Equivalent Years"
+    MSG = MismatchedRegions
+    If Len(MSG) > 0 Then
+      ssMessageBox MSG, vbOKOnly, "Cannot Compute Equivalent Years"
     Else
       Set FirstReturns = pUserRegions(1).Region.DepVars
       
@@ -338,7 +338,7 @@ Public Function StdError() As Double()
   Dim retval() As Double
   Dim curval As Double
   Dim ExpVal As Double
-  Dim msg As String
+  Dim MSG As String
   
 'Commented out just in case we were saving old values too long
 '  If UBound(pSaveStdError) > 0 Then
@@ -361,9 +361,9 @@ Public Function StdError() As Double()
       Exit Function
     End If
     
-    msg = MismatchedRegions
-    If Len(msg) > 0 Then
-      ssMessageBox msg, vbOKOnly, "Cannot Compute Standard Error"
+    MSG = MismatchedRegions
+    If Len(MSG) > 0 Then
+      ssMessageBox MSG, vbOKOnly, "Cannot Compute Standard Error"
     Else
       Set FirstReturns = pUserRegions(1).Region.DepVars
       ReDim retval(1 To FirstReturns.Count)
@@ -460,16 +460,16 @@ Public Function PredInts() As Double()
   Dim CurStat As nssDepVar
   Dim CurReturn As nssDepVar
   Dim CurComponent As nssComponent
-  Dim i&, j&, MDim&, s!, T!
+  Dim i&, j&, MDim&, s!, t!
   Dim Prod() As Single, Prod2(1, 1) As Single
   Dim lv As Double
   Dim lParm As Single
-  Dim X() As Single 'X vector
+  Dim x() As Single 'X vector
   Dim Xt() As Single 'transpose of X vector
   Dim Uv As Variant
   Dim U() As Single
   Dim retval() As Double
-  Dim msg As String
+  Dim MSG As String
   Dim StateMetric As Boolean
   Dim lCompName As String
 
@@ -482,9 +482,9 @@ Public Function PredInts() As Double()
   If Me.ROI Or Me.ProbEqtn Then
     PredInts = pSavePredInts
   Else
-    msg = MismatchedRegions
-    If Len(msg) > 0 Then
-      ssMessageBox msg, vbOKOnly, "Cannot Compute Prediction Intervals"
+    MSG = MismatchedRegions
+    If Len(MSG) > 0 Then
+      ssMessageBox MSG, vbOKOnly, "Cannot Compute Prediction Intervals"
     Else
       If pUserRegions(1).Region.Name = pProject.NationalUrban.Name Then
         StateMetric = pProject.NationalUrban.State.Metric
@@ -501,10 +501,10 @@ Public Function PredInts() As Double()
           Set CurRegion = pUserRegions(RegionIndex)
           Set CurStat = CurRegion.Region.DepVars(ReturnIndex)
           MDim = CurStat.Components.Count + 1
-          ReDim X(MDim, 1)
+          ReDim x(MDim, 1)
           ReDim Xt(1, MDim)
-          X(1, 1) = 1
-          Xt(1, 1) = X(1, 1)
+          x(1, 1) = 1
+          Xt(1, 1) = x(1, 1)
           For i = 2 To CurStat.Components.Count + 1
             Set CurComponent = CurStat.Components(i - 1)
             If i = 2 Then 'use area from whole scenario, not just the part in this region
@@ -540,13 +540,13 @@ Public Function PredInts() As Double()
             Else 'exponent term, don't take log
               lv = CurComponent.ExpMod + lParm
             End If
-            X(i, 1) = lv
+            x(i, 1) = lv
 '            If lv > 0 Then
 '              X(i, 1) = Log10(lv)
 '            Else
 '              X(i, 1) = 0
 '            End If
-            Xt(1, i) = X(i, 1)
+            Xt(1, i) = x(i, 1)
           Next i
           Uv = CurStat.PopulateMatrix
           ReDim U(MDim, MDim)
@@ -556,12 +556,12 @@ Public Function PredInts() As Double()
             Next j
           Next i
           ReDim Prod(MDim, 1)
-          Call mltply(Prod, U, X, MDim, MDim, 1, 1, 1, 1)
+          Call mltply(Prod, U, x, MDim, MDim, 1, 1, 1, 1)
           Call mltply(Prod2, Xt, Prod, 1, MDim, 1, 1, 1, 1)
           s = Sqr(CurStat.Variance + Prod2(1, 1))
-          T = 10 ^ (CurStat.tDist * s)
-          retval(1, ReturnIndex) = retval(1, ReturnIndex) + ((1 / T) * (CurRegion.Discharges(ReturnIndex) / CurReturn.BCF)) * CurRegion.UserParms(1).GetValue(Me.Project.Metric)
-          retval(2, ReturnIndex) = retval(2, ReturnIndex) + (T * (CurRegion.Discharges(ReturnIndex) / CurReturn.BCF)) * CurRegion.UserParms(1).GetValue(Me.Project.Metric)
+          t = 10 ^ (CurStat.tDist * s)
+          retval(1, ReturnIndex) = retval(1, ReturnIndex) + ((1 / t) * (CurRegion.Discharges(ReturnIndex) / CurReturn.BCF)) * CurRegion.UserParms(1).GetValue(Me.Project.Metric)
+          retval(2, ReturnIndex) = retval(2, ReturnIndex) + (t * (CurRegion.Discharges(ReturnIndex) / CurReturn.BCF)) * CurRegion.UserParms(1).GetValue(Me.Project.Metric)
         Next
         retval(1, ReturnIndex) = retval(1, ReturnIndex) / Me.GetArea(Me.Project.Metric) 'pUserRegions.Count
         retval(2, ReturnIndex) = retval(2, ReturnIndex) / Me.GetArea(Me.Project.Metric) 'pUserRegions.Count
@@ -605,14 +605,14 @@ Public Function Intervals() As Single()
   Dim FirstReturns As FastCollection
   Dim lReturn As String
   Dim i As Long
-  Dim msg As String
+  Dim MSG As String
   
   If pUserRegions.Count = 0 Then
     ReDim retval(0)
   Else
-    msg = MismatchedRegions
-    If Len(msg) > 0 Then
-      ssMessageBox msg, vbOKOnly, "Cannot Compute Intervals"
+    MSG = MismatchedRegions
+    If Len(MSG) > 0 Then
+      ssMessageBox MSG, vbOKOnly, "Cannot Compute Intervals"
     Else
       Set FirstReturns = pUserRegions(1).Region.DepVars
       ReDim retval(1 To FirstReturns.Count)
@@ -647,244 +647,244 @@ Public Function Discharge(IntervalIndex As Long) As Double
 End Function
 
 'Returns results in project units, ready to display
-Public Function Discharges() As Double()
-  Static lasterr As Single
-  Dim RegionIndex As Long
-  Dim ReturnIndex As Long
-  Dim ComponentIndex As Long
-  Dim AccumFlow As Double
-  Dim FirstReturns As FastCollection
-  Dim CurRegion As userRegion
-  Dim CurReturn As nssDepVar
-  Dim CurComponent As nssComponent
-  Dim IntervalDischarge() As Double
-  Dim RegionVal As Double
-  Dim curval As Double
-  Dim ExpVal As Double
-  Dim StepName As String
-  Dim WarnedAboutMissingComponents As Boolean
-  Dim Equation As String
-  Dim msg As String
-  Dim StateMetric As Boolean
-  Dim InMultParmExp As Boolean
-  Dim MultParmExpVal As Double
-  Dim lVariance As Double
-  Dim Uv As Variant
-  Dim lVals() As Double
-  
-  On Error GoTo ErrHand
-  
-  If ROI Then
-    IntervalDischarge = ComputeROIdischarge(Me, pSaveEquivYears, pSaveStdError, pSaveStdErrorPlus, pSavePredInts, pZeroAdjusted)
-  Else
-  
-    If pUserRegions.Count = 0 Then
-      ReDim IntervalDischarge(0)
-      Discharges = IntervalDischarge
-      Exit Function
-    End If
-    
-    msg = MismatchedRegions
-    If Len(msg) > 0 Then
-      ssMessageBox msg, vbOKOnly, "Cannot Compute Discharges"
-      GoTo LastLine
-    End If
-    
-    Set FirstReturns = pUserRegions(1).Region.DepVars
-    
-    ReDim IntervalDischarge(1 To FirstReturns.Count)
-    
-    If pUserRegions(1).Region.Name = pProject.NationalUrban.Name Then
-      StateMetric = pProject.NationalUrban.State.Metric
-    Else
-      StateMetric = pProject.State.Metric
-    End If
-    If pProbEqtn Then
-      ReDim pSaveStdError(FirstReturns.Count)
-      ReDim pSavePredInts(2, FirstReturns.Count)
-    End If
-    
-    StepName = "For ReturnIndex = 1 To FirstReturns.Count"
-    
-    For ReturnIndex = 1 To FirstReturns.Count
-      StepName = "IntervalDischarge(ReturnIndex) = 0"
-      IntervalDischarge(ReturnIndex) = 0
-      StepName = "For RegionIndex = 1 To pUserRegions.Count"
-      For RegionIndex = 1 To pUserRegions.Count
-        StepName = "Set CurRegion = pUserRegions(RegionIndex)"
-        Set CurRegion = pUserRegions(RegionIndex)
-        If ReturnIndex = 1 Then 'reset collection of discharges for this region
-          CurRegion.Discharges.Clear
-        End If
-        StepName = "Set CurReturn = CurRegion.Region.DepVars(ReturnIndex)"
-        Set CurReturn = CurRegion.Region.DepVars(ReturnIndex)
-        RegionVal = CurReturn.Constant
-        StepName = "For ComponentIndex = 1 To CurReturn.Components.Count"
-        If pProbEqtn And Me.UsePredInts Then
-          Uv = CurReturn.PopulateMatrix
-          lVariance = Uv(1, 1)
-        End If
-        'Some 500-year returns are supposed to be missing components, so we don't want to warn about them
-        If CurReturn.Components.Count = 0 And Not WarnedAboutMissingComponents And InStr(CurReturn.Name, "500") = 0 Then
-          StepName = "Error: Components for return period " & CurReturn.Name & " of " & CurRegion.Region.Name & " are missing from the database"
-          pErrorDescription = pErrorDescription & StepName & vbCrLf
-          ssMessageBox StepName, vbOKOnly, "NSS Discharges"
-          WarnedAboutMissingComponents = True
-        End If
-        ReDim lVals(CurReturn.Components.Count)
-        MultParmExpVal = 0 '1
-        For ComponentIndex = 1 To CurReturn.Components.Count
-          StepName = "Set CurComponent = CurReturn.Components(ComponentIndex)"
-          Set CurComponent = CurReturn.Components(ComponentIndex)
-          StepName = "Select Case CurComponent.ParmID (" & CurComponent.ParmID & ")"
-          Select Case CurComponent.ParmID
-            Case -4: curval = 0
-            Case -3: InMultParmExp = True
-            Case -2: curval = findRuralValue(FirstReturns(ReturnIndex).Name, StateMetric) 'find computed rural discharge
-                     If curval = -999 Then 'Could not find a rural discharge, so we can't compute this urban one
-                       IntervalDischarge(ReturnIndex) = -1
-                       GoTo NextInterval
-                     End If
-            Case -1: curval = Me.GetArea(StateMetric) 'Drainage area of whole basin, not just the part in this region
-            Case 0:  curval = 0
-            Case Is > 0
-                   If ComponentIndex = 1 And InStr(LCase(CurComponent.Parameter.NSSName), "area") > 0 Then
-                     curval = Me.GetArea(StateMetric) 'Drainage area of whole basin, not just the part in this region
-                   Else
-                     curval = CurRegion.UserParms(CurComponent.Parameter.NSSName).GetValue(StateMetric)
-                   End If
-            Case Else:
-              ssMessageBox "Could not use component " & ComponentIndex & " (ParmID=" & CurComponent.ParmID & ")" & vbCr _
-                   & "of region " & CurRegion.Region.Name & ", return period " & CurReturn.Name, vbOKOnly, "Compute Discharge Problem"
-              GoTo LastLine
-          End Select
-          lVals(ComponentIndex) = curval
-          StepName = "If CurComponent.ExpID = 0 Then [If " & CurComponent.ExpID & " = 0 Then"
-          If CurComponent.ExpID = 0 Then
-            ExpVal = CurComponent.BaseExp
-            Equation = ExpVal
-          ElseIf pProbEqtn And CurComponent.ExpID = -999 Then
-            'probability equation, -999 ExpID indicates to take natural log of base parm
-            curval = Log(curval)
-            lVals(ComponentIndex) = curval
-            ExpVal = CurComponent.BaseExp
-            Equation = ExpVal
-          Else
-            Equation = CurComponent.ExpMod & " + " & CurRegion.ParmIDVal(Abs(CurComponent.ExpID), StateMetric)
-            ExpVal = CurComponent.ExpMod + CurRegion.ParmIDVal(Abs(CurComponent.ExpID), StateMetric)
-            If CurComponent.ExpID < 0 Then
-              StepName = "ExpVal = Log10(ExpVal) [ExpVal = Log10(" & ExpVal & ")]"
-              Equation = "Log10(" & Equation & ")"
-              ExpVal = Log10(ExpVal)
-            Else
-              Equation = "(" & Equation & ")"
-            End If
-            StepName = "ExpVal = ExpVal ^ CurComponent.ExpExp [ExpVal = " & ExpVal & " ^ " & CurComponent.ExpExp & "]"
-            Equation = Equation & " ^ " & CurComponent.ExpExp
-            ExpVal = ExpVal ^ CurComponent.ExpExp
-            Equation = CurComponent.BaseExp & " * (" & Equation & ")"
-            ExpVal = ExpVal * CurComponent.BaseExp
-          End If
-          If InMultParmExp Then 'compute exponent value from multiple parms
-            MultParmExpVal = MultParmExpVal + ExpVal '* ExpVal
-            If CurComponent.ParmID = -4 Then 'last parm in exponent
-              ExpVal = MultParmExpVal
-              InMultParmExp = False
-            End If
-          End If
-          If Not InMultParmExp Then
-            If pProbEqtn And CurComponent.ExpID = -999 Then 'natural log taken of this component
-              Equation = "(ln(" & curval & " + " & CurComponent.BaseMod & ") * " & CurComponent.BaseCoeff & ") ^ " & Equation
-            Else
-              Equation = "((" & curval & " + " & CurComponent.BaseMod & ") * " & CurComponent.BaseCoeff & ") ^ " & Equation
-            End If
-            curval = curval + CurComponent.BaseMod
-            StepName = "curval = (curval * CurComponent.BaseCoeff) ^ ExpVal [curval = (" & curval & " * " & CurComponent.BaseCoeff & ") ^ " & ExpVal & "]"
-            curval = (curval * CurComponent.BaseCoeff) ^ ExpVal
-            If pProbEqtn Then
-              RegionVal = RegionVal + curval
-            Else
-              RegionVal = RegionVal * curval
-            End If
-          End If
-          If pProbEqtn And Me.UsePredInts Then
-            lVariance = lVariance + (Uv(ComponentIndex + 1, 1) * (lVals(ComponentIndex) ^ 2)) + (2 * lVals(ComponentIndex) * Uv(ComponentIndex + 1, ComponentIndex + 1))
-            Dim j As Integer
-            For j = ComponentIndex To 2 Step -1
-              lVariance = lVariance + (2 * lVals(ComponentIndex) * lVals(j - 1) * Uv(j, ComponentIndex + 1))
-            Next j
-          End If
-        Next
-        StepName = "IntervalDischarge(ReturnIndex) = ..."
-        IntervalDischarge(ReturnIndex) = IntervalDischarge(ReturnIndex) + RegionVal * CurRegion.UserParms(1).GetValue(StateMetric) / Me.GetArea(StateMetric)
-        If StateMetric <> Me.Project.Metric And Not pProbEqtn Then
-          If Me.Project.Metric Then
-            RegionVal = RegionVal * 0.028317
-          Else
-            RegionVal = RegionVal / 0.028317
-          End If
-        End If
-        CurRegion.Discharges.Add RegionVal
-      Next
-      If pProbEqtn Then
-        If Me.UsePredInts Then
-          StepName = "Compute Probability - e^Value/(1 + e^Value)"
-          pSaveStdError(ReturnIndex) = Sqr(lVariance)
-          pSavePredInts(1, ReturnIndex) = Exp(IntervalDischarge(ReturnIndex) - CurReturn.tDist * pSaveStdError(ReturnIndex)) / (1 + Exp(IntervalDischarge(ReturnIndex) - CurReturn.tDist * pSaveStdError(ReturnIndex)))
-          pSavePredInts(2, ReturnIndex) = Exp(IntervalDischarge(ReturnIndex) + CurReturn.tDist * pSaveStdError(ReturnIndex)) / (1 + Exp(IntervalDischarge(ReturnIndex) + CurReturn.tDist * pSaveStdError(ReturnIndex)))
-        End If
-        IntervalDischarge(ReturnIndex) = Exp(IntervalDischarge(ReturnIndex)) / (1 + Exp(IntervalDischarge(ReturnIndex)))
-      Else
-        StepName = "If StateMetric <> Me.Project.Metric"
-        If StateMetric <> Me.Project.Metric Then
-          If Me.Project.Metric Then
-            IntervalDischarge(ReturnIndex) = IntervalDischarge(ReturnIndex) * 0.028317
-          Else
-            IntervalDischarge(ReturnIndex) = IntervalDischarge(ReturnIndex) / 0.028317
-          End If
-        End If
-      End If
-NextInterval:
-    Next
-    If InStr(FirstReturns(FirstReturns.Count).Name, "500") > 0 And _
-       IntervalDischarge(FirstReturns.Count) < 0.001 Then
-      'not able to compute 500 year flood, extrapolate it
-      StepName = "nss500"
-      IntervalDischarge(FirstReturns.Count) = nss500(IntervalDischarge, Me.Intervals)
-      pExtrapolated = True
-    End If
-  End If
-  Discharges = IntervalDischarge
-  Exit Function
-
-ErrHand:
-    msg = "Error: " & Err.Description & vbCrLf & vbCrLf _
-           & StepName & vbCrLf _
-           & "ReturnIndex = " & ReturnIndex & vbCrLf _
-           & "RegionIndex = " & RegionIndex & vbCrLf _
-           & "ComponentIndex = " & ComponentIndex
-    If Not CurComponent Is Nothing Then
-      With CurComponent
-        msg = msg & vbCrLf _
-            & " Parameter Name = " & .Parameter.NSSName & vbCrLf _
-            & " BaseMod = " & .BaseMod & vbCrLf _
-            & " BaseCoeff = " & .BaseCoeff & vbCrLf _
-            & " BaseExp = " & .BaseExp & vbCrLf _
-            & " ExpMod = " & .ExpMod & vbCrLf _
-            & " ExpID = " & .ExpID & vbCrLf _
-            & " ExpExp = " & .ExpExp & vbCrLf _
-            & "Equation: " & Equation
-      End With
-    End If
-    pErrorDescription = pErrorDescription & msg
-  'If Timer - lasterr > 1 Then
-    ssMessageBox msg, vbExclamation, "Error computing discharges"
-  '  lasterr = Timer
-  'End If
-
-LastLine:
-  Discharges = IntervalDischarge 'Return empty array if there is a problem
-End Function
+'Public Function Discharges() As Double()
+'  Static lasterr As Single
+'  Dim RegionIndex As Long
+'  Dim ReturnIndex As Long
+'  Dim ComponentIndex As Long
+'  Dim AccumFlow As Double
+'  Dim FirstReturns As FastCollection
+'  Dim CurRegion As userRegion
+'  Dim CurReturn As nssDepVar
+'  Dim CurComponent As nssComponent
+'  Dim IntervalDischarge() As Double
+'  Dim RegionVal As Double
+'  Dim curval As Double
+'  Dim ExpVal As Double
+'  Dim StepName As String
+'  Dim WarnedAboutMissingComponents As Boolean
+'  Dim Equation As String
+'  Dim MSG As String
+'  Dim StateMetric As Boolean
+'  Dim InMultParmExp As Boolean
+'  Dim MultParmExpVal As Double
+'  Dim lVariance As Double
+'  Dim Uv As Variant
+'  Dim lVals() As Double
+'
+'  On Error GoTo ErrHand
+'
+'  If ROI Then
+'    IntervalDischarge = ComputeROIdischarge(Me, pSaveEquivYears, pSaveStdError, pSaveStdErrorPlus, pSavePredInts, pZeroAdjusted)
+'  Else
+'
+'    If pUserRegions.Count = 0 Then
+'      ReDim IntervalDischarge(0)
+'      Discharges = IntervalDischarge
+'      Exit Function
+'    End If
+'
+'    MSG = MismatchedRegions
+'    If Len(MSG) > 0 Then
+'      ssMessageBox MSG, vbOKOnly, "Cannot Compute Discharges"
+'      GoTo LastLine
+'    End If
+'
+'    Set FirstReturns = pUserRegions(1).Region.DepVars
+'
+'    ReDim IntervalDischarge(1 To FirstReturns.Count)
+'
+'    If pUserRegions(1).Region.Name = pProject.NationalUrban.Name Then
+'      StateMetric = pProject.NationalUrban.State.Metric
+'    Else
+'      StateMetric = pProject.State.Metric
+'    End If
+'    If pProbEqtn Then
+'      ReDim pSaveStdError(FirstReturns.Count)
+'      ReDim pSavePredInts(2, FirstReturns.Count)
+'    End If
+'
+'    StepName = "For ReturnIndex = 1 To FirstReturns.Count"
+'
+'    For ReturnIndex = 1 To FirstReturns.Count
+'      StepName = "IntervalDischarge(ReturnIndex) = 0"
+'      IntervalDischarge(ReturnIndex) = 0
+'      StepName = "For RegionIndex = 1 To pUserRegions.Count"
+'      For RegionIndex = 1 To pUserRegions.Count
+'        StepName = "Set CurRegion = pUserRegions(RegionIndex)"
+'        Set CurRegion = pUserRegions(RegionIndex)
+'        If ReturnIndex = 1 Then 'reset collection of discharges for this region
+'          CurRegion.Discharges.Clear
+'        End If
+'        StepName = "Set CurReturn = CurRegion.Region.DepVars(ReturnIndex)"
+'        Set CurReturn = CurRegion.Region.DepVars(ReturnIndex)
+'        RegionVal = CurReturn.Constant
+'        StepName = "For ComponentIndex = 1 To CurReturn.Components.Count"
+'        If pProbEqtn And Me.UsePredInts Then
+'          Uv = CurReturn.PopulateMatrix
+'          lVariance = Uv(1, 1)
+'        End If
+'        'Some 500-year returns are supposed to be missing components, so we don't want to warn about them
+'        If CurReturn.Components.Count = 0 And Not WarnedAboutMissingComponents And InStr(CurReturn.Name, "500") = 0 Then
+'          StepName = "Error: Components for return period " & CurReturn.Name & " of " & CurRegion.Region.Name & " are missing from the database"
+'          pErrorDescription = pErrorDescription & StepName & vbCrLf
+'          ssMessageBox StepName, vbOKOnly, "NSS Discharges"
+'          WarnedAboutMissingComponents = True
+'        End If
+'        ReDim lVals(CurReturn.Components.Count)
+'        MultParmExpVal = 0 '1
+'        For ComponentIndex = 1 To CurReturn.Components.Count
+'          StepName = "Set CurComponent = CurReturn.Components(ComponentIndex)"
+'          Set CurComponent = CurReturn.Components(ComponentIndex)
+'          StepName = "Select Case CurComponent.ParmID (" & CurComponent.ParmID & ")"
+'          Select Case CurComponent.ParmID
+'            Case -4: curval = 0
+'            Case -3: InMultParmExp = True
+'            Case -2: curval = findRuralValue(FirstReturns(ReturnIndex).Name, StateMetric) 'find computed rural discharge
+'                     If curval = -999 Then 'Could not find a rural discharge, so we can't compute this urban one
+'                       IntervalDischarge(ReturnIndex) = -1
+'                       GoTo NextInterval
+'                     End If
+'            Case -1: curval = Me.GetArea(StateMetric) 'Drainage area of whole basin, not just the part in this region
+'            Case 0:  curval = 0
+'            Case Is > 0
+'                   If ComponentIndex = 1 And InStr(LCase(CurComponent.Parameter.NSSName), "area") > 0 Then
+'                     curval = Me.GetArea(StateMetric) 'Drainage area of whole basin, not just the part in this region
+'                   Else
+'                     curval = CurRegion.UserParms(CurComponent.Parameter.NSSName).GetValue(StateMetric)
+'                   End If
+'            Case Else:
+'              ssMessageBox "Could not use component " & ComponentIndex & " (ParmID=" & CurComponent.ParmID & ")" & vbCr _
+'                   & "of region " & CurRegion.Region.Name & ", return period " & CurReturn.Name, vbOKOnly, "Compute Discharge Problem"
+'              GoTo LastLine
+'          End Select
+'          lVals(ComponentIndex) = curval
+'          StepName = "If CurComponent.ExpID = 0 Then [If " & CurComponent.ExpID & " = 0 Then"
+'          If CurComponent.ExpID = 0 Then
+'            ExpVal = CurComponent.BaseExp
+'            Equation = ExpVal
+'          ElseIf pProbEqtn And CurComponent.ExpID = -999 Then
+'            'probability equation, -999 ExpID indicates to take natural log of base parm
+'            curval = Log(curval)
+'            lVals(ComponentIndex) = curval
+'            ExpVal = CurComponent.BaseExp
+'            Equation = ExpVal
+'          Else
+'            Equation = CurComponent.ExpMod & " + " & CurRegion.ParmIDVal(Abs(CurComponent.ExpID), StateMetric)
+'            ExpVal = CurComponent.ExpMod + CurRegion.ParmIDVal(Abs(CurComponent.ExpID), StateMetric)
+'            If CurComponent.ExpID < 0 Then
+'              StepName = "ExpVal = Log10(ExpVal) [ExpVal = Log10(" & ExpVal & ")]"
+'              Equation = "Log10(" & Equation & ")"
+'              ExpVal = Log10(ExpVal)
+'            Else
+'              Equation = "(" & Equation & ")"
+'            End If
+'            StepName = "ExpVal = ExpVal ^ CurComponent.ExpExp [ExpVal = " & ExpVal & " ^ " & CurComponent.ExpExp & "]"
+'            Equation = Equation & " ^ " & CurComponent.ExpExp
+'            ExpVal = ExpVal ^ CurComponent.ExpExp
+'            Equation = CurComponent.BaseExp & " * (" & Equation & ")"
+'            ExpVal = ExpVal * CurComponent.BaseExp
+'          End If
+'          If InMultParmExp Then 'compute exponent value from multiple parms
+'            MultParmExpVal = MultParmExpVal + ExpVal '* ExpVal
+'            If CurComponent.ParmID = -4 Then 'last parm in exponent
+'              ExpVal = MultParmExpVal
+'              InMultParmExp = False
+'            End If
+'          End If
+'          If Not InMultParmExp Then
+'            If pProbEqtn And CurComponent.ExpID = -999 Then 'natural log taken of this component
+'              Equation = "(ln(" & curval & " + " & CurComponent.BaseMod & ") * " & CurComponent.BaseCoeff & ") ^ " & Equation
+'            Else
+'              Equation = "((" & curval & " + " & CurComponent.BaseMod & ") * " & CurComponent.BaseCoeff & ") ^ " & Equation
+'            End If
+'            curval = curval + CurComponent.BaseMod
+'            StepName = "curval = (curval * CurComponent.BaseCoeff) ^ ExpVal [curval = (" & curval & " * " & CurComponent.BaseCoeff & ") ^ " & ExpVal & "]"
+'            curval = (curval * CurComponent.BaseCoeff) ^ ExpVal
+'            If pProbEqtn Then
+'              RegionVal = RegionVal + curval
+'            Else
+'              RegionVal = RegionVal * curval
+'            End If
+'          End If
+'          If pProbEqtn And Me.UsePredInts Then
+'            lVariance = lVariance + (Uv(ComponentIndex + 1, 1) * (lVals(ComponentIndex) ^ 2)) + (2 * lVals(ComponentIndex) * Uv(ComponentIndex + 1, ComponentIndex + 1))
+'            Dim j As Integer
+'            For j = ComponentIndex To 2 Step -1
+'              lVariance = lVariance + (2 * lVals(ComponentIndex) * lVals(j - 1) * Uv(j, ComponentIndex + 1))
+'            Next j
+'          End If
+'        Next
+'        StepName = "IntervalDischarge(ReturnIndex) = ..."
+'        IntervalDischarge(ReturnIndex) = IntervalDischarge(ReturnIndex) + RegionVal * CurRegion.UserParms(1).GetValue(StateMetric) / Me.GetArea(StateMetric)
+'        If StateMetric <> Me.Project.Metric And Not pProbEqtn Then
+'          If Me.Project.Metric Then
+'            RegionVal = RegionVal * 0.028317
+'          Else
+'            RegionVal = RegionVal / 0.028317
+'          End If
+'        End If
+'        CurRegion.Discharges.Add RegionVal
+'      Next
+'      If pProbEqtn Then
+'        If Me.UsePredInts Then
+'          StepName = "Compute Probability - e^Value/(1 + e^Value)"
+'          pSaveStdError(ReturnIndex) = Sqr(lVariance)
+'          pSavePredInts(1, ReturnIndex) = Exp(IntervalDischarge(ReturnIndex) - CurReturn.tDist * pSaveStdError(ReturnIndex)) / (1 + Exp(IntervalDischarge(ReturnIndex) - CurReturn.tDist * pSaveStdError(ReturnIndex)))
+'          pSavePredInts(2, ReturnIndex) = Exp(IntervalDischarge(ReturnIndex) + CurReturn.tDist * pSaveStdError(ReturnIndex)) / (1 + Exp(IntervalDischarge(ReturnIndex) + CurReturn.tDist * pSaveStdError(ReturnIndex)))
+'        End If
+'        IntervalDischarge(ReturnIndex) = Exp(IntervalDischarge(ReturnIndex)) / (1 + Exp(IntervalDischarge(ReturnIndex)))
+'      Else
+'        StepName = "If StateMetric <> Me.Project.Metric"
+'        If StateMetric <> Me.Project.Metric Then
+'          If Me.Project.Metric Then
+'            IntervalDischarge(ReturnIndex) = IntervalDischarge(ReturnIndex) * 0.028317
+'          Else
+'            IntervalDischarge(ReturnIndex) = IntervalDischarge(ReturnIndex) / 0.028317
+'          End If
+'        End If
+'      End If
+'NextInterval:
+'    Next
+'    If InStr(FirstReturns(FirstReturns.Count).Name, "500") > 0 And _
+'       IntervalDischarge(FirstReturns.Count) < 0.001 Then
+'      'not able to compute 500 year flood, extrapolate it
+'      StepName = "nss500"
+'      IntervalDischarge(FirstReturns.Count) = nss500(IntervalDischarge, Me.Intervals)
+'      pExtrapolated = True
+'    End If
+'  End If
+'  Discharges = IntervalDischarge
+'  Exit Function
+'
+'ErrHand:
+'    MSG = "Error: " & Err.Description & vbCrLf & vbCrLf _
+'           & StepName & vbCrLf _
+'           & "ReturnIndex = " & ReturnIndex & vbCrLf _
+'           & "RegionIndex = " & RegionIndex & vbCrLf _
+'           & "ComponentIndex = " & ComponentIndex
+'    If Not CurComponent Is Nothing Then
+'      With CurComponent
+'        MSG = MSG & vbCrLf _
+'            & " Parameter Name = " & .Parameter.NSSName & vbCrLf _
+'            & " BaseMod = " & .BaseMod & vbCrLf _
+'            & " BaseCoeff = " & .BaseCoeff & vbCrLf _
+'            & " BaseExp = " & .BaseExp & vbCrLf _
+'            & " ExpMod = " & .ExpMod & vbCrLf _
+'            & " ExpID = " & .ExpID & vbCrLf _
+'            & " ExpExp = " & .ExpExp & vbCrLf _
+'            & "Equation: " & Equation
+'      End With
+'    End If
+'    pErrorDescription = pErrorDescription & MSG
+'  'If Timer - lasterr > 1 Then
+'    ssMessageBox MSG, vbExclamation, "Error computing discharges"
+'  '  lasterr = Timer
+'  'End If
+'
+'LastLine:
+'  Discharges = IntervalDischarge 'Return empty array if there is a problem
+'End Function
 
 Private Function findRuralValue(ReturnPeriod As String, WantMetric As Boolean)
   Dim ReturnIndex As Long
@@ -965,7 +965,7 @@ Private Sub SetMatrix()
   Dim myRec As Recordset
   
   sql = "SELECT * FROM StateMatrices" & _
-        " WHERE StID='" & Me.Project.State.Code & _
+        " WHERE StID='" & Me.Project.State.code & _
         "' ORDER BY RowID, ColID;"
   Set myRec = Me.Project.DB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
@@ -1000,7 +1000,7 @@ Private Sub SetRHO()
   Dim i&, j&
   
   sql = "SELECT * FROM RHO " & _
-        "WHERE StID='" & Me.Project.State.Code & _
+        "WHERE StID='" & Me.Project.State.code & _
         "' ORDER BY RowID, ColID;"
   Set myRec = Me.Project.DB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
@@ -1019,11 +1019,11 @@ Private Sub SetRHO()
   Next i
 End Sub
 
-Public Property Get CF() As Variant
+Public Property Get Cf() As Variant
   If IsEmpty(pCF) Then SetCF
-  CF = pCF
+  Cf = pCF
 End Property
-Public Property Let CF(ByVal newValue As Variant)
+Public Property Let Cf(ByVal newValue As Variant)
   pCF = newValue
 End Property
 Private Sub SetCF()
@@ -1036,8 +1036,8 @@ Private Sub SetCF()
     ReDim pCF(1 To .RecordCount, 1 To 5)
     .MoveFirst
     While Not .EOF
-      pCF(.AbsolutePosition + 1, 1) = !X
-      pCF(.AbsolutePosition + 1, 2) = !Y
+      pCF(.AbsolutePosition + 1, 1) = !x
+      pCF(.AbsolutePosition + 1, 2) = !y
       pCF(.AbsolutePosition + 1, 3) = !C2
       pCF(.AbsolutePosition + 1, 4) = !C25
       pCF(.AbsolutePosition + 1, 5) = !C100
@@ -1054,7 +1054,7 @@ End Function
 
 Private Sub mltply(Prod() As Single, Xmat() As Single, Ymat() As Single, k1&, k2&, k3&, N1&, N2&, N3&)
   Dim i&, j&, k&
-  Dim Sum!
+  Dim sum!
 ' --------------------------------------------------------------
 '  Xmat IS K1*K2 MATRIX
 '  Ymat IS K2*K3 MATRIX
@@ -1062,11 +1062,11 @@ Private Sub mltply(Prod() As Single, Xmat() As Single, Ymat() As Single, k1&, k2
 ' --------------------------------------------------------------
   For i = 1 To k1
     For k = 1 To k3
-      Sum = 0#
+      sum = 0#
       For j = 1 To k2
-        Sum = Sum + Xmat(i, j) * Ymat(j, k)
+        sum = sum + Xmat(i, j) * Ymat(j, k)
       Next j
-      Prod(i, k) = Sum
+      Prod(i, k) = sum
     Next k
   Next i
 End Sub
@@ -1201,7 +1201,7 @@ Public Function EstimateString() As String
     If Me.ROI Then
 '      txt = "Recurrence     Peak,   Pred. Intervals   Standard Error    Equivalent" & vbCrLf _
 '          & "Interval, yrs   cfs       Low     High     (-%)    (+%)    Years"
-      If Me.LowFlow And Me.Project.State.Code = "47" Then
+      If Me.LowFlow And Me.Project.State.code = "47" Then
         txt = "              Value,   Pred. Intervals   Adjusted for" & vbCrLf _
             & "Statistic  " & lUnitStr & "      Low     High   Prob. of Zero"
       Else
@@ -1284,9 +1284,9 @@ Public Function EstimateString() As String
     For Index = 1 To nIntervals
       If Me.ROI Then
         If Me.LowFlow Then
-          IntervalText(Index) = Me.UserRegions(1).Region.State.ROILowData.FlowStats(Index).Code
+          IntervalText(Index) = Me.UserRegions(1).Region.State.ROILowData.FlowStats(Index).code
         Else
-          IntervalText(Index) = Me.UserRegions(1).Region.State.ROIPeakData.FlowStats(Index).Code
+          IntervalText(Index) = Me.UserRegions(1).Region.State.ROIPeakData.FlowStats(Index).code
         End If
       Else 'get name from DepVars collection populated from database query
         IntervalText(Index) = Me.UserRegions(1).Region.DepVars(Index).Name
@@ -1364,7 +1364,7 @@ Public Function EstimateString() As String
     End If
     For Index = 1 To nIntervals
       If Me.UsePredInts And Me.Weight.WeightType = 0 Then
-        If Me.LowFlow And Me.Project.State.Code = "47" Then
+        If Me.LowFlow And Me.Project.State.code = "47" Then
           txt = txt & vbCrLf & IntervalText(Index) & "  " _
                              & FlowText(Index) _
                              & PredIntsText(Index) _
@@ -1400,7 +1400,7 @@ End Function
 Private Sub GetMatrixBinary(MatType As Integer, MatVar As Variant)
   Dim i As Long, j As Long, Fun As Long, Fnv As Long, nv As Long
   Dim FileType As Integer '1 - RHO, 2 - REC
-  Dim Filename As String
+  Dim filename As String
   Dim iVal As Integer
   Dim rval As Single
   Dim FTotVal As Single, TotVal As Single
@@ -1410,15 +1410,15 @@ Private Sub GetMatrixBinary(MatType As Integer, MatVar As Variant)
 '    Filename = GetSetting("StreamStatsDB", "Defaults", Me.Project.State.Abbrev & "_RHOImportFile")
     ff.SetDialogProperties "Please locate ROI RHO binary file", Me.Project.State.Abbrev & ".rho.bin"
     ff.SetRegistryInfo "StreamStatsDB", "Defaults", Me.Project.State.Abbrev & "RHOBinary"
-    Filename = ff.GetName
+    filename = ff.GetName
   Else 'REC
 '    Filename = GetSetting("StreamStatsDB", "Defaults", Me.Project.State.Abbrev & "_MConImportFile")
     ff.SetDialogProperties "Please locate ROI REC binary file", Me.Project.State.Abbrev & ".rec.bin"
     ff.SetRegistryInfo "StreamStatsDB", "Defaults", Me.Project.State.Abbrev & "RECBinary"
-    Filename = ff.GetName
+    filename = ff.GetName
   End If
   Fun = FreeFile(0)
-  Open Filename For Binary As #Fun
+  Open filename For Binary As #Fun
   Get #Fun, , FileType
   Get #Fun, , Fnv
   Get #Fun, , FTotVal
@@ -1454,3 +1454,296 @@ Private Sub GetMatrixBinary(MatType As Integer, MatVar As Variant)
     Next i
   End If
 End Sub
+
+Public Function Discharges() As Double()
+  Static lasterr As Single
+  Dim RegionIndex As Long
+  Dim ReturnIndex As Long
+  Dim ComponentIndex As Long
+  Dim AccumFlow As Double
+  Dim FirstReturns As FastCollection
+  Dim CurRegion As userRegion
+  Dim CurReturn As nssDepVar
+  Dim CurComponent As nssComponent
+  Dim IntervalDischarge() As Double
+  Dim RegionVal As Double
+  Dim curval As Double
+  Dim ExpVal As Double
+  Dim StepName As String
+  Dim WarnedAboutMissingComponents As Boolean
+  Dim Equation As String
+  Dim MSG As String
+  Dim StateMetric As Boolean
+  Dim InMultParmExp As Boolean
+  Dim MultParmExpVal As Double
+  Dim lVariance As Double
+  Dim Uv As Variant
+  Dim lVals() As Double
+  Dim lMath As clsMathParser
+  Dim lVarName As String
+  Dim vParm As nssParameter
+  Dim i As Integer
+  Dim j As Integer
+  
+  On Error GoTo ErrHand
+  
+  If ROI Then
+    IntervalDischarge = ComputeROIdischarge(Me, pSaveEquivYears, pSaveStdError, pSaveStdErrorPlus, pSavePredInts, pZeroAdjusted)
+  Else
+  
+    If pUserRegions.Count = 0 Then
+      ReDim IntervalDischarge(0)
+      Discharges = IntervalDischarge
+      Exit Function
+    End If
+    
+    MSG = MismatchedRegions
+    If Len(MSG) > 0 Then
+      ssMessageBox MSG, vbOKOnly, "Cannot Compute Discharges"
+      GoTo LastLine
+    End If
+    
+    Set FirstReturns = pUserRegions(1).Region.DepVars
+    
+    ReDim IntervalDischarge(1 To FirstReturns.Count)
+    
+    If pUserRegions(1).Region.Name = pProject.NationalUrban.Name Then
+      StateMetric = pProject.NationalUrban.State.Metric
+    Else
+      StateMetric = pProject.State.Metric
+    End If
+    If pProbEqtn Then
+      ReDim pSaveStdError(FirstReturns.Count)
+      ReDim pSavePredInts(2, FirstReturns.Count)
+    End If
+    
+    StepName = "For ReturnIndex = 1 To FirstReturns.Count"
+    
+    For ReturnIndex = 1 To FirstReturns.Count
+      StepName = "IntervalDischarge(ReturnIndex) = 0"
+      IntervalDischarge(ReturnIndex) = 0
+      StepName = "For RegionIndex = 1 To pUserRegions.Count"
+      For RegionIndex = 1 To pUserRegions.Count
+        StepName = "Set CurRegion = pUserRegions(RegionIndex)"
+        Set CurRegion = pUserRegions(RegionIndex)
+        If ReturnIndex = 1 Then 'reset collection of discharges for this region
+          CurRegion.Discharges.Clear
+        End If
+        StepName = "Set CurReturn = CurRegion.Region.DepVars(ReturnIndex)"
+        Set CurReturn = CurRegion.Region.DepVars(ReturnIndex)
+        Set lMath = New clsMathParser
+        If lMath.StoreExpression(CurReturn.Equation) Then
+          If pProbEqtn And Me.UsePredInts Then
+            ReDim lVals(lMath.VarTop)
+          End If
+          For i = 1 To lMath.VarTop
+            If lMath.VarName(i) = "CONTDA" Or lMath.VarName(i) = "DRNAREA" Then 'use whole scenario area
+              lMath.Variable(i) = Me.GetArea(StateMetric)
+            ElseIf UCase(lMath.VarName(i)) = "RURAL_DIS" Then 'need corresponding rural estimate for urban equation
+              lMath.Variable(i) = findRuralValue(FirstReturns(ReturnIndex).Name, StateMetric) 'find computed rural discharge
+                If lMath.Variable(i) = -999 Then 'Could not find a rural discharge, so we can't compute this urban one
+                  IntervalDischarge(ReturnIndex) = -1
+                  GoTo NextInterval
+                End If
+            ElseIf UCase(lMath.VarName(i)) = "RURAL_DA" Then 'need corresponding rural area for urban equation (IS THIS CORRECT?)
+              lMath.Variable(i) = Me.GetArea(StateMetric)
+            Else 'match variable name with UserParm name
+              For Each vParm In CurRegion.Region.Parameters
+                If vParm.Abbrev = lMath.VarName(i) Then 'get the input value
+                  lMath.Variable(vParm.Abbrev) = CurRegion.UserParms(vParm.NSSName).GetValue(StateMetric)
+                End If
+              Next
+            End If
+            If pProbEqtn And Me.UsePredInts Then 'save variable values for variance/PI calcs
+              lVals(i) = lMath.Variable(i)
+              j = InStr(CurReturn.Equation, lMath.VarName(i))
+              If j > 4 Then 'see if log of variable is being taken
+                If InStr(Mid(CurReturn.Equation, j - 4, 4), "ln(") > 0 Then
+                  lVals(i) = Log(lVals(i))
+                End If
+              End If
+            End If
+          Next
+          curval = lMath.Eval
+        ElseIf Len(CurReturn.Equation) > 0 And InStr(CurReturn.Name, "500") = 0 Then 'problem with equation
+          MsgBox "Could not parse: " & CurReturn.Equation, , "NSS Problem"
+        End If
+        RegionVal = curval
+        
+'        RegionVal = CurReturn.Constant
+'        StepName = "For ComponentIndex = 1 To CurReturn.Components.Count"
+        If pProbEqtn And Me.UsePredInts Then
+          Uv = CurReturn.PopulateMatrix
+          lVariance = Uv(1, 1)
+          For i = 1 To lMath.VarTop
+            lVariance = lVariance + (Uv(i + 1, 1) * (lVals(i) ^ 2)) + (2 * lVals(i) * Uv(i + 1, i + 1))
+            For j = i To 2 Step -1
+              lVariance = lVariance + (2 * lVals(i) * lVals(j - 1) * Uv(j, i + 1))
+            Next j
+          Next i
+        End If
+        'Some 500-year returns are supposed to be missing components, so we don't want to warn about them
+        If CurReturn.Components.Count = 0 And Not WarnedAboutMissingComponents And InStr(CurReturn.Name, "500") = 0 Then
+          StepName = "Error: Components for return period " & CurReturn.Name & " of " & CurRegion.Region.Name & " are missing from the database"
+          pErrorDescription = pErrorDescription & StepName & vbCrLf
+          ssMessageBox StepName, vbOKOnly, "NSS Discharges"
+          WarnedAboutMissingComponents = True
+        End If
+        ReDim lVals(CurReturn.Components.Count)
+'        MultParmExpVal = 0 '1
+'        For ComponentIndex = 1 To CurReturn.Components.Count
+'          StepName = "Set CurComponent = CurReturn.Components(ComponentIndex)"
+'          Set CurComponent = CurReturn.Components(ComponentIndex)
+'          StepName = "Select Case CurComponent.ParmID (" & CurComponent.ParmID & ")"
+'          Select Case CurComponent.ParmID
+'            Case -4: curval = 0
+'            Case -3: InMultParmExp = True
+'            Case -2: curval = findRuralValue(FirstReturns(ReturnIndex).Name, StateMetric) 'find computed rural discharge
+'                     If curval = -999 Then 'Could not find a rural discharge, so we can't compute this urban one
+'                       IntervalDischarge(ReturnIndex) = -1
+'                       GoTo NextInterval
+'                     End If
+'            Case -1: curval = Me.GetArea(StateMetric) 'Drainage area of whole basin, not just the part in this region
+'            Case 0:  curval = 0
+'            Case Is > 0
+'                   If ComponentIndex = 1 And InStr(LCase(CurComponent.Parameter.NSSName), "area") > 0 Then
+'                     curval = Me.GetArea(StateMetric) 'Drainage area of whole basin, not just the part in this region
+'                   Else
+'                     curval = CurRegion.UserParms(CurComponent.Parameter.NSSName).GetValue(StateMetric)
+'                   End If
+'            Case Else:
+'              ssMessageBox "Could not use component " & ComponentIndex & " (ParmID=" & CurComponent.ParmID & ")" & vbCr _
+'                   & "of region " & CurRegion.Region.Name & ", return period " & CurReturn.Name, vbOKOnly, "Compute Discharge Problem"
+'              GoTo LastLine
+'          End Select
+'          lVals(ComponentIndex) = curval
+'          StepName = "If CurComponent.ExpID = 0 Then [If " & CurComponent.ExpID & " = 0 Then"
+'          If CurComponent.ExpID = 0 Then
+'            ExpVal = CurComponent.BaseExp
+'            Equation = ExpVal
+'          ElseIf pProbEqtn And CurComponent.ExpID = -999 Then
+'            'probability equation, -999 ExpID indicates to take natural log of base parm
+'            curval = Log(curval)
+'            lVals(ComponentIndex) = curval
+'            ExpVal = CurComponent.BaseExp
+'            Equation = ExpVal
+'          Else
+'            Equation = CurComponent.ExpMod & " + " & CurRegion.ParmIDVal(Abs(CurComponent.ExpID), StateMetric)
+'            ExpVal = CurComponent.ExpMod + CurRegion.ParmIDVal(Abs(CurComponent.ExpID), StateMetric)
+'            If CurComponent.ExpID < 0 Then
+'              StepName = "ExpVal = Log10(ExpVal) [ExpVal = Log10(" & ExpVal & ")]"
+'              Equation = "Log10(" & Equation & ")"
+'              ExpVal = Log10(ExpVal)
+'            Else
+'              Equation = "(" & Equation & ")"
+'            End If
+'            StepName = "ExpVal = ExpVal ^ CurComponent.ExpExp [ExpVal = " & ExpVal & " ^ " & CurComponent.ExpExp & "]"
+'            Equation = Equation & " ^ " & CurComponent.ExpExp
+'            ExpVal = ExpVal ^ CurComponent.ExpExp
+'            Equation = CurComponent.BaseExp & " * (" & Equation & ")"
+'            ExpVal = ExpVal * CurComponent.BaseExp
+'          End If
+'          If InMultParmExp Then 'compute exponent value from multiple parms
+'            MultParmExpVal = MultParmExpVal + ExpVal '* ExpVal
+'            If CurComponent.ParmID = -4 Then 'last parm in exponent
+'              ExpVal = MultParmExpVal
+'              InMultParmExp = False
+'            End If
+'          End If
+'          If Not InMultParmExp Then
+'            If pProbEqtn And CurComponent.ExpID = -999 Then 'natural log taken of this component
+'              Equation = "(ln(" & curval & " + " & CurComponent.BaseMod & ") * " & CurComponent.BaseCoeff & ") ^ " & Equation
+'            Else
+'              Equation = "((" & curval & " + " & CurComponent.BaseMod & ") * " & CurComponent.BaseCoeff & ") ^ " & Equation
+'            End If
+'            curval = curval + CurComponent.BaseMod
+'            StepName = "curval = (curval * CurComponent.BaseCoeff) ^ ExpVal [curval = (" & curval & " * " & CurComponent.BaseCoeff & ") ^ " & ExpVal & "]"
+'            curval = (curval * CurComponent.BaseCoeff) ^ ExpVal
+'            If pProbEqtn Then
+'              RegionVal = RegionVal + curval
+'            Else
+'              RegionVal = RegionVal * curval
+'            End If
+'          End If
+          
+           '*** NOTE - Will need to resolve Variance computation
+'          If pProbEqtn And Me.UsePredInts Then
+'            lVariance = lVariance + (Uv(ComponentIndex + 1, 1) * (lVals(ComponentIndex) ^ 2)) + (2 * lVals(ComponentIndex) * Uv(ComponentIndex + 1, ComponentIndex + 1))
+'            Dim j As Integer
+'            For j = ComponentIndex To 2 Step -1
+'              lVariance = lVariance + (2 * lVals(ComponentIndex) * lVals(j - 1) * Uv(j, ComponentIndex + 1))
+'            Next j
+'          End If
+'        Next
+        StepName = "IntervalDischarge(ReturnIndex) = ..."
+        IntervalDischarge(ReturnIndex) = IntervalDischarge(ReturnIndex) + RegionVal * CurRegion.UserParms(1).GetValue(StateMetric) / Me.GetArea(StateMetric)
+        If StateMetric <> Me.Project.Metric And Not pProbEqtn Then
+          If Me.Project.Metric Then
+            RegionVal = RegionVal * 0.028317
+          Else
+            RegionVal = RegionVal / 0.028317
+          End If
+        End If
+        CurRegion.Discharges.Add RegionVal
+      Next
+      If pProbEqtn Then
+        If Me.UsePredInts Then
+          StepName = "Compute Probability - e^Value/(1 + e^Value)"
+          pSaveStdError(ReturnIndex) = Sqr(lVariance)
+          pSavePredInts(1, ReturnIndex) = Exp(IntervalDischarge(ReturnIndex) - CurReturn.tDist * pSaveStdError(ReturnIndex)) / (1 + Exp(IntervalDischarge(ReturnIndex) - CurReturn.tDist * pSaveStdError(ReturnIndex)))
+          pSavePredInts(2, ReturnIndex) = Exp(IntervalDischarge(ReturnIndex) + CurReturn.tDist * pSaveStdError(ReturnIndex)) / (1 + Exp(IntervalDischarge(ReturnIndex) + CurReturn.tDist * pSaveStdError(ReturnIndex)))
+        End If
+'        IntervalDischarge(ReturnIndex) = Exp(IntervalDischarge(ReturnIndex)) / (1 + Exp(IntervalDischarge(ReturnIndex)))
+      Else
+        StepName = "If StateMetric <> Me.Project.Metric"
+        If StateMetric <> Me.Project.Metric Then
+          If Me.Project.Metric Then
+            IntervalDischarge(ReturnIndex) = IntervalDischarge(ReturnIndex) * 0.028317
+          Else
+            IntervalDischarge(ReturnIndex) = IntervalDischarge(ReturnIndex) / 0.028317
+          End If
+        End If
+      End If
+NextInterval:
+    Next
+    If InStr(FirstReturns(FirstReturns.Count).Name, "500") > 0 And _
+       IntervalDischarge(FirstReturns.Count) < 0.001 Then
+      'not able to compute 500 year flood, extrapolate it
+      StepName = "nss500"
+      IntervalDischarge(FirstReturns.Count) = nss500(IntervalDischarge, Me.Intervals)
+      pExtrapolated = True
+    End If
+  End If
+  Discharges = IntervalDischarge
+  Exit Function
+
+ErrHand:
+    MSG = "Error: " & Err.Description & vbCrLf & vbCrLf _
+           & StepName & vbCrLf _
+           & "ReturnIndex = " & ReturnIndex & vbCrLf _
+           & "RegionIndex = " & RegionIndex & vbCrLf _
+           & "ComponentIndex = " & ComponentIndex
+    If Not CurComponent Is Nothing Then
+      With CurComponent
+        MSG = MSG & vbCrLf _
+            & " Parameter Name = " & .Parameter.NSSName & vbCrLf _
+            & " BaseMod = " & .BaseMod & vbCrLf _
+            & " BaseCoeff = " & .BaseCoeff & vbCrLf _
+            & " BaseExp = " & .BaseExp & vbCrLf _
+            & " ExpMod = " & .ExpMod & vbCrLf _
+            & " ExpID = " & .ExpID & vbCrLf _
+            & " ExpExp = " & .ExpExp & vbCrLf _
+            & "Equation: " & Equation
+      End With
+    End If
+    pErrorDescription = pErrorDescription & MSG
+  'If Timer - lasterr > 1 Then
+    ssMessageBox MSG, vbExclamation, "Error computing discharges"
+  '  lasterr = Timer
+  'End If
+
+LastLine:
+  Discharges = IntervalDischarge 'Return empty array if there is a problem
+End Function
+
+
