@@ -288,7 +288,7 @@ Begin VB.Form frmROISetUp
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   4
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -653,7 +653,12 @@ Private Sub cmdSave_Click()
   If lFlowType = "Peak" Then 'just edit ROI fields on standard State table record
     SSDB.state.Edit str, -chkCF.value, -chkDistance.value, -chkRegress.value, -chkUseRegions.value, atxSimStations.value 'useRegions
   Else 'Low/Dur ROI, add 2nd record (if needed) for state that will contain low/dur ROI info in fields
-  
+    Dim lCode As Integer
+    lCode = SSDB.state.code
+    SSDB.state.code = 10000 + lCode
+    SSDB.state.Edit str, -chkCF.value, -chkDistance.value, -chkRegress.value, -chkUseRegions.value, atxSimStations.value 'useRegions
+    SSDB.state.code = lCode
+    'SSDB.States(lKey).Edit str, -chkCF.value, -chkDistance.value, -chkRegress.value, -chkUseRegions.value, atxSimStations.value 'useRegions
   End If
   For regionCnter = 1 To lstRegions.ListCount
     Set curRegion = ExistingRegions(regionCnter)
@@ -670,7 +675,11 @@ Private Sub cmdSave_Click()
     Next ParmCnter
     For row = 1 To lstReturnPeriods.RightCount
       Set MyDepVar = New nssDepVar
-      MyDepVar.Add True, curRegion, lstReturnPeriods.RightItem(row - 1)
+      If lFlowType = "Peak" Then
+        MyDepVar.Add True, curRegion, lstReturnPeriods.RightItem(row - 1)
+      Else
+        MyDepVar.Add False, curRegion, lstReturnPeriods.RightItem(row - 1)
+      End If
     Next row
   Next regionCnter
 NoChanges:
@@ -706,7 +715,7 @@ Private Sub cmdStaData_Click()
         Set SSDB.state.StatsOnFile = Nothing
         SSDB.state.Regions.Clear
         Set SSDB.state.Regions = Nothing
-        Form_Load
+'        Form_Load
       End If
     End If
   End With
@@ -724,23 +733,46 @@ Private Sub Form_Load()
   Me.Caption = "Add new ROI data for " & SSDB.state.Name
   rdoFlowType(0).value = False
   rdoFlowType(1).value = False
-  If Not SSDB.state.ROIPeakData.Stations Is Nothing Then
+  
+'  If Not SSDB.state.ROIPeakData Is Nothing Then
+'    rdoFlowType(0).value = True
+'  ElseIf Not SSDB.state.ROIlowData Is Nothing Then
+'    rdoFlowType(1).value = True
+'  Else
+
+  i = myMsgBox.Show("Do you want to import/edit ROI data for Peak flow or Low Flow/Duration?", _
+                    "ROI Setup", "+&Peak", "-&Low")
+  If i = 1 Then
     rdoFlowType(0).value = True
-  ElseIf Not SSDB.state.ROILowData.Stations Is Nothing Then
-    rdoFlowType(1).value = True
   Else
-    i = myMsgBox.Show("There are no ROI data on file for " & SSDB.state.Name & "." & vbCrLf & vbCrLf & _
-                      "Do you want to import ROI station data for Peak flow or Low Flow/Duration?", _
-                      "ROI Setup", "+&Peak", "-&Low")
-    If i = 1 Then lFlowType = "Peak" Else lFlowType = "Low"
-    cmdStaData_Click
-    If ImportedNewData Then  'reset all region data in state
-      SSDB.state.Regions.Clear
-      Set SSDB.state.Regions = Nothing
-    Else
-      Exit Sub
-    End If
+    rdoFlowType(1).value = True
   End If
+  
+'  If Not SSDB.state.ROIPeakData Is Nothing Then
+'    If SSDB.state.ROIPeakData.Stations.Count > 0 Then rdoFlowType(0).value = True
+'  ElseIf Not SSDB.state.ROILowData Is Nothing Then
+'    If SSDB.state.ROILowData.Stations.Count > 0 Then rdoFlowType(1).value = True
+'  End If
+'  If rdoFlowType(0).value = False And rdoFlowType(1).value = False Then
+'    i = myMsgBox.Show("There are no ROI data on file for " & SSDB.state.Name & "." & vbCrLf & vbCrLf & _
+'                      "Do you want to import ROI station data for Peak flow or Low Flow/Duration?", _
+'                      "ROI Setup", "+&Peak", "-&Low")
+'    If i = 1 Then lFlowType = "Peak" Else lFlowType = "Low"
+'    cmdStaData_Click
+'    If ImportedNewData Then  'reset all region data in state
+'      Set SSDB.States = Nothing
+'      If lFlowType = "Peak" Then
+'        Set lROIData = SSDB.States(CStr(SSDB.state.code)).ROIPeakData
+'      Else
+'        Set lROIData = SSDB.States(CStr(SSDB.state.code)).ROILowData
+'      End If
+'      SSDB.state.Regions.Clear
+'      Set SSDB.state.Regions = Nothing
+'    Else
+'      Exit Sub
+'    End If
+'  End If
+  
   'Retrieve name of station data import file from registry
   txtStaDataFile.Text = GetSetting("StreamStatsDB", "Defaults", SSDB.state.Abbrev & "_" & lFlowType & "_StaDataImportFile")
 ImportedData:
@@ -764,9 +796,14 @@ ImportedData:
   Next ParmCnt
 
   PopulateParms
-
   'Fill in ROI regions, if there are any
   PopulateRegions
+  PopulateReturnPeriods
+  If lstRegions.ListCount > 0 Then
+    lstRegions.Selected(0) = True
+    lstRegions_Click
+  End If
+
 '  For regnCnter = 1 To SSDB.state.Regions.Count
 '    If SSDB.state.Regions(regnCnter).ROIRegnID > 0 Then
 '      If height = 0 Then
@@ -872,6 +909,7 @@ Private Sub PopulateRegions()
   Dim i As Integer
 
   lstRegions.Clear
+  ExistingRegions.Clear
 
   For i = 1 To SSDB.state.Regions.Count
     If (lFlowType = "Peak" And SSDB.state.Regions(i).ROIRegnID > 0) Or _
@@ -1260,29 +1298,44 @@ End Sub
 
 Private Sub rdoFlowType_Click(Index As Integer)
 
+  Dim lStationCount As Integer
+  
   If Index = 0 Then 'peak flow
     lFlowType = "Peak"
     Set lROIData = SSDB.state.ROIPeakData
+    lStationCount = lROIData.Stations.Count
   Else
     lFlowType = "Low"
-    Dim lKey As String
-    lKey = CStr(10000 + CInt(SSDB.state.code))
-    Set lROIData = SSDB.States(lKey).ROILowData
+    If SSDB.state.ROILowData Is Nothing Then
+      lStationCount = 0
+    Else
+      Set lROIData = SSDB.state.ROILowData
+      lStationCount = lROIData.Stations.Count
+    End If
   End If
-  If lROIData.Stations.Count = 0 Then
+  If lStationCount = 0 Then
     MsgBox "There are no ROI " & lFlowType & " station data on file." & vbCrLf & vbCrLf & _
         "You must import station data for " & SSDB.state.Name & vbCrLf & _
         "before specifying the ROI parameters.", , "Need station data"
     cmdStaData_Click
     If ImportedNewData Then  'reset all region data in state
+      Set SSDB.States = Nothing
+      If lFlowType = "Peak" Then
+        Set lROIData = SSDB.States(CStr(SSDB.state.code)).ROIPeakData
+      Else
+        Set lROIData = SSDB.States(CStr(SSDB.state.code)).ROILowData
+      End If
       SSDB.state.Regions.Clear
       Set SSDB.state.Regions = Nothing
     End If
   End If
-  PopulateParms
-  PopulateRegions
-  PopulateReturnPeriods
-  lstRegions.Selected(0) = True
-  lstRegions_Click
   
+'  PopulateParms
+'  PopulateRegions
+'  PopulateReturnPeriods
+'  If lstRegions.ListCount > 0 Then
+'    lstRegions.Selected(0) = True
+'    lstRegions_Click
+'  End If
+
 End Sub
