@@ -16,7 +16,7 @@ Option Explicit
 
 Private pRegion As nssRegion
 Private pUserParms As FastCollection 'of userParameter
-Private pDischarges as FastCollection 'of individual region's discharges estimates
+Private pDischarges As FastCollection 'of individual region's discharges estimates
 
 Public Property Get Region() As nssRegion
   Set Region = pRegion
@@ -78,7 +78,7 @@ Private Sub PopulateUserParms()
   For Each baseParm In pRegion.Parameters
     Set newParm = New userParameter
     Set newParm.Parameter = baseParm
-    pUserParms.Add newParm, baseParm.NSSName  'baseParm.Abbrev
+    pUserParms.Add newParm, baseParm.NSSName 'baseParm.Abbrev
     Set newParm = Nothing
   Next
 End Sub

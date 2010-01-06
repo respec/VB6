@@ -318,6 +318,7 @@ Public Sub PopulateDepVars()
         If Not IsNull(depVarRec.Fields("ExpDA")) Then .ExpDA = depVarRec.Fields("ExpDA")
         'add the following line when database updated to link DepVars and StatLabel tables
         If Not IsNull(depVarRec.Fields("UnitID")) Then Set .Units = pDB.Units(CStr(depVarRec.Fields("UnitID")))
+        If Not IsNull(depVarRec.Fields("Equation")) Then .Equation = depVarRec.Fields("Equation")
       End With
       newDepVar.Components.Clear
       Set newDepVar.Components = Nothing

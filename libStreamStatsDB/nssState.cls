@@ -537,7 +537,7 @@ Public Sub PopulateRegions()
         .Urban = rgnRec.Fields("Urban")
         .UrbanNeedsRural = rgnRec.Fields("UrbanNeedsRural")
         .PredInt = rgnRec.Fields("PredInt")
-        .ROIRegnID = rgnRec.Fields("ROI")
+        .ROIRegnID = rgnRec.Fields("ROIRegionID")
         .LowFlowRegnID = rgnRec.Fields("LowFlow")
       End With
       pRegions.Add newRegion, newRegion.Name
