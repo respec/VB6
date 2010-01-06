@@ -492,7 +492,7 @@ Private Sub cboState_Click()
   If answer = vbOK Then
     Project.Clear
     Clear
-    Set Project.State = Project.DB.States(cboState.ListIndex + 1)
+    Set Project.State = Project.DB.States.ItemByKey(Format(cboState.ItemData(cboState.ListIndex), "00"))
   ElseIf Project.State.code <> Format(cboState.ItemData(cboState.ListIndex), "00") Then
     'keep current state
     While cboState.ItemData(i) <> CLng(Project.State.code)
@@ -661,6 +661,7 @@ Private Sub cmdWeight_Click()
 End Sub
 
 Private Sub Form_Load()
+  Dim i As Integer
   Dim stIndex As Long
   Dim selState As Long
   Dim progress As String
@@ -679,11 +680,18 @@ Private Sub Form_Load()
   progress = progress & vbCr & "cboState.Clear"
   cboState.Clear
   progress = progress & vbCr & "Adding states to cboState"
-  For stIndex = 1 To Project.DB.States.Count
-    progress = progress & vbCr & "Adding " & Project.DB.States(stIndex).Name
-    cboState.AddItem Project.DB.States(stIndex).Name
-    cboState.ItemData(stIndex - 1) = Project.DB.States(stIndex).code
-    If Project.DB.States(stIndex).Name = Project.State.Name Then selState = stIndex
+  stIndex = 0
+  For i = 1 To Project.DB.States.Count
+    If IsNumeric(Project.DB.States(i).code) Then
+      If CInt(Project.DB.States(i).code) < 99 Then
+        'weed out dummy state and ROI low flow state records
+        progress = progress & vbCr & "Adding " & Project.DB.States(i).Name
+        cboState.AddItem Project.DB.States(i).Name
+        cboState.ItemData(stIndex) = Project.DB.States(i).code
+        stIndex = stIndex + 1
+        If Project.DB.States(i).Name = Project.State.Name Then selState = stIndex
+      End If
+    End If
   Next
   progress = progress & vbCr & "cboState.ListIndex = " & selState - 1
   cboState.ListIndex = selState - 1
