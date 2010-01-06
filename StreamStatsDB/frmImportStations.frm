@@ -86,7 +86,7 @@ Begin VB.Form frmImportStations
       AllowEditHeader =   0   'False
       AllowLoad       =   0   'False
       AllowSorting    =   0   'False
-      Rows            =   87
+      Rows            =   88
       Cols            =   2
       ColWidthMinimum =   300
       gridFontBold    =   0   'False
@@ -466,7 +466,8 @@ Private Sub cmdOK_Click()
 End Sub
 
 Private Sub Form_Resize()
-  Me.Caption = "Import station data for " & SSDB.state.Name
+  'Me.Caption = "Import station data for " & SSDB.state.Name
+  Me.Caption = Me.Caption & " for " & SSDB.state.Name
   fraButtons.Left = (Me.ScaleWidth - fraButtons.Width) / 2
   fraButtons.Top = Me.ScaleHeight - fraButtons.height * 1.5
   If fraButtons.Top > fraButtons.height Then
