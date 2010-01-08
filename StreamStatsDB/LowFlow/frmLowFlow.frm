@@ -16,7 +16,7 @@ Begin VB.Form frmLowFlow
       Caption         =   "Convert"
       Height          =   375
       Left            =   9840
-      TabIndex        =   42
+      TabIndex        =   38
       Top             =   6240
       Width           =   735
    End
@@ -34,7 +34,7 @@ Begin VB.Form frmLowFlow
       Height          =   252
       Index           =   2
       Left            =   2880
-      TabIndex        =   41
+      TabIndex        =   37
       Top             =   600
       Width           =   1335
    End
@@ -51,7 +51,7 @@ Begin VB.Form frmLowFlow
       EndProperty
       Height          =   615
       Left            =   6720
-      TabIndex        =   38
+      TabIndex        =   34
       Top             =   480
       Width           =   2175
       Begin VB.OptionButton rdoUnits 
@@ -68,7 +68,7 @@ Begin VB.Form frmLowFlow
          Height          =   255
          Index           =   0
          Left            =   105
-         TabIndex        =   40
+         TabIndex        =   36
          Top             =   240
          Width           =   975
       End
@@ -86,7 +86,7 @@ Begin VB.Form frmLowFlow
          Height          =   255
          Index           =   1
          Left            =   1170
-         TabIndex        =   39
+         TabIndex        =   35
          Top             =   240
          Width           =   975
       End
@@ -104,7 +104,7 @@ Begin VB.Form frmLowFlow
       EndProperty
       Height          =   255
       Left            =   120
-      TabIndex        =   36
+      TabIndex        =   32
       Top             =   120
       Width           =   735
    End
@@ -121,7 +121,7 @@ Begin VB.Form frmLowFlow
       EndProperty
       Height          =   492
       Left            =   9840
-      TabIndex        =   32
+      TabIndex        =   31
       Top             =   7440
       Width           =   732
    End
@@ -139,7 +139,7 @@ Begin VB.Form frmLowFlow
       EndProperty
       Height          =   372
       Left            =   9840
-      TabIndex        =   29
+      TabIndex        =   28
       Top             =   600
       Width           =   732
    End
@@ -157,7 +157,7 @@ Begin VB.Form frmLowFlow
       EndProperty
       Height          =   372
       Left            =   9000
-      TabIndex        =   28
+      TabIndex        =   27
       Top             =   600
       Width           =   732
    End
@@ -175,7 +175,7 @@ Begin VB.Form frmLowFlow
       Height          =   252
       Index           =   1
       Left            =   1560
-      TabIndex        =   27
+      TabIndex        =   26
       Top             =   600
       Width           =   1335
    End
@@ -193,7 +193,7 @@ Begin VB.Form frmLowFlow
       Height          =   252
       Index           =   0
       Left            =   120
-      TabIndex        =   26
+      TabIndex        =   25
       Top             =   600
       Width           =   1335
    End
@@ -210,7 +210,7 @@ Begin VB.Form frmLowFlow
       EndProperty
       Height          =   492
       Left            =   9840
-      TabIndex        =   25
+      TabIndex        =   24
       Top             =   8040
       Width           =   732
    End
@@ -300,88 +300,130 @@ Begin VB.Form frmLowFlow
       Top             =   3240
       Visible         =   0   'False
       Width           =   9615
-      Begin ATCoCtl.ATCoGrid grdComps 
-         CausesValidation=   0   'False
-         Height          =   1515
+      Begin VB.Frame fraEquation 
+         Caption         =   "Equation Definition"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   2175
          Left            =   120
-         TabIndex        =   24
-         Top             =   1560
+         TabIndex        =   39
+         Top             =   1680
          Width           =   9375
-         _ExtentX        =   16536
-         _ExtentY        =   2672
-         SelectionToggle =   0   'False
-         AllowBigSelection=   -1  'True
-         AllowEditHeader =   0   'False
-         AllowLoad       =   0   'False
-         AllowSorting    =   0   'False
-         Rows            =   1
-         Cols            =   2
-         ColWidthMinimum =   300
-         gridFontBold    =   0   'False
-         gridFontItalic  =   0   'False
-         gridFontName    =   "MS Sans Serif"
-         gridFontSize    =   8
-         gridFontUnderline=   0   'False
-         gridFontWeight  =   400
-         gridFontWidth   =   0
-         Header          =   "Equation Components"
-         FixedRows       =   2
-         FixedCols       =   0
-         ScrollBars      =   2
-         SelectionMode   =   0
-         BackColor       =   -2147483643
-         ForeColor       =   -2147483640
-         BackColorBkg    =   -2147483632
-         BackColorSel    =   -2147483635
-         ForeColorSel    =   -2147483634
-         BackColorFixed  =   -2147483633
-         ForeColorFixed  =   -2147483630
-         InsideLimitsBackground=   -2147483643
-         OutsideHardLimitBackground=   8421631
-         OutsideSoftLimitBackground=   8454143
-         ComboCheckValidValues=   -1  'True
-      End
-      Begin VB.CommandButton cmdComponent 
-         Caption         =   "Remove Component"
-         BeginProperty Font 
-            Name            =   "MS Sans Serif"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   700
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   255
-         Index           =   1
-         Left            =   2520
-         TabIndex        =   34
-         Top             =   3120
-         Width           =   2055
-      End
-      Begin VB.CommandButton cmdComponent 
-         Caption         =   "Add Component"
-         BeginProperty Font 
-            Name            =   "MS Sans Serif"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   700
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   255
-         Index           =   0
-         Left            =   240
-         TabIndex        =   33
-         Top             =   3120
-         Width           =   2055
+         Begin VB.CommandButton cmdTest 
+            Caption         =   "Test"
+            BeginProperty Font 
+               Name            =   "MS Sans Serif"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   700
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   255
+            Left            =   6960
+            TabIndex        =   45
+            Top             =   240
+            Width           =   735
+         End
+         Begin VB.TextBox txtEquation 
+            BeginProperty Font 
+               Name            =   "MS Sans Serif"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   700
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   1455
+            Left            =   2160
+            MaxLength       =   255
+            MultiLine       =   -1  'True
+            TabIndex        =   42
+            Top             =   600
+            Width           =   7095
+         End
+         Begin VB.ListBox lstEqtnVars 
+            BeginProperty Font 
+               Name            =   "MS Sans Serif"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   700
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   1425
+            Left            =   120
+            TabIndex        =   40
+            Top             =   600
+            Width           =   1815
+         End
+         Begin VB.Label lblStatus 
+            Caption         =   "Status"
+            BeginProperty Font 
+               Name            =   "MS Sans Serif"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   700
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   495
+            Left            =   7800
+            TabIndex        =   44
+            Top             =   120
+            Width           =   1455
+         End
+         Begin VB.Label lblEquation 
+            Caption         =   "Label1"
+            BeginProperty Font 
+               Name            =   "MS Sans Serif"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   700
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   255
+            Left            =   2160
+            TabIndex        =   43
+            Top             =   360
+            Width           =   2295
+         End
+         Begin VB.Label lblEqtnVars 
+            Caption         =   "Variables:"
+            BeginProperty Font 
+               Name            =   "MS Sans Serif"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   700
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   255
+            Left            =   120
+            TabIndex        =   41
+            Top             =   360
+            Width           =   1695
+         End
       End
       Begin ATCoCtl.ATCoGrid grdMatrix 
          CausesValidation=   0   'False
          Height          =   1635
          Left            =   120
-         TabIndex        =   31
+         TabIndex        =   30
          Top             =   3960
          Width           =   9375
          _ExtentX        =   16536
@@ -391,7 +433,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   438
+         Rows            =   467
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -432,7 +474,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -458,13 +500,6 @@ Begin VB.Form frmLowFlow
          OutsideHardLimitBackground=   8421631
          OutsideSoftLimitBackground=   8454143
          ComboCheckValidValues=   0   'False
-      End
-      Begin VB.Label lblEquation 
-         Height          =   495
-         Left            =   120
-         TabIndex        =   35
-         Top             =   3480
-         Width           =   9375
       End
    End
    Begin VB.Frame fraEdit 
@@ -498,7 +533,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   6
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -647,7 +682,7 @@ Begin VB.Form frmLowFlow
             Caption         =   "use prediction intervals"
             Height          =   252
             Left            =   120
-            TabIndex        =   30
+            TabIndex        =   29
             Top             =   960
             Width           =   2652
          End
@@ -725,7 +760,7 @@ Begin VB.Form frmLowFlow
       EndProperty
       Height          =   255
       Left            =   960
-      TabIndex        =   37
+      TabIndex        =   33
       Top             =   120
       Width           =   9735
    End
@@ -769,6 +804,7 @@ Dim Changes() As String, CompChanges() As String, _
     MatrixChanges() As String, OldMatrix() As String
 Dim SelParms As FastCollection  'of NSSParameter
 Dim Metric As Boolean
+Dim lMath As New clsMathParser
 
 Private Sub cmdCancel_Click()
   Dim row&, col&, i&
@@ -904,10 +940,10 @@ End Sub
 
 Private Sub cmdDatabase_Click()
   Dim lDBFName As String
-  lDBFName = DB.filename
+  lDBFName = DB.FileName
 
   SetDB (True)
-  If lDBFName <> DB.filename Then 'database changed
+  If lDBFName <> DB.FileName Then 'database changed
     rdoMainOpt(0).Value = False
     rdoMainOpt(1).Value = False
     rdoMainOpt(2).Value = False
@@ -942,12 +978,12 @@ Private Sub cmdHelp_Click()
     With cdlgFileSel
 BadFile:
       .DialogTitle = "Select the help file"
-      .filename = App.path
+      .FileName = App.path
       .Filter = "(*.chm)|*.chm"
       .FilterIndex = 1
       .CancelError = True
       .ShowOpen
-      helpFilePath = .filename
+      helpFilePath = .FileName
       If Len(Dir(helpFilePath)) = 0 Then
         MsgBox "Could not find '" & helpFilePath & "'."
         GoTo BadFile
@@ -966,7 +1002,7 @@ End Sub
 Private Sub cmdImport_Click()
   Dim i&, j&, k&, m&, inFile&, regnCnt&, parmCnt&, depVarCnt&, _
       compCnt&, flds&, DepVarID&, response&
-  Dim filename$, str$, regnName$, flowFlag$
+  Dim FileName$, str$, regnName$, flowFlag$
   Dim urban As Boolean, isReturn As Boolean
   Dim regnVals() As Integer
   Dim parmVals() As String, depVarVals() As String, compVals() As String
@@ -984,23 +1020,23 @@ TryAgain:
   With cdlgFileSel
     .DialogTitle = "Select import file"
     If RDO = 0 Then
-      filename = GetSetting("SEE", "Defaults", "NSSExportFile", filename)
+      FileName = GetSetting("SEE", "Defaults", "NSSExportFile", FileName)
     ElseIf RDO >= 1 Then
-      filename = GetSetting("SEE", "Defaults", "LowFlowExportFile", filename)
+      FileName = GetSetting("SEE", "Defaults", "LowFlowExportFile", FileName)
     End If
-    If Len(Dir(filename, vbDirectory)) = 0 Then
-      filename = CurDir & "\Import.txt"
+    If Len(Dir(FileName, vbDirectory)) = 0 Then
+      FileName = CurDir & "\Import.txt"
     Else
-      filename = filename & "\Import.txt"
+      FileName = FileName & "\Import.txt"
     End If
-    .filename = filename
+    .FileName = FileName
     .Filter = "(*.txt)|*.txt"
     .FilterIndex = 1
     .CancelError = True
     .ShowOpen
-    filename = .filename
+    FileName = .FileName
   End With
-  If Len(Dir(filename, vbDirectory)) = 0 Then
+  If Len(Dir(FileName, vbDirectory)) = 0 Then
     MsgBox "The filename you selected does not exist." & vbCrLf & _
            "Try again or cancel out of the dialog box."
     GoTo TryAgain
@@ -1008,7 +1044,7 @@ TryAgain:
 
   Me.MousePointer = vbHourglass
   inFile = FreeFile
-  Open filename For Input As inFile
+  Open FileName For Input As inFile
   'read in state info
   Line Input #inFile, str
   Set DB.State = DB.States(StrRetRem(str))
@@ -1154,7 +1190,7 @@ TryAgain:
 '  ResetRegion
   cboState_Click
   Me.MousePointer = vbDefault
-  MsgBox "Completed import from file " & filename, , "SEE Import"
+  MsgBox "Completed import from file " & FileName, , "SEE Import"
   Exit Sub
 x:
   Me.MousePointer = vbDefault
@@ -1167,7 +1203,7 @@ End Sub
 
 Private Sub cmdExport_Click()
   Dim i&, j&, k&, OutFile&, tmpCnt&, compCnt&, row&, col&
-  Dim filename$, str$
+  Dim FileName$, str$
   Dim covArray() As String
   
   On Error GoTo x
@@ -1183,50 +1219,50 @@ Private Sub cmdExport_Click()
   With cdlgFileSel
     .DialogTitle = "Assign name of export file"
     If RDO = 0 Then
-      filename = GetSetting("SEE", "Defaults", "NSSExportFile")
+      FileName = GetSetting("SEE", "Defaults", "NSSExportFile")
     ElseIf RDO = 1 Then
-      filename = GetSetting("SEE", "Defaults", "LowFlowExportFile")
+      FileName = GetSetting("SEE", "Defaults", "LowFlowExportFile")
     ElseIf RDO = 2 Then
-      filename = GetSetting("SEE", "Defaults", "ProbabilityExportFile")
+      FileName = GetSetting("SEE", "Defaults", "ProbabilityExportFile")
     End If
-    If Len(Dir(filename, vbDirectory)) <= 1 Then
-      filename = CurDir & "\" & DB.State.Abbrev & "_Export"
+    If Len(Dir(FileName, vbDirectory)) <= 1 Then
+      FileName = CurDir & "\" & DB.State.Abbrev & "_Export"
     Else
-      filename = filename & "\" & DB.State.Abbrev & "_Export"
+      FileName = FileName & "\" & DB.State.Abbrev & "_Export"
     End If
     If RDO = 0 Then
-      filename = filename & "-PeakFlow"
+      FileName = FileName & "-PeakFlow"
     ElseIf RDO = 1 Then
-      filename = filename & "-LowFlow"
+      FileName = FileName & "-LowFlow"
     ElseIf RDO = 2 Then
-      filename = filename & "-Probability"
+      FileName = FileName & "-Probability"
     End If
     'Increment output file name if files already exported for state
-    While Len(Dir(filename & ".txt")) > 0
+    While Len(Dir(FileName & ".txt")) > 0
       i = i + 1
-      If i > 2 Then filename = Left(filename, Len(filename) - 2)
-      filename = filename & "-" & i
+      If i > 2 Then FileName = Left(FileName, Len(FileName) - 2)
+      FileName = FileName & "-" & i
     Wend
-    .filename = filename
+    .FileName = FileName
     .Filter = "(*.txt)|*.txt"
     .FilterIndex = 1
     .CancelError = True
     .ShowSave
-    filename = .filename
+    FileName = .FileName
     If RDO = 0 Then
-      SaveSetting "SEE", "Defaults", "NSSExportFile", PathNameOnly(filename)
+      SaveSetting "SEE", "Defaults", "NSSExportFile", PathNameOnly(FileName)
       j = 0
     ElseIf RDO = 1 Then
-      SaveSetting "SEE", "Defaults", "LowFlowExportFile", PathNameOnly(filename)
+      SaveSetting "SEE", "Defaults", "LowFlowExportFile", PathNameOnly(FileName)
       j = 1
     ElseIf RDO = 2 Then
-      SaveSetting "SEE", "Defaults", "ProbabilityExportFile", PathNameOnly(filename)
+      SaveSetting "SEE", "Defaults", "ProbabilityExportFile", PathNameOnly(FileName)
       j = 2
     End If
   End With
   
   OutFile = FreeFile
-  Open filename For Output As OutFile
+  Open FileName For Output As OutFile
   Print #OutFile, DB.State.code & " " & DB.State.Name & " " & j
   If DB.State.Metric Then j = 1 Else j = 0
   Print #OutFile, lstRegions.ListCount & " " & j
@@ -1306,7 +1342,7 @@ nextRegion:
   Next i
   Close OutFile
   
-  MsgBox "Completed Export to file " & filename, vbOKOnly, "SEE Export"
+  MsgBox "Completed Export to file " & FileName, vbOKOnly, "SEE Export"
   If lstRegions.SelCount > 0 Then
     Set MyRegion = DB.State.Regions(lstRegions.List(lstRegions.ListIndex))
   Else
@@ -1389,16 +1425,8 @@ Private Function BuildEquation(aDepVar As nssDepVar) As String
     Else
       lExpInUse = True
     End If
-    'If lComp.BaseExp <> 0 And lComp.BaseExp <> 1 Then
     'try processing BaseExp's of "0" to handle MT equations that raise DA to 0 so it's ignored
     If lComp.BaseExp <> 1 Then
-'      If Not InMultExp And lComp.ParmID < -2 Then '1st instance of multiple parms in exponent
-'        lEqtnStr = lEqtnStr & "^(" & lComp.BaseExp
-'      ElseIf InMultExp Then
-'        lEqtnStr = lEqtnStr & lComp.BaseExp
-'      Else
-'        lEqtnStr = lEqtnStr & "^(" & lComp.BaseExp & ")"
-'      End If
       If InMultExp Then
         lEqtnStr = lEqtnStr & lComp.BaseExp
       Else
@@ -1446,10 +1474,64 @@ ErrHandler:
 
 End Function
 
+Private Sub cmdTest_Click()
+  Dim lPos As Integer
+  Dim i As Integer
+  Dim j As Integer
+  Dim lVarNotFound As Integer
+  Dim lVarCount As Integer
+  
+  'check equation status
+  If lMath.StoreExpression(txtEquation.Text) Then
+    lblStatus.Caption = "Good!"
+    lblStatus.BackColor = vbGreen
+  Else 'problem with equation
+    lPos = lMath.ErrorPos
+    lblStatus.Caption = "Problem at " & lPos
+    lblStatus.BackColor = vbRed
+  End If
+  If lMath.VarTop > 0 Then
+    lVarNotFound = 0
+    lVarCount = 0
+    For i = 1 To lMath.VarTop
+      j = 0
+      While j < lstEqtnVars.ListCount
+        If lMath.VarName(i) = lstEqtnVars.List(j) Then
+          j = lstEqtnVars.ListCount
+          lVarCount = lVarCount + 1
+        End If
+        j = j + 1
+      Wend
+      If j = lstEqtnVars.ListCount Then 'didn't find variable in parameter list
+        lVarNotFound = i
+        Exit For
+      End If
+    Next i
+    If lVarNotFound > 0 Then
+      lblStatus.Caption = "Var not found:" & vbCrLf & lMath.VarName(lVarNotFound)
+      lblStatus.BackColor = vbRed
+    ElseIf MyRegion.PredInt Then 'set covariance matrix grid size
+      grdMatrix.Rows = lVarCount + 1
+      grdMatrix.cols = lVarCount + 1
+      For i = 0 To grdMatrix.cols - 1
+        grdMatrix.ColEditable(i) = True
+      Next i
+    End If
+  Else
+    lblStatus.Caption = "No Variables"
+    lblStatus.BackColor = vbRed
+  End If
+  
+End Sub
+
 Private Sub Form_Load()
   
   SetDB
 
+End Sub
+
+Private Sub grdInterval_LostFocus()
+  lblEquation.Caption = grdInterval.TextMatrix(1, 0) & " ="
 End Sub
 
 Private Sub grdInterval_RowColChange()
@@ -1462,16 +1544,7 @@ Private Sub grdInterval_RowColChange()
     If .col = 0 Then
       If RDO = 0 Then  'order then add return intervals to drop-down list
         retCnt = DB.returns.Count
-'        ReDim returns(1 To retCnt)
         For i = 1 To retCnt
-'          rank = 1
-'          For j = 1 To retCnt
-'            If IsNumeric(DB.returns(j).Name) Then
-'              If CSng(DB.returns(i).Name) > CSng(DB.returns(j).Name) Then rank = rank + 1
-'            End If
-'          Next j
-'          returns(rank) = DB.returns(i).Name
-        
           ipos = 0
           If IsNumeric(DB.returns(i).Name) Then 'put it in sorted position
             j = 1
@@ -1545,7 +1618,6 @@ Private Sub grdParms_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, _
       For i = 1 To DB.Parameters.Count
         If .TextMatrix(ChangeFromRow, 1) = DB.Parameters(i).Name Then
           .TextMatrix(ChangeFromRow, 2) = DB.Parameters(i).Abbrev
-          '.TextMatrix(ChangeFromRow, 5) = DB.Parameters(i).ConvFlag
           'use real unit names
           If Metric Then
             .TextMatrix(ChangeFromRow, 5) = DB.Units.ItemByKey(DB.Parameters(i).ConvFlag).MetricLabel
@@ -1559,7 +1631,6 @@ Private Sub grdParms_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, _
       For i = 1 To DB.Parameters.Count
         If .TextMatrix(ChangeFromRow, 2) = DB.Parameters(i).Abbrev Then
           .TextMatrix(ChangeFromRow, 1) = DB.Parameters(i).Name
-          '.TextMatrix(ChangeFromRow, 5) = DB.Parameters(i).ConvFlag
           'use real unit names
           If Metric Then
             .TextMatrix(ChangeFromRow, 5) = DB.Units.ItemByKey(DB.Parameters(i).ConvFlag).MetricLabel
@@ -1880,26 +1951,6 @@ Private Sub grdComps_RowColChange()
   End With
 End Sub
 
-'Private Sub grdComps_TextChange(ChangeFromRow As Long, ChangeToRow As Long, _
-'                                ChangeFromCol As Long, ChangeToCol As Long)
-'  Dim col&
-'  With grdComps
-'    If ChangeToRow <> .Rows Then Exit Sub
-'    For col = 0 To .cols - 1
-'      If Len(Trim(.TextMatrix(.Rows, col))) = 0 Then Exit Sub
-'    Next col
-'    .Rows = .Rows + 1
-'        grdMatrix.Rows = .Rows
-'        grdMatrix.cols = .Rows
-'  End With
-'  With grdMatrix
-'    For col = 0 To .cols - 1
-'      .colWidth(col) = 800
-'      .ColEditable(col) = True
-'    Next col
-'  End With
-'End Sub
-
 Private Sub lstParms_GotFocus()
   Dim i&
   
@@ -1917,16 +1968,6 @@ Private Sub lstParms_GotFocus()
         If ChangesMade Then SaveChanges
         FocusOnParms
       End If
-'    Else  'possible deselection made
-'      For i = 1 To SelParms.Count
-'        If SelParms(i).Name = lstParms.List(lstParms.ListIndex) Then Exit For
-'      Next i
-'      If i <= SelParms.Count Then
-'        lstParms_Click  'deselecting a parm
-'      Else
-'        If ChangesMade Then SaveChanges
-'        FocusOnParms
-'      End If
     End If
   Else
     If ChangesMade Then SaveChanges
@@ -2092,8 +2133,8 @@ Private Sub ResetDB()
   
   Set DB = Nothing
   Set DB = New nssDatabase
-  DB.filename = DBPath
-  Set DB.State = DB.States.ItemByKey(CStr(cboState.ItemData(cboState.ListIndex)))
+  DB.FileName = DBPath
+  Set DB.State = DB.States(cboState.ListIndex + 1) 'DB.States.ItemByKey(CStr(cboState.ItemData(cboState.ListIndex)))
   DB.State.Regions.Clear
   Set DB.State.Regions = Nothing
   If fraEdit(0).Visible Then
@@ -2199,18 +2240,8 @@ Private Sub cmdAdd_Click()
       .Rows = 1
       .col = 2  'avoids conflict with change event that creates listboxes
     End With
-    With grdComps
-      .ClearData
-      .Rows = 1
-      .cols = 7
-      .TextMatrix(1, 1) = "0"
-      .TextMatrix(1, 2) = "1"
-      .TextMatrix(1, 4) = "none"
-      .TextMatrix(1, 5) = "0"
-      .TextMatrix(1, 6) = "0"
-      .TextMatrix(1, 7) = "0"
-      .col = 2  'avoids conflict with change event that creates listboxes
-    End With
+    lblEquation.Caption = "New ="
+    txtEquation.Text = ""
     With grdMatrix
       .ClearData
       .Rows = 2
@@ -2372,15 +2403,11 @@ Private Sub cmdSave_Click()
         Exit Sub
       End If
     Next i
-    For i = 1 To grdComps.Rows - 1
-      For j = 0 To grdComps.cols - 1
-        If grdComps.TextMatrix(i, j) = "" Then
-          MsgBox "You must enter a value for the field '" & grdComps.TextMatrix(0, j) & vbCrLf _
-                  & "' in row " & i & " of the grid.", , "Missing Data"
-          Exit Sub
-        End If
-      Next j
-    Next i
+    cmdTest_Click
+    If lblStatus.BackColor = vbRed Then
+      MsgBox "You must enter a valid equation." & vbCrLf & _
+             "See the Status field for more detail.", , "Equation Problem"
+    End If
   End If
   
   'Check for changes and write them to an array
@@ -2491,15 +2518,15 @@ Private Sub cmdSave_Click()
       Set MyParm = SelParms(CStr(SelParms(UBound(parmNames)).id))
     ElseIf fraEdit(2).Visible Then 'editing return period/statistic, components, and matrix
       If MyRegion.PredInt Then
-        BCF = grdInterval.TextMatrix(1, 6)
-        tdist = grdInterval.TextMatrix(1, 7)
-        Variance = grdInterval.TextMatrix(1, 8)
-        ExpDA = grdInterval.TextMatrix(1, 9)
+        BCF = grdInterval.TextMatrix(1, 5)
+        tdist = grdInterval.TextMatrix(1, 6)
+        Variance = grdInterval.TextMatrix(1, 7)
+        ExpDA = grdInterval.TextMatrix(1, 8)
       Else
         BCF = ""
         tdist = ""
         Variance = ""
-        ExpDA = grdInterval.TextMatrix(1, 6)
+        ExpDA = grdInterval.TextMatrix(1, 5)
       End If
       If MyDepVar.IsNew Then
         'Add new Return or Statistic
@@ -2512,7 +2539,8 @@ Private Sub cmdSave_Click()
         tmpID = MyDepVar.Add(isReturn, MyRegion, grdInterval.TextMatrix(1, 0), _
             grdInterval.TextMatrix(1, 1), grdInterval.TextMatrix(1, 2), _
             grdInterval.TextMatrix(1, 3), grdInterval.TextMatrix(1, 4), _
-            grdInterval.TextMatrix(1, 5), BCF, tdist, Variance, ExpDA)
+            1, BCF, tdist, Variance, ExpDA, txtEquation.Text)
+            'grdInterval.TextMatrix(1, 5), BCF, tdist, Variance, ExpDA)
         If tmpID = -1 Then GoTo x
         ResetDB
         lstRetPds.Clear
@@ -2521,63 +2549,27 @@ Private Sub cmdSave_Click()
       Else
         'Edit existing Return or Statistic
         MyDepVar.Edit grdInterval.TextMatrix(1, 0), grdInterval.TextMatrix(1, 1), _
-            grdInterval.TextMatrix(1, 2), grdInterval.TextMatrix(1, 3), grdInterval.TextMatrix(1, 4), grdInterval.TextMatrix(1, 5), BCF, tdist, Variance, ExpDA
+                      grdInterval.TextMatrix(1, 2), grdInterval.TextMatrix(1, 3), _
+                      grdInterval.TextMatrix(1, 4), 1, BCF, tdist, Variance, ExpDA, txtEquation.Text
+                      'grdInterval.TextMatrix(1, 5), BCF, tdist, Variance, ExpDA
         MyDepVar.ClearOldComponents
         ResetDB
         tmpID = MyDepVar.id
       End If
-      'Add values in Components grid and Covariance grid to DB
-      Set MyComp = New nssComponent
-      ReDim covArray(1 To grdMatrix.Rows, 1 To grdMatrix.cols)
-      For i = 1 To grdComps.Rows
-        If i <= grdComps.Rows Then
-          expID = GetCode(grdComps.TextMatrix(i, 4))
-          If grdComps.TextMatrix(i, 7) <> "0" Then 'one of multiple parms in exponent
-            If i < grdComps.Rows Then 'see if this is the last parm in exponent
-              If grdComps.TextMatrix(i + 1, 7) = grdComps.TextMatrix(i, 7) Then
-                'more parms coming that belong in this exponent
-                baseID = -3
-              Else 'last parm in this exponent
-                baseID = -4
-              End If
-            Else 'last component, so must be last parm in exponent
-              baseID = -4
-            End If
-          Else
-            baseID = GetCode(grdComps.TextMatrix(i, 0))
-            If baseID < 0 Then 'indicates natural log, set exponent ID to indicate so
-              baseID = Abs(baseID)
-              expID = -999
-            End If
-          End If
-          'Add components from grid to DB
-          MyComp.Add MyRegion, tmpID, baseID, grdComps.TextMatrix(i, 1), _
-              grdComps.TextMatrix(i, 2), grdComps.TextMatrix(i, 3), expID, _
-              grdComps.TextMatrix(i, 5), grdComps.TextMatrix(i, 6)
-          'Write Component changes to DetailedLog table
-          str = CStr(tmpID) & " " & CStr(baseID) & " " & CStr(expID)
-          For k = 0 To UBound(CompChanges, 3)
-            If Len(CompChanges(1, i - 1, k)) > 0 Then
-              MyRegion.DB.RecordChanges TransID, "Components", k + 1, _
-                  str, CompChanges(0, i - 1, k), CompChanges(1, i - 1, k)
-            End If
-          Next k
-        End If
-        If MyRegion.PredInt Then
+      If MyRegion.PredInt Then
+        ReDim covArray(1 To grdMatrix.Rows, 1 To grdMatrix.cols)
+        For i = 1 To grdMatrix.Rows
           'Add matrix values from 'i'th row of grid to DB
           For k = 1 To grdMatrix.cols
             covArray(i, k) = grdMatrix.TextMatrix(i, k - 1)
-            If i = grdComps.Rows Then 'include final row of matrix
-              covArray(i + 1, k) = grdMatrix.TextMatrix(i + 1, k - 1)
-            End If
             'Write Covariance Matrix changes to DetailedLog table
             If Len(MatrixChanges(1, i, k)) > 0 Then
               MyRegion.DB.RecordChanges TransID, "Covariance", 3, CStr(tmpID) & " " & _
                    i & " " & k, MatrixChanges(0, i, k), MatrixChanges(1, i, k)
             End If
           Next k
-        End If
-      Next i
+        Next i
+      End If
       If MyRegion.PredInt Then MyDepVar.AddMatrix MyRegion, tmpID, covArray()
       ResetDB
       i = 0
@@ -2609,7 +2601,7 @@ x:
 End Sub
 
 Private Sub SetGrid(Table As String)
-  Dim i&, row&, col&, compCnt&
+  Dim i&, j&, row&, col&, compCnt&
   Dim tmp As Single, AddSpace As Single
   Dim str$
   Dim covArray() As String
@@ -2680,8 +2672,7 @@ Private Sub SetGrid(Table As String)
       If i >= 0 Then
         If lstRetPds.ItemData(i) > 0 Then
           Set MyDepVar = MyRegion.DepVars(CStr(lstRetPds.ItemData(i)))
-          compCnt = MyDepVar.Components.Count
-          If MyRegion.PredInt And MyDepVar.Components.Count > 0 Then
+          If MyRegion.PredInt Then 'And MyDepVar.Components.Count > 0 Then
             covArray = MyDepVar.PopulateMatrix()
           End If
         End If
@@ -2689,10 +2680,10 @@ Private Sub SetGrid(Table As String)
       With grdInterval
         .Rows = lstRetPds.SelCount
         If MyRegion.PredInt Then
-          DepVarFlds = 10
+          DepVarFlds = 9
           AddSpace = 100
         Else
-          DepVarFlds = 7
+          DepVarFlds = 6
           AddSpace = 350
         End If
         .cols = DepVarFlds + 1
@@ -2723,23 +2714,19 @@ Private Sub SetGrid(Table As String)
         .TextMatrix(-1, 4) = "Equivalent"
         .TextMatrix(0, 4) = "Years"
         .colWidth(4) = 850 + AddSpace
-        .ColType(5) = ATCoSng
-        .TextMatrix(-1, 5) = "Regression"
-        .TextMatrix(0, 5) = "Constant"
-        .colWidth(5) = 910 + AddSpace
         If MyRegion.PredInt Then
+          .ColType(5) = ATCoSng
+          .TextMatrix(-1, 5) = ""
+          .TextMatrix(0, 5) = "BCF"
+          .colWidth(5) = 480
           .ColType(6) = ATCoSng
-          .TextMatrix(-1, 6) = ""
-          .TextMatrix(0, 6) = "BCF"
-          .colWidth(6) = 480
+          .TextMatrix(-1, 6) = "t -"
+          .TextMatrix(0, 6) = "Distribution"
+          .colWidth(6) = 880
           .ColType(7) = ATCoSng
-          .TextMatrix(-1, 7) = "t -"
-          .TextMatrix(0, 7) = "Distribution"
-          .colWidth(7) = 880
-          .ColType(8) = ATCoSng
-          .TextMatrix(-1, 8) = ""
-          .TextMatrix(0, 8) = "Variance"
-          .colWidth(8) = 740
+          .TextMatrix(-1, 7) = ""
+          .TextMatrix(0, 7) = "Variance"
+          .colWidth(7) = 740
         End If
         .ColType(.cols - 2) = ATCoSng
         .TextMatrix(-1, .cols - 2) = "Drn. Area"
@@ -2759,8 +2746,7 @@ Private Sub SetGrid(Table As String)
                 Case 2: .Text = MyDepVar.EstErr
                 Case 3: .Text = MyDepVar.PreErr
                 Case 4: .Text = MyDepVar.EquivYears
-                Case 5: .Text = MyDepVar.Constant
-                Case 6:
+                Case 5:
                         If MyRegion.PredInt Then
                           .Text = MyDepVar.BCF
                         Else
@@ -2772,107 +2758,45 @@ Private Sub SetGrid(Table As String)
                   Else
                     .Text = MyDepVar.Units.MetricLabel
                   End If
-                Case 7: .Text = MyDepVar.tdist
-                Case 8: .Text = MyDepVar.Variance
-                Case 9: .Text = MyDepVar.ExpDA
+                Case 6: .Text = MyDepVar.tdist
+                Case 7: .Text = MyDepVar.Variance
+                Case 8: .Text = MyDepVar.ExpDA
               End Select
             End If
           Next row
         Next col
       End With
-      With grdComps
-        If lstRetPds.SelCount > 0 Then 'DepVar is selected
-          .Rows = compCnt
-        Else
-          .Rows = 0
-        End If
-        .cols = 8
-        .col = 2
-        .ColType(0) = ATCoTxt
-        .TextMatrix(-1, 0) = "Base"
-        .TextMatrix(0, 0) = "Variable"
-        .ColType(1) = ATCoSng
-        .TextMatrix(-1, 1) = "Base"
-        .TextMatrix(0, 1) = "Modifier"
-        .ColType(2) = ATCoSng
-        .TextMatrix(-1, 2) = "Base"
-        .TextMatrix(0, 2) = "Coefficient"
-        .ColType(3) = ATCoSng
-        .TextMatrix(-1, 3) = "Base"
-        .TextMatrix(0, 3) = "Exponent"
-        .ColType(4) = ATCoTxt
-        .TextMatrix(-1, 4) = "Exponent"
-        .TextMatrix(0, 4) = "Variable"
-        .ColType(5) = ATCoSng
-        .TextMatrix(-1, 5) = "Exponent"
-        .TextMatrix(0, 5) = "Modifier"
-        .ColType(6) = ATCoSng
-        .TextMatrix(-1, 6) = "Exponent"
-        .TextMatrix(0, 6) = "Exponent"
-        .ColType(7) = ATCoTxt
-        .TextMatrix(-1, 7) = "Exponent"
-        .TextMatrix(0, 7) = "Index"
-        For col = 0 To .cols - 1
-          .ColEditable(col) = True
-          .colWidth(0) = 1080
-        Next col
-        If lstRetPds.SelCount > 0 Then
-          Dim lExpInd As Integer
-          lExpInd = 1
-          For row = 1 To compCnt
-            Set MyComp = MyDepVar.Components(row)
-            str = GetAbbrev(MyComp.ParmID)
-            If MyComp.expID = -999 Then str = "ln(" & str & ")" 'indicates use natural log
-            For col = 0 To .cols - 1
-              .row = row
-              .col = col
-              If Not MyDepVar.Components(row).IsNew Then
-                Select Case col
-                  Case 0: .Text = str
-                  Case 1: .Text = MyComp.BaseMod
-                  Case 2: .Text = MyComp.BaseCoeff
-                  Case 3: .Text = MyComp.BaseExp
-                  Case 4: str = GetAbbrev(MyComp.expID)
-                          .Text = str
-                  Case 5: .Text = MyComp.ExpMod
-                  Case 6: .Text = MyComp.ExpExp
-                  Case 7:
-                    If MyComp.ParmID < -2 Then 'one of multiple parms in exponent
-                      .Text = lExpInd
-                      If MyComp.ParmID = -4 Then 'last of this exponent's parms, increment index
-                        lExpInd = lExpInd + 1
-                      End If
-                    Else
-                      .Text = "0"
-                    End If
-                End Select
-              End If
+      lstEqtnVars.Clear
+      For j = 0 To lstParms.ListCount - 1
+        lstEqtnVars.AddItem GetAbbrev(lstParms.ItemData(j))
+      Next j
+      lblEquation.Caption = MyDepVar.Name & " ="
+      txtEquation.Text = MyDepVar.Equation
+      If lMath.StoreExpression(MyDepVar.Equation) Then
+        compCnt = lMath.VarTop
+      End If
+      If MyRegion.PredInt Then
+        With grdMatrix
+          If i < 0 Or compCnt = 0 Then
+            .Rows = 0
+            .cols = 0
+          Else
+            .Rows = compCnt + 1
+            .cols = compCnt + 1
+            For col = 1 To .cols
+              .ColType(col - 1) = ATCoTxt
+              .colWidth(col - 1) = 800
+              For row = 1 To .Rows
+                .TextMatrix(row, col - 1) = covArray(row, col)
+              Next row
             Next col
-          Next row
-        End If
-        'If Not newParm And grdInterval.Rows > 0 Then .Rows = .Rows + 1
-      End With
-      If Not MyRegion.PredInt Then Exit Sub
-      With grdMatrix
-        If i < 0 Or compCnt = 0 Then
-          .Rows = 0
-          .cols = 0
-        Else
-          .Rows = compCnt + 1
-          .cols = compCnt + 1
-          For col = 1 To .cols
-            .ColType(col - 1) = ATCoTxt
-            .colWidth(col - 1) = 800
-            For row = 1 To .Rows
-              .TextMatrix(row, col - 1) = covArray(row, col)
-            Next row
+          End If
+          For col = 0 To .cols - 1
+            .ColEditable(col) = True
           Next col
-        End If
-        For col = 0 To .cols - 1
-          .ColEditable(col) = True
-        Next col
-        .ColsSizeByContents
+          .ColsSizeByContents
       End With
+      End If
   End Select
 End Sub
 
@@ -3033,11 +2957,6 @@ Private Sub PopulateDepVars()
         If Left(lVarNames(depVarIndex), 2) = "PK" Then
           lVarNames(depVarIndex) = Mid(lVarNames(depVarIndex), 3)
         End If
-'        If Left(MyRegion.DepVars(depVarIndex).Name, 2) = "PK" Then
-'          lVarNames(depVarIndex) = Mid(MyRegion.DepVars(depVarIndex).Name, 3)
-'        Else
-'          lVarNames(depVarIndex) = MyRegion.DepVars(depVarIndex).Name
-'        End If
       Next depVarIndex
     End If
     For depVarIndex = 1 To intCnt
@@ -3223,7 +3142,7 @@ Private Function ChangesMade() As Boolean
     Next row
   ElseIf fraEdit(2).Visible And Not MyDepVar Is Nothing Then
     'First record changes to Return Period or Statistic
-    ReDim Changes(1, DepVarFlds)
+    ReDim Changes(1, DepVarFlds + 1)
     ReDim oldVals(DepVarFlds)
     If MyDepVar.IsNew Then
       For i = 0 To DepVarFlds
@@ -3231,24 +3150,23 @@ Private Function ChangesMade() As Boolean
       Next i
       ChangesMade = True
     Else
-      compCnt = MyDepVar.Components.Count
+      compCnt = MyDepVar.VarCount ' MyDepVar.Components.Count
       oldVals(0) = MyDepVar.Name
       oldVals(1) = MyDepVar.StdErr
       oldVals(2) = MyDepVar.EstErr
       oldVals(3) = MyDepVar.PreErr
       oldVals(4) = MyDepVar.EquivYears
-      oldVals(5) = MyDepVar.Constant
       If MyRegion.PredInt Then
-        oldVals(6) = MyDepVar.BCF
-        oldVals(7) = MyDepVar.tdist
-        oldVals(8) = MyDepVar.Variance
+        oldVals(5) = MyDepVar.BCF
+        oldVals(6) = MyDepVar.tdist
+        oldVals(7) = MyDepVar.Variance
       End If
       oldVals(DepVarFlds - 1) = MyDepVar.ExpDA
       oldVals(DepVarFlds) = MyDepVar.Units.id
       Set MyDepVar.DB = DB
       If compCnt > 0 And MyRegion.PredInt Then
         OldMatrix = MyDepVar.PopulateMatrix()
-        grdMatrix.Rows = MyDepVar.Components.Count + 1
+        grdMatrix.Rows = MyDepVar.VarCount + 1 ' MyDepVar.Components.Count + 1
         grdMatrix.cols = grdMatrix.Rows
       End If
       For i = 0 To DepVarFlds
@@ -3263,62 +3181,12 @@ Private Function ChangesMade() As Boolean
           ChangesMade = True
         End If
       Next i
-    End If
-    'Now record changes to Components
-    'don't track Exponent Index (col=7) as it is not stored on the DB, thus subtract 2 from 2nd dimension
-    ReDim CompChanges(1, grdComps.Rows, grdComps.cols - 2)
-    For row = 1 To grdComps.Rows
-      If row > compCnt Then
-        CompChanges(1, row - 1, 0) = grdComps.TextMatrix(row, 0)
-        CompChanges(1, row - 1, 1) = grdComps.TextMatrix(row, 1)
-        CompChanges(1, row - 1, 2) = grdComps.TextMatrix(row, 2)
-        CompChanges(1, row - 1, 3) = grdComps.TextMatrix(row, 3)
-        CompChanges(1, row - 1, 4) = grdComps.TextMatrix(row, 4)
-        CompChanges(1, row - 1, 5) = grdComps.TextMatrix(row, 5)
-        CompChanges(1, row - 1, 6) = grdComps.TextMatrix(row, 6)
+      If txtEquation.Text <> MyDepVar.Equation Then
+        Changes(0, DepVarFlds + 1) = MyDepVar.Equation
+        Changes(1, DepVarFlds + 1) = txtEquation.Text
         ChangesMade = True
-      Else
-        Set tmpComp = MyDepVar.Components(row)
-        baseID = Abs(GetCode(grdComps.TextMatrix(row, 0)))
-        If baseID <> tmpComp.ParmID And tmpComp.ParmID >= 0 Then
-          CompChanges(0, row - 1, 0) = GetAbbrev(tmpComp.ParmID)
-          CompChanges(1, row - 1, 0) = grdComps.TextMatrix(row, 0)
-          ChangesMade = True
-        End If
-        If grdComps.TextMatrix(row, 1) <> tmpComp.BaseMod Then
-          CompChanges(0, row - 1, 1) = tmpComp.BaseMod
-          CompChanges(1, row - 1, 1) = grdComps.TextMatrix(row, 1)
-          ChangesMade = True
-        End If
-        If grdComps.TextMatrix(row, 2) <> tmpComp.BaseCoeff Then
-          CompChanges(0, row - 1, 2) = tmpComp.BaseCoeff
-          CompChanges(1, row - 1, 2) = grdComps.TextMatrix(row, 2)
-          ChangesMade = True
-        End If
-        If grdComps.TextMatrix(row, 3) <> tmpComp.BaseExp Then
-          CompChanges(0, row - 1, 3) = tmpComp.BaseExp
-          CompChanges(1, row - 1, 3) = grdComps.TextMatrix(row, 3)
-          ChangesMade = True
-        End If
-        expID = GetCode(grdComps.TextMatrix(row, 4))
-        If Left(grdComps.TextMatrix(row, 0), 2) = "ln" Then expID = -999
-        If expID <> tmpComp.expID Then
-          CompChanges(0, row - 1, 4) = GetAbbrev(tmpComp.expID)
-          CompChanges(1, row - 1, 4) = grdComps.TextMatrix(row, 4)
-          ChangesMade = True
-        End If
-        If grdComps.TextMatrix(row, 5) <> tmpComp.ExpMod Then
-          CompChanges(0, row - 1, 5) = tmpComp.ExpMod
-          CompChanges(1, row - 1, 5) = grdComps.TextMatrix(row, 5)
-          ChangesMade = True
-        End If
-        If grdComps.TextMatrix(row, 6) <> tmpComp.ExpExp Then
-          CompChanges(0, row - 1, 6) = tmpComp.ExpExp
-          CompChanges(1, row - 1, 6) = grdComps.TextMatrix(row, 6)
-          ChangesMade = True
-        End If
       End If
-    Next row
+    End If
     If MyRegion.PredInt And grdMatrix.Rows > 1 Then
       'Record changes to Matrix
       ReDim MatrixChanges(1, 1 To grdMatrix.Rows, 1 To grdMatrix.cols)
@@ -3360,6 +3228,11 @@ Private Sub rdoUnits_Click(Index As Integer)
   Else
     Metric = True
   End If
+End Sub
+
+Private Sub txtEquation_Change()
+  lblStatus.Caption = ""
+  lblStatus.BackColor = vbButtonFace
 End Sub
 
 Private Sub txtRegName_Change()
@@ -3486,7 +3359,7 @@ FindDB:
   
   If Len(DBPath) > 0 Then
     Set DB = New nssDatabase
-    DB.filename = DBPath
+    DB.FileName = DBPath
     If Not DBCheck(DBPath) Then
       GoTo FindDB
     End If
@@ -3502,7 +3375,7 @@ FindDB:
     lstRetPds.Clear
     grdMatrix.Rows = 1
     grdMatrix.cols = 1
-    lblDatabase.Caption = "Database: " & DB.filename
+    lblDatabase.Caption = "Database: " & DB.FileName
     Me.Show
   End If
   Exit Sub
