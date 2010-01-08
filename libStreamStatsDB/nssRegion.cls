@@ -34,10 +34,10 @@ Public Property Let Name(ByVal newValue As String)
   pName = newValue
 End Property
 
-Public Property Get ID() As Long
-  ID = pID
+Public Property Get Id() As Long
+  Id = pID
 End Property
-Public Property Let ID(ByVal newValue As Long)
+Public Property Let Id(ByVal newValue As Long)
   pID = newValue
 End Property
 
@@ -139,7 +139,7 @@ Public Sub PopulateParameters()
       Set newParm = New nssParameter
       With newParm
         Set .Region = Me
-        .ID = parmRec.Fields("ParmID")
+        .Id = parmRec.Fields("ParmID")
         If Not IsNull(parmRec.Fields("StatisticLabelID")) Then .LabelCode = parmRec.Fields("StatisticLabelID")
         If Not IsNull(parmRec.Fields("StatisticLabel")) Then .Name = parmRec.Fields("StatisticLabel")
         If Not IsNull(parmRec.Fields("StatLabel")) Then .Abbrev = parmRec.Fields("StatLabel")
@@ -150,7 +150,7 @@ Public Sub PopulateParameters()
         If Not IsNull(parmRec.Fields("StatisticTypeCode")) Then .StatTypeCode = parmRec.Fields("StatisticTypeCode")
         If Not IsNull(parmRec.Fields("StatisticType")) Then .StatType = parmRec.Fields("StatisticType")
       End With
-      pParameters.Add newParm, CStr(newParm.ID)
+      pParameters.Add newParm, CStr(newParm.Id)
       Set newParm = Nothing
       parmRec.MoveNext
     Wend
@@ -163,7 +163,7 @@ Public Sub ClearROIUserparms()
   Dim myRec As Recordset
   
   sql = "SELECT ROIUserParms.* From [ROIUserParms] " & _
-        "WHERE RegionID=" & Me.ID & ";"
+        "WHERE RegionID=" & Me.Id & ";"
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     If Not .EOF Then
@@ -176,7 +176,7 @@ Public Sub ClearROIUserparms()
   End With
 
   sql = "SELECT Parameters.* From [Parameters] " & _
-        "WHERE RegionID=" & Me.ID & ";"
+        "WHERE RegionID=" & Me.Id & ";"
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     If Not .EOF Then
@@ -189,7 +189,7 @@ Public Sub ClearROIUserparms()
   End With
 
   sql = "SELECT DepVars.* From [DepVars] " & _
-        "WHERE RegionID=" & Me.ID & ";"
+        "WHERE RegionID=" & Me.Id & ";"
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     If Not .EOF Then
@@ -239,7 +239,7 @@ Public Sub PopulateROIParameters()
       Set newParm = New nssParameter
       With newParm
         Set .Region = Me
-        .ID = parmRec("ParmID")
+        .Id = parmRec("ParmID")
         If Not IsNull(parmRec("StatisticLabelID")) Then .LabelCode = parmRec("StatisticLabelID")
         If Not IsNull(parmRec("StatisticLabel")) Then
           .Name = parmRec("StatisticLabel")
@@ -255,7 +255,7 @@ Public Sub PopulateROIParameters()
         If Not IsNull(parmRec("SimVar")) Then .SimulationVar = parmRec("SimVar")
         If Not IsNull(parmRec("RegVar")) Then .RegressionVar = parmRec("RegVar")
       End With
-      pROIParameters.Add newParm, CStr(newParm.ID)
+      pROIParameters.Add newParm, CStr(newParm.Id)
       Set newParm = Nothing
       parmRec.MoveNext
     Wend
@@ -281,6 +281,7 @@ Public Sub PopulateDepVars()
   Dim vDepVar As Variant
   Dim lName As String
   Dim lCurName As String
+  Dim lMath As New clsMathParser
   
   AllNumeric = True 'assume all depvars for region are numbers and may be sorted
   Set pDepVars = Nothing
@@ -304,7 +305,7 @@ Public Sub PopulateDepVars()
       With newDepVar
         Set .DB = pDB
         Set .Region = Me
-        .ID = DepVarID
+        .Id = DepVarID
         'If Not IsNull(depVarRec.Fields("StatLabelCode")) Then .Name = depVarRec.Fields("StatLabelCode")
         If Not IsNull(depVarRec.Fields("StatLabel")) Then .Name = depVarRec.Fields("StatLabel")
         If Not IsNull(depVarRec.Fields("StdErr")) Then .StdErr = depVarRec.Fields("StdErr")
@@ -318,10 +319,17 @@ Public Sub PopulateDepVars()
         If Not IsNull(depVarRec.Fields("ExpDA")) Then .ExpDA = depVarRec.Fields("ExpDA")
         'add the following line when database updated to link DepVars and StatLabel tables
         If Not IsNull(depVarRec.Fields("UnitID")) Then Set .Units = pDB.Units(CStr(depVarRec.Fields("UnitID")))
-        If Not IsNull(depVarRec.Fields("Equation")) Then .Equation = depVarRec.Fields("Equation")
+        If Not IsNull(depVarRec.Fields("Equation")) Then
+          .Equation = depVarRec.Fields("Equation")
+          If lMath.StoreExpression(.Equation) Then 'set number of variables
+            .VarCount = lMath.VarTop
+          Else
+            .VarCount = 0
+          End If
+        End If
       End With
-      newDepVar.Components.Clear
-      Set newDepVar.Components = Nothing
+'      newDepVar.Components.Clear
+'      Set newDepVar.Components = Nothing
       If Left(newDepVar.Name, 2) = "PK" Then
         lName = Mid(newDepVar.Name, 3)
       Else
@@ -353,18 +361,18 @@ Public Sub PopulateDepVars()
       depVarRec.MoveNext
     Wend
     depVarRec.Close
-    For Each vDepVar In pDepVars
-      Set newDepVar = vDepVar
-      For Each vComponent In newDepVar.Components
-        If vComponent.ParmID > 0 Then
-          'XXX - the parameters in vComponent are from region indexed one below current region
-          Set vComponent.Parameter = Me.Parameters(CStr(vComponent.ParmID))
-        End If
-        If vComponent.ExpID > 0 Then
-          Set vComponent.ExponentParameter = Me.Parameters(CStr(vComponent.ExpID))
-        End If
-      Next
-    Next
+'    For Each vDepVar In pDepVars
+'      Set newDepVar = vDepVar
+'      For Each vComponent In newDepVar.Components
+'        If vComponent.ParmID > 0 Then
+'          'XXX - the parameters in vComponent are from region indexed one below current region
+'          Set vComponent.Parameter = Me.Parameters(CStr(vComponent.ParmID))
+'        End If
+'        If vComponent.ExpID > 0 Then
+'          Set vComponent.ExponentParameter = Me.Parameters(CStr(vComponent.ExpID))
+'        End If
+'      Next
+'    Next
   End If
 End Sub
 
@@ -387,7 +395,7 @@ Public Function Add(ByVal RegType As Long, ByVal RegName As String, ByVal Urban 
     ByVal RuralInput As Long, ByVal PredInt As Long, ByVal ROIRegnID As Long, Optional NoWarnFlg As Boolean) As Boolean
   'RegType: 0 - Peak Flow, 1 - Low Flow, 2 - Probability
   Dim myRec As Recordset
-  Dim ID&, lowFlowID&
+  Dim Id&, lowFlowID&
   Dim sql$
   Dim lInc As Integer
   
@@ -396,16 +404,16 @@ Public Function Add(ByVal RegType As Long, ByVal RegName As String, ByVal Urban 
   With myRec
     'check to see if region with this name already exists
     If .RecordCount > 0 Then
-      .FindFirst "RegionName='" & RegName & "' AND StateCode='" & DB.State.Code & "'"
+      .FindFirst "RegionName='" & RegName & "' AND StateCode='" & DB.State.code & "'"
     End If
     If .NoMatch Or .RecordCount = 0 Then
       'find an unused ID
       .MoveLast
-      ID = !Regionid
-      .FindFirst "RegionID=" & ID
+      Id = !Regionid
+      .FindFirst "RegionID=" & Id
       While Not .NoMatch
-        ID = !Regionid + 1
-        .FindFirst "RegionID=" & ID
+        Id = !Regionid + 1
+        .FindFirst "RegionID=" & Id
       Wend
     Else
       If Not NoWarnFlg Then
@@ -418,7 +426,7 @@ Public Function Add(ByVal RegType As Long, ByVal RegName As String, ByVal Urban 
   End With
   'quicker to open new recordset than to search all regions for LowFlow ID
   sql = "SELECT * FROM Regions " & _
-        "WHERE StateCode='" & DB.State.Code & "';"
+        "WHERE StateCode='" & DB.State.code & "';"
   Set myRec = Me.DB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     If RegType = 0 Then
@@ -446,8 +454,8 @@ Public Function Add(ByVal RegType As Long, ByVal RegName As String, ByVal Urban 
       End If
     End If
     .AddNew
-    !StateCode = DB.State.Code
-    !Regionid = ID
+    !StateCode = DB.State.code
+    !Regionid = Id
     !RegionName = RegName
     !Urban = Urban
     !UrbanNeedsRural = -RuralInput
@@ -463,10 +471,10 @@ Public Function Delete() As Boolean
   Dim myRec As Recordset
   Dim sql$
   
-  sql = "SELECT * FROM Regions WHERE StateCode='" & DB.State.Code & "'"
+  sql = "SELECT * FROM Regions WHERE StateCode='" & DB.State.code & "'"
   Set myRec = DB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
-    .FindFirst "RegionID=" & Me.ID
+    .FindFirst "RegionID=" & Me.Id
     If Not .NoMatch Then
       .Delete
       Delete = True
@@ -482,11 +490,11 @@ Public Sub Edit(ByVal NewName As String, ByVal Urban As Boolean, _
   Dim sql$
   
   NewName = NoSpaces(NewName)
-  sql = "SELECT * FROM Regions WHERE StateCode='" & Me.State.Code & "'"
+  sql = "SELECT * FROM Regions WHERE StateCode='" & Me.State.code & "'"
   Set myRec = DB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     .MoveLast
-    .FindFirst "RegionID=" & Me.ID
+    .FindFirst "RegionID=" & Me.Id
     If Not .NoMatch Then
       .Edit
       !RegionName = NewName
@@ -510,7 +518,7 @@ Private Function GetStationType(TypeCode As String) As ssStationType
     .FindFirst "StationTypeCode='" & TypeCode & "'"
     If Not .NoMatch Then
       Set GetStationType.DB = pDB
-      GetStationType.Code = .Fields("StationTypeCode")
+      GetStationType.code = .Fields("StationTypeCode")
       GetStationType.Name = .Fields("StationType")
     End If
   End With

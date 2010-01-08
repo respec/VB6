@@ -65,10 +65,10 @@ Public Property Get LastEdited() As String
   End If
 End Property
 
-Public Property Get Filename() As String
-  Filename = pFileName
+Public Property Get filename() As String
+  filename = pFileName
 End Property
-Public Property Let Filename(ByVal newValue As String)
+Public Property Let filename(ByVal newValue As String)
   pFileName = newValue
   Set pnssDB = OpenDatabase(pFileName, False, False, "MS Access; pwd=" & DatabasePassword)
 End Property
@@ -84,6 +84,9 @@ Public Property Get States() As FastCollection
   ' Filename must be set before this will work
   If pStates Is Nothing Then PopulateStates
   Set States = pStates
+End Property
+Public Property Set States(ByVal newValue As FastCollection)
+  Set pStates = newValue
 End Property
 
 Private Sub PopulateStates()
@@ -107,26 +110,26 @@ Private Sub PopulateStates()
       Set .DB = Me
       .Name = myRec.Fields("State")
       .Abbrev = myRec.Fields("St")
-      .Code = myRec.Fields("StateCode")
+      .code = myRec.Fields("StateCode")
       .Metric = myRec.Fields("Metric")
       Set lROIData.DB = Me
-      lROIData.StateCode = .Code
+      lROIData.StateCode = .code
       lROIData.ClimateFactor = myRec.Fields("ROIClimateFactor")
       lROIData.Distance = myRec.Fields("ROIDistance")
       lROIData.Regress = myRec.Fields("ROIBackStepRegression")
       lROIData.UseRegions = myRec.Fields("ROIRegions")
       lROIData.SimStations = myRec.Fields("ROISimStations")
-      lCode = Right(.Code, 2)
+      lCode = Right(.code, 2)
       If States.KeyExists(lCode) Then
         'just add other ROI data from this 2nd occurrence
-        If CInt(.Code) > 10000 Then
+        If CInt(.code) > 10000 Then
           Set States(lCode).ROILowData = lROIData
         Else
           Set States(lCode).ROIPeakData = lROIData
         End If
       Else 'add state (and this ROI data) to collection
-        If CInt(.Code) > 10000 Then 'low flow ROI data
-          .Code = lCode
+        If CInt(.code) > 10000 Then 'low flow ROI data
+          .code = lCode
           Set .ROILowData = lROIData
         Else
           Set .ROIPeakData = lROIData
@@ -156,14 +159,14 @@ Private Sub PopulateUnits()
   While Not myRec.EOF
     Set newUnits = New nssUnits
     With newUnits
-      .ID = myRec.Fields("UnitID")
+      .Id = myRec.Fields("UnitID")
       .MetricLabel = myRec.Fields("Metric")
       .MetricAbbrev = myRec.Fields("MetricAbbrev")
       .EnglishLabel = myRec.Fields("English")
       .EnglishAbbrev = myRec.Fields("EnglishAbbrev")
       .Factor = myRec.Fields("EnglishMetricFactor")
     End With
-    pUnits.Add newUnits, CStr(newUnits.ID)
+    pUnits.Add newUnits, CStr(newUnits.Id)
     Set newUnits = Nothing
     myRec.MoveNext
   Wend
@@ -189,7 +192,7 @@ Private Sub PopulateStationTypes()
   Dim myRec As Recordset
   Dim newType As ssStationType
   
-  On Error GoTo X
+  On Error GoTo x
   
   Set pStationTypes = New FastCollection
   'builds collection of StationTypes
@@ -199,15 +202,15 @@ Private Sub PopulateStationTypes()
     Set newType = New ssStationType
     With newType
       Set .DB = Me
-      .Code = myRec("StationTypeCode")
+      .code = myRec("StationTypeCode")
       .Name = myRec("StationType")
     End With
-    StationTypes.Add newType, newType.Code
+    StationTypes.Add newType, newType.code
     myRec.MoveNext
   Wend
   myRec.Close
   Exit Sub
-X:
+x:
 End Sub
 
 Public Property Set StatType(ByRef newValue As ssStatType)
@@ -242,11 +245,11 @@ Private Sub PopulateStatisticTypes()
     Set newStatType = New ssStatType
     With newStatType
       Set .DB = Me
-      .ID = myRec("StatisticTypeID")
-      .Code = myRec("StatisticTypeCode")
+      .Id = myRec("StatisticTypeID")
+      .code = myRec("StatisticTypeCode")
       .Name = myRec("StatisticType")
     End With
-    StatisticTypes.Add newStatType, newStatType.Code
+    StatisticTypes.Add newStatType, newStatType.code
     myRec.MoveNext
   Wend
   myRec.Close
@@ -310,7 +313,7 @@ Private Sub PopulateDepVars(FlowType As String)
   Dim sql$
   Dim newDepVar As nssDepVar
   
-  On Error GoTo X
+  On Error GoTo x
   
   If FlowType = "LF" Then
     If Not pLFStats Is Nothing Then
@@ -318,14 +321,20 @@ Private Sub PopulateDepVars(FlowType As String)
       Set pLFStats = Nothing
     End If
     Set pLFStats = New FastCollection
-    sql = "SELECT DISTINCT Name FROM DepVars WHERE ID>10000 ORDER BY NAME;"
+    'sql = "SELECT DISTINCT Name FROM DepVars WHERE ID>10000 ORDER BY NAME;"
+    sql = "SELECT DISTINCT StatLabel.StatLabel FROM StatLabel " & _
+          "INNER JOIN DepVars ON StatLabel.StatisticLabelID = DepVars.StatisticLabelID " & _
+          "WHERE DepVarID>10000 ORDER BY StatLabel;"
   ElseIf FlowType = "PF" Then
     If Not pReturns Is Nothing Then
       pReturns.Clear
       Set pReturns = Nothing
     End If
     Set pReturns = New FastCollection
-    sql = "SELECT DISTINCT Name FROM DepVars WHERE ID<10000 ORDER BY NAME;"
+    'sql = "SELECT DISTINCT Name FROM DepVars WHERE ID<10000 ORDER BY NAME;"
+    sql = "SELECT DISTINCT StatLabel.StatLabel FROM StatLabel " & _
+          "INNER JOIN DepVars ON StatLabel.StatisticLabelID = DepVars.StatisticLabelID " & _
+          "WHERE DepVarID<10000 ORDER BY StatLabel;"
   End If
   
   'builds list of available Statistics/Returns
@@ -333,9 +342,7 @@ Private Sub PopulateDepVars(FlowType As String)
   On Error GoTo 0
   While Not myRec.EOF
     Set newDepVar = New nssDepVar
-    With newDepVar
-      .Name = myRec("Name")
-    End With
+    newDepVar.Name = myRec("StatLabel")
     If FlowType = "PF" Then
       pReturns.Add newDepVar, newDepVar.Name
     ElseIf FlowType = "LF" Then
@@ -345,7 +352,7 @@ Private Sub PopulateDepVars(FlowType As String)
   Wend
   myRec.Close
   Exit Sub
-X:
+x:
 End Sub
 Public Property Set Sources(ByRef newValue As FastCollection)
   Set pSources = newValue
@@ -370,11 +377,11 @@ Private Sub PopulateSources()
       Set newSource = New ssSource
       With newSource
         Set .DB = Me
-        .ID = myRec("DataSourceID")
+        .Id = myRec("DataSourceID")
         .Name = myRec("Citation")
         If Not IsNull(myRec("CitationURL")) Then .URL = myRec("CitationURL")
       End With
-      Sources.Add newSource, newSource.ID
+      Sources.Add newSource, newSource.Id
       .MoveNext
     Wend
     .Close
@@ -399,7 +406,7 @@ Public Function RecordUserInfo(ByVal UserName As String, ByVal LogOnName As Stri
   End With
 End Function
 
-Public Function RecordChanges(ByVal ID As Long, ByVal TableName As String, _
+Public Function RecordChanges(ByVal Id As Long, ByVal TableName As String, _
     ByVal fldID As Long, ByVal RecID As String, _
     ByVal oldval As String, ByVal newval As String)
   Dim myRec As Recordset
@@ -411,7 +418,7 @@ Public Function RecordChanges(ByVal ID As Long, ByVal TableName As String, _
   Set myRec = pnssDB.OpenRecordset("DetailedLog", dbOpenDynaset)
   With myRec
     .AddNew
-    !TransID = ID
+    !TransID = Id
     !table = TableName
     !Field = fldName
     !Record = RecID
@@ -422,7 +429,7 @@ Public Function RecordChanges(ByVal ID As Long, ByVal TableName As String, _
   myRec.Close
 End Function
 
-Private Sub Class_Terminate()
+Private Sub Class_terminate()
   On Error Resume Next
   Set pStates = Nothing
   Set pUnits = Nothing
