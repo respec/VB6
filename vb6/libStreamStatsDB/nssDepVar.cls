@@ -35,6 +35,7 @@ Private pExpDA As Double
 Private pIsNew As Boolean
 Private pUnits As nssUnits
 Private pEquation As String
+Private pVarCount As Integer
 Private pComponents As FastCollection
 
 Public Property Get Name() As String
@@ -44,10 +45,10 @@ Public Property Let Name(ByVal newValue As String)
   pName = newValue
 End Property
 
-Public Property Get ID() As Long
-  ID = pID
+Public Property Get Id() As Long
+  Id = pID
 End Property
-Public Property Let ID(ByVal newValue As Long)
+Public Property Let Id(ByVal newValue As Long)
   pID = newValue
 End Property
 
@@ -194,6 +195,13 @@ Public Property Let Equation(ByVal newValue As String)
   pEquation = newValue
 End Property
 
+Public Property Get VarCount() As Integer
+  VarCount = pVarCount
+End Property
+Public Property Let VarCount(ByVal newValue As Integer)
+  pVarCount = newValue
+End Property
+
 Private Sub PopulateComponents()
   Dim newComp As nssComponent
   Dim comprec As Recordset
@@ -239,7 +247,7 @@ Public Function Add(IsReturn As Boolean, ByVal Region As nssRegion, _
     Optional ByVal Equation As String) As Long
     'OPTIONAL ByVal Stations As String, OPTIONAL ByVal CoeffDet As String, OPTIONAL ByVal MAD As String) As Boolean
   Dim myRec As Recordset
-  Dim ID&
+  Dim Id&
   Dim StatLabelID&
   
   If Name = "find" Then
@@ -257,22 +265,22 @@ Public Function Add(IsReturn As Boolean, ByVal Region As nssRegion, _
     With myRec
       'check to see if parameter with this name already exists for this region
       '.FindFirst "RegionID=" & Region.ID & " AND StatLabelCode='" & Name & "'"
-      .FindFirst "RegionID=" & Region.ID & " AND StatisticLabelID=" & StatLabelID
+      .FindFirst "RegionID=" & Region.Id & " AND StatisticLabelID=" & StatLabelID
       If .NoMatch Then  'OK to add
         'find an unused ID
         If IsReturn Then
-          ID = 1
+          Id = 1
         Else
-          ID = 10001
+          Id = 10001
         End If
-        .FindFirst "DepVarID=" & ID
+        .FindFirst "DepVarID=" & Id
         While Not .NoMatch
-          ID = !DepVarID + 1
-          .FindFirst "DepVarID=" & ID
+          Id = !DepVarID + 1
+          .FindFirst "DepVarID=" & Id
         Wend
         .AddNew
-        !DepVarID = ID
-        !Regionid = Region.ID
+        !DepVarID = Id
+        !Regionid = Region.Id
         '!statLabelCode = Name
         !StatisticLabelID = StatLabelID
         If IsNumeric(StdErr) Then !StdErr = StdErr
@@ -289,7 +297,7 @@ Public Function Add(IsReturn As Boolean, ByVal Region As nssRegion, _
   '      if isnumeric(CoeffDet) then !CoeffDet = CoeffDet
   '      if isnumeric(MAD) then !MAD = MAD
         .Update
-        Add = ID
+        Add = Id
       Else
         ssMessageBox "'" & Name & "' already exists for " & Region.Name & _
               "." & vbCrLf & "No entry was made."
@@ -309,7 +317,7 @@ Public Sub Delete()
   
   Set myRec = Me.Region.DB.DB.OpenRecordset("DepVars", dbOpenDynaset)
   With myRec
-    .FindFirst "DepVarID=" & Me.ID
+    .FindFirst "DepVarID=" & Me.Id
     If Not .NoMatch Then
       .Delete
     End If
@@ -329,12 +337,12 @@ Public Sub Edit(ByVal Name As String, _
   Set myRec = pDB.DB.OpenRecordset("DepVars", dbOpenDynaset)
   With myRec
     .MoveLast
-    .FindFirst "DepVarID=" & Me.ID
+    .FindFirst "DepVarID=" & Me.Id
     If Not .NoMatch Then
       .Edit
       '!Name = Name
-      !DepVarID = Me.ID
-      !Regionid = Me.Region.ID
+      !DepVarID = Me.Id
+      !Regionid = Me.Region.Id
       !StatisticLabelID = GetLabelID(Name, pDB)
       If IsNumeric(StdErr) Then !StdErr = StdErr
       If IsNumeric(EstErr) Then !EstErr = EstErr
@@ -365,28 +373,33 @@ Public Function PopulateMatrix() As Variant
   If pDB Is Nothing Then
     ssMessageBox "Cannot read covariance matrix" & vbCr & "DB not set."
   Else
-    myDim = Me.Components.Count + 1
-    ReDim covArray(1 To myDim, 1 To myDim)
-    sql = "SELECT * FROM [Covariance] " & _
-          "WHERE DepVarID=" & Me.ID & _
-          " ORDER BY Row, Col;"
-    Set covRec = pDB.DB.OpenRecordset(sql)
-    With covRec
-      If .RecordCount > 0 Then
-        .MoveLast
-        If !row <> myDim Then GoTo DBProblem
-        If !col <> myDim Then GoTo DBProblem
-        .MoveFirst
-      End If
-      While Not .EOF
-        row = !row
-        col = !col
-        If Not IsNull(!Value) Then covArray(row, col) = CStr(!Value)
-        .MoveNext
-      Wend
-    End With
-    covRec.Close
-    PopulateMatrix = covArray
+'    myDim = Me.Components.Count + 1
+    myDim = Me.VarCount + 1
+    If myDim > 0 Then
+      ReDim covArray(1 To myDim, 1 To myDim)
+      sql = "SELECT * FROM [Covariance] " & _
+            "WHERE DepVarID=" & Me.Id & _
+            " ORDER BY Row, Col;"
+      Set covRec = pDB.DB.OpenRecordset(sql)
+      With covRec
+        If .RecordCount > 0 Then
+          .MoveLast
+          If !row <> myDim Then GoTo DBProblem
+          If !col <> myDim Then GoTo DBProblem
+          .MoveFirst
+        End If
+        While Not .EOF
+          row = !row
+          col = !col
+          If Not IsNull(!Value) Then covArray(row, col) = CStr(!Value)
+          .MoveNext
+        Wend
+      End With
+      covRec.Close
+      PopulateMatrix = covArray
+    Else
+      GoTo DBProblem
+    End If
   End If
   Exit Function
 
@@ -429,7 +442,7 @@ Public Function ClearOldComponents() As Boolean
   Set myRec = pDB.DB.OpenRecordset("Components", dbOpenDynaset)
   With myRec
     While Not .EOF
-      .FindFirst "DepVarID=" & Me.ID
+      .FindFirst "DepVarID=" & Me.Id
       If Not .NoMatch Then
         .Delete
         ClearOldComponents = True
@@ -443,7 +456,7 @@ x:
   Set myRec = pDB.DB.OpenRecordset("Covariance", dbOpenDynaset)
   With myRec
     While Not .EOF
-      .FindFirst "DepVarID=" & Me.ID
+      .FindFirst "DepVarID=" & Me.Id
       If Not .NoMatch Then
         .Delete
         ClearOldComponents = True
