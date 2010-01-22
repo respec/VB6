@@ -51,10 +51,10 @@ Public Property Let Name(ByVal newValue As String)
   pName = newValue
 End Property
 
-Public Property Get Code() As String
-  Code = pCode
+Public Property Get code() As String
+  code = pCode
 End Property
-Public Property Let Code(ByVal newValue As String)
+Public Property Let code(ByVal newValue As String)
   pCode = newValue
 End Property
 
@@ -170,9 +170,9 @@ Private Sub PopulateHUCs()
         Set .DB = pDB
         Set .State = Me
         .Name = Trim(hucRec.Fields("HUCName"))
-        .Code = Trim(hucRec.Fields("HUC"))
+        .code = Trim(hucRec.Fields("HUC"))
       End With
-      pHUCs.Add newHUC, newHUC.Code
+      pHUCs.Add newHUC, newHUC.code
       Set newHUC = Nothing
       hucRec.MoveNext
     Wend
@@ -207,9 +207,9 @@ Public Sub PopulateStateBasins()
         Set .DB = pDB
         Set .State = Me
         .Name = basinRec.Fields("StateBasin")
-        .Code = basinRec.Fields("StateBasinCode")
+        .code = basinRec.Fields("StateBasinCode")
       End With
-      pStateBasins.Add newStateBasin, newStateBasin.Code
+      pStateBasins.Add newStateBasin, newStateBasin.code
       Set newStateBasin = Nothing
       basinRec.MoveNext
     Wend
@@ -250,10 +250,10 @@ Public Sub PopulateCounties()
       With newCounty
         Set .DB = pDB
         Set .State = Me
-        .Code = countyRec.Fields("CountyCode")
+        .code = countyRec.Fields("CountyCode")
         .Name = countyRec.Fields("County")
       End With
-      pCounties.Add newCounty, newCounty.Code
+      pCounties.Add newCounty, newCounty.code
       Set newCounty = Nothing
       countyRec.MoveNext
     Wend
@@ -295,10 +295,10 @@ Public Sub PopulateMCDs()
       With newMCD
         Set .DB = pDB
         Set .State = Me
-        .Code = MCDRec.Fields("MCDCode")
+        .code = MCDRec.Fields("MCDCode")
         .Name = MCDRec.Fields("MCDName")
       End With
-      pMCDs.Add newMCD, newMCD.Code
+      pMCDs.Add newMCD, newMCD.code
       Set newMCD = Nothing
       MCDRec.MoveNext
     Wend
@@ -336,7 +336,7 @@ Private Sub PopulateStations()
       With newStation
         Set .DB = pDB
         Set .State = Me
-        .ID = stationRec("StaID")
+        .Id = stationRec("StaID")
         If Not IsNull(stationRec("StationName")) Then .Name = stationRec("StationName")
         If Not IsNull(stationRec("StationName")) Then
           .Label = stationRec("StationName")
@@ -365,7 +365,7 @@ Private Sub PopulateStations()
       End With
       'NOTE: This conditional handles the issue of having the same station twice
       '      for a state that has both High and Low flow ROI apps; PRH, 7/2009
-      If Not pStations.KeyExists(newStation.ID) Then pStations.Add newStation, newStation.ID
+      If Not pStations.KeyExists(newStation.Id) Then pStations.Add newStation, newStation.Id
       Set newStation = Nothing
       stationRec.MoveNext
     Wend
@@ -409,14 +409,14 @@ Public Sub PopulateStatsOnFile()
         "INNER JOIN STATISTIC ON STATION.StaID = STATISTIC.StaID) " & _
         "ON STATLABEL.StatisticLabelID = STATISTIC.StatisticLabelID) " & _
         "ON STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode " & _
-        "WHERE [StationState].[StateCode]='" & Me.Code & "' AND [StationState].[ROI]>0;"
+        "WHERE [StationState].[StateCode]='" & Me.code & "' AND [StationState].[ROI]>0;"
     Set statRec = pDB.DB.OpenRecordset(sql)
     While Not statRec.EOF
       Set newStat = New ssStatistic
       With newStat
         If Not IsNull(statRec("StatisticTypeCode")) Then .StatTypeCode = statRec("StatisticTypeCode")
         If Not IsNull(statRec("StatisticType")) Then .StatType = statRec("StatisticType")
-        If Not IsNull(statRec("StatisticLabelID")) Then .Code = statRec("StatisticLabelID")
+        If Not IsNull(statRec("StatisticLabelID")) Then .code = statRec("StatisticLabelID")
         If Not IsNull(statRec("StatisticLabel")) Then .Name = statRec("StatisticLabel")
         If Not IsNull(statRec("StatLabel")) Then .Abbrev = statRec("StatLabel")
         If Not IsNull(statRec("UnitID")) Then Set .Units = pDB.Units(CStr(statRec("UnitID")))
@@ -499,7 +499,7 @@ Private Function GetStationType(TypeCode As String) As ssStationType
     .FindFirst "StationTypeCode='" & TypeCode & "'"
     If Not .NoMatch Then
       Set GetStationType.DB = pDB
-      GetStationType.Code = .Fields("StationTypeCode")
+      GetStationType.code = .Fields("StationTypeCode")
       GetStationType.Name = .Fields("StationType")
     End If
   End With
@@ -532,7 +532,7 @@ Public Sub PopulateRegions()
       With newRegion
         Set .DB = pDB
         Set .State = Me
-        .ID = regnID
+        .Id = regnID
         .Name = rgnRec.Fields("RegionName")
         .Urban = rgnRec.Fields("Urban")
         .UrbanNeedsRural = rgnRec.Fields("UrbanNeedsRural")
@@ -547,17 +547,17 @@ Public Sub PopulateRegions()
     rgnRec.Close
   End If
 End Sub
-Public Sub Edit(ByVal PeakFlows As String, ByVal CF As Boolean, ByVal Distance As Boolean, _
+Public Sub Edit(ByVal PeakFlows As String, ByVal Cf As Boolean, ByVal Distance As Boolean, _
                 ByVal Regress As Boolean, ByVal Regions As Boolean, ByVal SimStations As Integer)
   Dim myRec As Recordset
   Dim sql$
   
-  sql = "SELECT * FROM STATES WHERE StateCode='" & Me.Code & "'"
+  sql = "SELECT * FROM STATES WHERE StateCode='" & Me.code & "'"
   Set myRec = DB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     .Edit
     !ROIPeakFlows = PeakFlows
-    !ROIClimateFactor = CF
+    !ROIClimateFactor = Cf
     !ROIDistance = Distance
     !ROIBackStepRegression = Regress
     !roiRegions = Regions
@@ -578,13 +578,13 @@ Public Sub ClearState(DVTable As String)
   i = 0
   If DVTable = "ReturnPeriods" Then
     sql = "SELECT Regions.* From [Regions] " & _
-          "WHERE StateCode='" & Me.Code & "' And LowFlow=0 And ROI=-1;"
+          "WHERE StateCode='" & Me.code & "' And LowFlow=0 And ROIRegionID=0;"
   ElseIf DVTable = "Statistics" Then
     sql = "SELECT Regions.* From [Regions] " & _
-          "WHERE StateCode='" & Me.Code & "' And LowFlow>0;"
+          "WHERE StateCode='" & Me.code & "' And LowFlow>0 And ROIRegionID=0;"
   ElseIf DVTable = "Probability" Then
     sql = "SELECT Regions.* From [Regions] " & _
-          "WHERE StateCode='" & Me.Code & "' And LowFlow<0;"
+          "WHERE StateCode='" & Me.code & "' And LowFlow<0;"
   End If
   Set regRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   While regRec.RecordCount > 0

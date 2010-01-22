@@ -1583,12 +1583,12 @@ Public Function Discharges() As Double()
           Next i
         End If
         'Some 500-year returns are supposed to be missing components, so we don't want to warn about them
-        If CurReturn.Components.Count = 0 And Not WarnedAboutMissingComponents And InStr(CurReturn.Name, "500") = 0 Then
-          StepName = "Error: Components for return period " & CurReturn.Name & " of " & CurRegion.Region.Name & " are missing from the database"
-          pErrorDescription = pErrorDescription & StepName & vbCrLf
-          ssMessageBox StepName, vbOKOnly, "NSS Discharges"
-          WarnedAboutMissingComponents = True
-        End If
+'        If CurReturn.Components.Count = 0 And Not WarnedAboutMissingComponents And InStr(CurReturn.Name, "500") = 0 Then
+'          StepName = "Error: Components for return period " & CurReturn.Name & " of " & CurRegion.Region.Name & " are missing from the database"
+'          pErrorDescription = pErrorDescription & StepName & vbCrLf
+'          ssMessageBox StepName, vbOKOnly, "NSS Discharges"
+'          WarnedAboutMissingComponents = True
+'        End If
         ReDim lVals(CurReturn.Components.Count)
 '        MultParmExpVal = 0 '1
 '        For ComponentIndex = 1 To CurReturn.Components.Count
