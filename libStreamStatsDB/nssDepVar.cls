@@ -240,11 +240,9 @@ End Sub
 Public Function Add(IsReturn As Boolean, ByVal Region As nssRegion, _
     ByVal Name As String, Optional ByVal StdErr As String, _
     Optional ByVal EstErr As String, Optional ByVal PreErr As String, _
-    Optional ByVal eqyrs As String, Optional ByVal Constant As String, _
-    Optional ByVal BCF As String, Optional ByVal tDist As String, _
-    Optional ByVal Variance As String, _
-    Optional ByVal ExpDA As String, _
-    Optional ByVal Equation As String) As Long
+    Optional ByVal eqyrs As String, Optional ByVal BCF As String, _
+    Optional ByVal tDist As String, Optional ByVal Variance As String, _
+    Optional ByVal ExpDA As String, Optional ByVal Equation As String) As Long
     'OPTIONAL ByVal Stations As String, OPTIONAL ByVal CoeffDet As String, OPTIONAL ByVal MAD As String) As Boolean
   Dim myRec As Recordset
   Dim Id&
