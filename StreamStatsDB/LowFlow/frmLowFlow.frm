@@ -297,7 +297,7 @@ Begin VB.Form frmLowFlow
       Index           =   2
       Left            =   120
       TabIndex        =   11
-      Top             =   3240
+      Top             =   3360
       Visible         =   0   'False
       Width           =   9615
       Begin VB.Frame fraEquation 
@@ -433,7 +433,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   467
+         Rows            =   483
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -1052,7 +1052,8 @@ TryAgain:
     i = i + 1
   Wend
   cboState.ListIndex = i
-  flowFlag = Right(str, 1)
+  flowFlag = StrRetRem(str) 'this skips the state name
+  flowFlag = StrRetRem(str) ' Right(str, 1)
   If flowFlag = "0" Then
     DB.State.ClearState "ReturnPeriods"
     isReturn = True
@@ -1064,10 +1065,10 @@ TryAgain:
     isReturn = False
   End If
 
-  DepVarFlds = 10 'always set to import all possible DepVar fields
+  DepVarFlds = 9 'always set to import all possible DepVar fields
   
   'read in number of regions and metric flag
-  Line Input #inFile, str
+  'Line Input #inFile, str
   regnCnt = CLng(StrRetRem(str))
   If str = "1" Then Metric = True Else Metric = False
   
@@ -1078,35 +1079,34 @@ TryAgain:
     lstParms.Clear
     lstRetPds.Clear
     Line Input #inFile, str
-    regnName = StrSplit(str, vbTab, "")
+    regnName = ""
+    While Len(regnName) = 0 And Len(str) > 0
+      regnName = StrRetRem(str)
+    Wend
     If StrRetRem(str) = "0" Then urban = False Else urban = True
     regnVals(0) = StrRetRem(str)
     regnVals(1) = StrRetRem(str)
     Set MyRegion = New nssRegion
     Set MyRegion.DB = DB
-    MyRegion.Add RDO, regnName, urban, regnVals(0), regnVals(1), -1
+    MyRegion.Add RDO, regnName, urban, regnVals(0), regnVals(1), 0
     DB.State.PopulateRegions
     Set MyRegion = DB.State.Regions(regnName)
-    'Read in parameters info
-    Line Input #inFile, str
+    'Read in parameters info - NOT ANY MORE, records merged 1/21/2010, prh
+    'Line Input #inFile, str
     parmCnt = StrRetRem(str)  'number or parameters for this region
     ReDim parmVals(parmCnt - 1, ParmFlds)
-    depVarCnt = StrSplit(str, vbTab, "")  'number or RetPds/Statistics for this region
-    If depVarCnt > 0 Then ReDim depVarVals(depVarCnt - 1, DepVarFlds + 1)
+    depVarCnt = StrRetRem(str)  'number or RetPds/Statistics for this region
+    If depVarCnt > 0 Then ReDim depVarVals(depVarCnt - 1, DepVarFlds)
     'Loop thru parameters
     For j = 0 To parmCnt - 1
-      If j > 0 Then
-        Line Input #inFile, str
-        str = Mid(str, 2) 'gets rid or initial vbtab
-      End If
-      str = Trim(str)
+      Line Input #inFile, str
+      parmVals(j, 0) = ""
+      While Len(parmVals(j, 0)) = 0 And Len(str) > 0
+        parmVals(j, 0) = StrRetRem(str)
+      Wend
       'Read in fields for each parm
-      For k = 0 To ParmFlds
-        If k < 2 Then
-          parmVals(j, k) = StrSplit(str, vbTab, "")
-        Else
-          parmVals(j, k) = StrRetRem(str)
-        End If
+      For k = 1 To ParmFlds - 1
+        parmVals(j, k) = StrRetRem(str)
       Next k
       If parmVals(j, 0) <> "RDA" And parmVals(j, 0) <> "CRD" Then
         'Write values to DB
@@ -1127,56 +1127,69 @@ TryAgain:
     End If
     ResetRegion
     'Loop thru Return Periods/Statistics
-    For j = 1 To depVarCnt
+    For j = 0 To depVarCnt - 1
       'Read in values
       Line Input #inFile, str
-      str = Mid(str, 2)  'gets rid of initial vbtab
-      For k = 0 To DepVarFlds + 1 '+1 is for component count at end of line
+      depVarVals(j, 0) = ""
+      While Len(depVarVals(j, 0)) = 0 And Len(str) > 0
+        depVarVals(j, 0) = StrRetRem(str)
+      Wend
+      For k = 1 To DepVarFlds
         If Len(str) > 0 Then
-          depVarVals(j - 1, k) = StrRetRem(str)
+          depVarVals(j, k) = StrSplit(str, ",", "")
         Else
           Exit For
         End If
       Next k
-      compCnt = depVarVals(j - 1, k - 1)
-      If compCnt > 0 Then ReDim compVals(depVarCnt - 1, compCnt - 1, CompFlds)
+'      compCnt = depVarVals(j, k - 1)
+'      If compCnt > 0 Then ReDim compVals(depVarCnt - 1, compCnt - 1, CompFlds)
       'Write values to DB
       Set MyDepVar = New nssDepVar
-      DepVarID = MyDepVar.Add(isReturn, MyRegion, depVarVals(j - 1, 0), depVarVals(j - 1, 1), _
-          depVarVals(j - 1, 2), depVarVals(j - 1, 3), depVarVals(j - 1, 4), depVarVals(j - 1, 5), _
-          depVarVals(j - 1, 6), depVarVals(j - 1, 7), depVarVals(j - 1, 8), depVarVals(j - 1, 9))
+      DepVarID = MyDepVar.Add(isReturn, MyRegion, depVarVals(j, 0), depVarVals(j, 1), _
+          depVarVals(j, 2), depVarVals(j, 3), depVarVals(j, 4), depVarVals(j, 5), _
+          depVarVals(j, 6), depVarVals(j, 7), depVarVals(j, 8), depVarVals(j, 9))
       MyRegion.PopulateDepVars
-      'Loop thru Components
-      For k = 0 To compCnt - 1
-        'Read in values
-        Line Input #inFile, str
-        str = Mid(str, 3)  'gets rid of initial 2 tabs
-        For m = 0 To CompFlds
-          If m = 0 Or m = 4 Then
-            compVals(j - 1, k, m) = GetCode(StrSplit(str, vbTab, ""))
-          Else
-            compVals(j - 1, k, m) = StrRetRem(str)
-          End If
-        Next m
-        If compVals(j - 1, k, 0) < -10 Then 'indicates to take natural log
-          compVals(j - 1, k, 0) = Abs(compVals(j - 1, k, 0))
-          compVals(j - 1, k, 4) = -999
-        End If
-        'Get rid of instructional equation on end of component string
-        compVals(j - 1, k, m - 1) = StrSplit(compVals(j - 1, k, m - 1), vbTab, "")
-        'Write values to DB
-        Set MyComp = New nssComponent
-        MyComp.Add MyRegion, DepVarID, CLng(compVals(j - 1, k, 0)), compVals(j - 1, k, 1), _
-            compVals(j - 1, k, 2), compVals(j - 1, k, 3), CLng(compVals(j - 1, k, 4)), _
-            compVals(j - 1, k, 5), compVals(j - 1, k, 6)
-      Next k
+      'check equation being imported
+      If lMath.StoreExpression(depVarVals(j, 9)) Then
+        compCnt = lMath.VarTop
+      Else
+        compCnt = 0
+        MsgBox "In Region " & MyRegion.Name & ", invalid equation format for DepVar: " & _
+               depVarVals(j, 0) & vbCrLf & "Equation:  " & depVarVals(j, 10) & vbCrLf & _
+               "If Prediction Intervals in use, covariance matrix will not be imported", vbCritical, "Import Error"
+      End If
+'      'Loop thru Components
+'      For k = 0 To compCnt - 1
+'        'Read in values
+'        Line Input #inFile, str
+'        str = Mid(str, 3)  'gets rid of initial 2 tabs
+'        For m = 0 To CompFlds
+'          If m = 0 Or m = 4 Then
+'            compVals(j, k, m) = GetCode(StrSplit(str, vbTab, ""))
+'          Else
+'            compVals(j, k, m) = StrRetRem(str)
+'          End If
+'        Next m
+'        If compVals(j, k, 0) < -10 Then 'indicates to take natural log
+'          compVals(j, k, 0) = Abs(compVals(j, k, 0))
+'          compVals(j, k, 4) = -999
+'        End If
+'        'Get rid of instructional equation on end of component string
+'        compVals(j, k, m - 1) = StrSplit(compVals(j, k, m - 1), vbTab, "")
+'        'Write values to DB
+'        Set MyComp = New nssComponent
+'        MyComp.Add MyRegion, DepVarID, CLng(compVals(j, k, 0)), compVals(j, k, 1), _
+'            compVals(j, k, 2), compVals(j, k, 3), CLng(compVals(j, k, 4)), _
+'            compVals(j, k, 5), compVals(j, k, 6)
+'      Next k
       'Loop thru Covariance Matrix
-      If compCnt > 0 And MyRegion.PredInt Then
+'      If compCnt > 0 And MyRegion.PredInt Then
+      If MyRegion.PredInt Then
         ReDim covArray(1 To compCnt + 1, 1 To compCnt + 1)
         For k = 1 To compCnt + 1
           Line Input #inFile, str
-          While Left(str, 1) = vbTab Or Left(str, 1) = " "
-            str = Mid(str, 2)  'gets rid of initial tabs/spaces
+          While Left(str, 1) = "," Or Left(str, 1) = " "
+            str = Mid(str, 2)  'gets rid of initial separators
           Wend
           For m = 1 To compCnt + 1
             covArray(k, m) = StrRetRem(str)
@@ -1263,77 +1276,74 @@ Private Sub cmdExport_Click()
   
   OutFile = FreeFile
   Open FileName For Output As OutFile
-  Print #OutFile, DB.State.code & " " & DB.State.Name & " " & j
-  If DB.State.Metric Then j = 1 Else j = 0
-  Print #OutFile, lstRegions.ListCount & " " & j
+  If DB.State.Metric Then
+    Print #OutFile, DB.State.code & ", " & DB.State.Name & ", " & j & ", " & lstRegions.ListCount & ", 1"
+  Else
+    Print #OutFile, DB.State.code & ", " & DB.State.Name & ", " & j & ", " & lstRegions.ListCount & ", 0"
+  End If
   'Loop thru Regions
   For i = 1 To lstRegions.ListCount
     Set MyRegion = DB.State.Regions(lstRegions.List(i - 1))
-    If MyRegion.ROIRegnID <> "-1" Then GoTo nextRegion
+    If MyRegion.ROIRegnID <> "0" Then GoTo nextRegion
     If MyRegion.urban Then j = 1 Else j = 0
-    str = MyRegion.Name & vbTab & j
+    str = MyRegion.Name & ", " & j
     If MyRegion.UrbanNeedsRural Then j = 1 Else j = 0
-    str = str & " " & j
+    str = str & ", " & j
     If MyRegion.PredInt Then j = 1 Else j = 0
-    str = str & " " & j
-    Print #OutFile, str
+    str = str & ", " & j
+    Print #OutFile, ",,,,, " & str & ", " & MyRegion.Parameters.Count & ", " & MyRegion.DepVars.Count
     'Loop thru Parameters
     For j = 1 To MyRegion.Parameters.Count
       Set MyParm = MyRegion.Parameters(j)
       'If MyParm.Abbrev <> "RDA" And MyParm.Abbrev <> "CRD" Then
-        tmpCnt = MyRegion.DepVars.Count
-        str = ""
-        If j = 1 Then
-          str = MyRegion.Parameters.Count & " " & tmpCnt
-        End If
-        str = str & vbTab & MyParm.Abbrev & vbTab & MyParm.Name & vbTab & _
-            MyParm.GetMin(DB.State.Metric) & " " & MyParm.GetMax(DB.State.Metric) & " " & MyParm.Units.id
-        Print #OutFile, str
+      str = ",,,,,,,,,,, " & MyParm.Abbrev & ", " & MyParm.Name & ", " & _
+            MyParm.GetMin(DB.State.Metric) & ", " & MyParm.GetMax(DB.State.Metric) & ", " & MyParm.Units.id
+      Print #OutFile, str
       'End If
     Next j
     'Loop thru Return Periods/Statistics
-    For j = 1 To tmpCnt
+    For j = 1 To MyRegion.DepVars.Count
       Set MyDepVar = MyRegion.DepVars(j)
       compCnt = MyDepVar.Components.Count
-      Print #OutFile, vbTab & MyDepVar.Name & " " & _
-          Round(MyDepVar.StdErr, 1) & " "; Round(MyDepVar.EstErr, 1) & " " _
-          ; Round(MyDepVar.PreErr, 1) & " " & Round(MyDepVar.EquivYears, 1) & " " & _
-          MyDepVar.Constant & " " & MyDepVar.BCF & " " & _
-          Round(MyDepVar.tdist, 4) & " " & Round(MyDepVar.Variance, 4) & _
-          " " & Round(MyDepVar.ExpDA, 4) & " " & compCnt
-      If MyRegion.PredInt Then covArray = MyDepVar.PopulateMatrix
-      'Loop thru Components
-      For k = 1 To compCnt
-        Set MyComp = MyDepVar.Components(k)
-        str = BldComponentEqtn(MyComp)
-        With MyComp
-          If .ParmID = -3 Or .ParmID = -4 Then
-            Print #OutFile, vbTab & vbTab & GetAbbrev(.ParmID) & CStr(.ParmID) & vbTab & _
-                .BaseMod & " " & .BaseCoeff & " " & _
-                .BaseExp & " " & GetAbbrev(.expID) & vbTab & _
-                .ExpMod & " " & .ExpExp & str
-          ElseIf .expID = -999 Then
-            Print #OutFile, vbTab & vbTab & "ln(" & GetAbbrev(.ParmID) & ")" & vbTab & _
-                .BaseMod & " " & .BaseCoeff & " " & _
-                .BaseExp & " " & GetAbbrev(.expID) & vbTab & _
-                .ExpMod & " " & .ExpExp & str
-          Else
-            Print #OutFile, vbTab & vbTab & GetAbbrev(.ParmID) & vbTab & _
-                .BaseMod & " " & .BaseCoeff & " " & _
-                .BaseExp & " " & GetAbbrev(.expID) & vbTab & _
-                .ExpMod & " " & .ExpExp & str
-          End If
-        End With
-      Next k
+      Print #OutFile, ",,,,,,,,,,,,,,,, " & MyDepVar.Name & ", " & Round(MyDepVar.StdErr, 1) & ", " & _
+          Round(MyDepVar.EstErr, 1) & ", " & Round(MyDepVar.PreErr, 1) & ", " & _
+          Round(MyDepVar.EquivYears, 1) & ", " & MyDepVar.BCF & ", " & _
+          Round(MyDepVar.tdist, 4) & ", " & Round(MyDepVar.Variance, 4) & ", " & _
+          Round(MyDepVar.ExpDA, 4) & ", " & MyDepVar.Equation
+          '" " & Round(MyDepVar.ExpDA, 4) & " " & compCnt
+'      'Loop thru Components
+'      For k = 1 To compCnt
+'        Set MyComp = MyDepVar.Components(k)
+'        str = BldComponentEqtn(MyComp)
+'        With MyComp
+'          If .ParmID = -3 Or .ParmID = -4 Then
+'            Print #OutFile, vbTab & vbTab & GetAbbrev(.ParmID) & CStr(.ParmID) & vbTab & _
+'                .BaseMod & " " & .BaseCoeff & " " & _
+'                .BaseExp & " " & GetAbbrev(.expID) & vbTab & _
+'                .ExpMod & " " & .ExpExp & str
+'          ElseIf .expID = -999 Then
+'            Print #OutFile, vbTab & vbTab & "ln(" & GetAbbrev(.ParmID) & ")" & vbTab & _
+'                .BaseMod & " " & .BaseCoeff & " " & _
+'                .BaseExp & " " & GetAbbrev(.expID) & vbTab & _
+'                .ExpMod & " " & .ExpExp & str
+'          Else
+'            Print #OutFile, vbTab & vbTab & GetAbbrev(.ParmID) & vbTab & _
+'                .BaseMod & " " & .BaseCoeff & " " & _
+'                .BaseExp & " " & GetAbbrev(.expID) & vbTab & _
+'                .ExpMod & " " & .ExpExp & str
+'          End If
+'        End With
+'      Next k
       If MyRegion.PredInt Then  'using prediction intervals
+        covArray = MyDepVar.PopulateMatrix
         If UBound(covArray, 1) > 1 Then  'this Return/Stat has a covariance matrix
           'Loop thru Covariance Matrix
           For row = 1 To UBound(covArray, 1)
-            str = vbTab & vbTab & vbTab
+            str = "" 'vbTab & vbTab & vbTab
             For col = 1 To UBound(covArray, 2)
-              str = str & " " & covArray(row, col)
+              str = str & covArray(row, col) & ", "
             Next col
-            Print #OutFile, str
+            Print #OutFile, ",,,,,,,,,,,,,,,,,,,,,,,,,,, " & Left(str, Len(str) - 2)
           Next row
         End If
       End If
@@ -2182,7 +2192,7 @@ Private Sub cmdAdd_Click()
   Dim i&, j&, mDim&
   Dim str$
   
-  If fraEdit(0).Visible Then
+  If fraEdit(0).Visible Then 'regions
     If Not MyRegion Is Nothing Then
       If MyRegion.IsNew Then Exit Sub
     End If
@@ -2207,7 +2217,7 @@ Private Sub cmdAdd_Click()
       Set SelParms = Nothing
     End If
     lstRetPds.Clear
-  ElseIf fraEdit(1).Visible Then
+  ElseIf fraEdit(1).Visible Then 'parameters
     If Not MyParm Is Nothing Then
       If MyParm.IsNew And grdParms.Rows > 0 Then Exit Sub
     End If
@@ -2217,7 +2227,7 @@ Private Sub cmdAdd_Click()
     MyRegion.Parameters.Add MyParm, "0"
     lstParms.AddItem "New Parameter"
     lstParms.Selected(lstParms.ListCount - 1) = True
-  ElseIf fraEdit(2).Visible Then
+  ElseIf fraEdit(2).Visible Then 'depvars
     If grdInterval.Rows > 0 Then
       If MyDepVar.IsNew Then Exit Sub
       Skip = True
