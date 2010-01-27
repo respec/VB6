@@ -184,7 +184,7 @@ Attribute FilenameSetExt.VB_Description = "Converts extension of filename from e
   End If
 End Function
 
-Function AbsolutePath(ByVal Filename As String, ByVal StartPath As String) As String
+Function AbsolutePath(ByVal filename As String, ByVal StartPath As String) As String
 Attribute AbsolutePath.VB_Description = "Converts an relative pathname to an absolute path given the starting directory."
 ' ##SUMMARY Converts an relative pathname to an absolute path given the starting directory.
 ' ##SUMMARY   Example: AbsolutePath("..\Data\DataFile.wdm", "C:\BASINS\models") = "C:\BASINS\Data\DataFile.wdm"
@@ -198,22 +198,22 @@ Attribute AbsolutePath.VB_Description = "Converts an relative pathname to an abs
   
   If Right(StartPath, 1) = "\" Then StartPath = Left(StartPath, Len(StartPath) - 1)
   
-  If UCase(Left(Filename, 2)) <> UCase(Left(StartPath, 2)) Then Filename = StartPath & "\" & Filename
+  If UCase(Left(filename, 2)) <> UCase(Left(StartPath, 2)) Then filename = StartPath & "\" & filename
   
-  slashposFilename = InStr(Filename, "\..\")
+  slashposFilename = InStr(filename, "\..\")
   While slashposFilename > 0
-    slashposPath = InStrRev(Filename, "\", slashposFilename - 1)
+    slashposPath = InStrRev(filename, "\", slashposFilename - 1)
     If slashposPath = 0 Then
       slashposFilename = 0
     Else
-      Filename = Left(Filename, slashposPath) & Mid(Filename, slashposFilename + 4)
-      slashposFilename = InStr(Filename, "\..\")
+      filename = Left(filename, slashposPath) & Mid(filename, slashposFilename + 4)
+      slashposFilename = InStr(filename, "\..\")
     End If
   Wend
-  AbsolutePath = Filename
+  AbsolutePath = filename
 End Function
 
-Function RelativeFilename(ByVal Filename As String, ByVal StartPath As String) As String
+Function RelativeFilename(ByVal filename As String, ByVal StartPath As String) As String
 Attribute RelativeFilename.VB_Description = "Converts an absolute pathname to a relative path given the starting directory."
 ' ##SUMMARY Converts an absolute pathname to a relative path given the starting directory.
 ' ##SUMMARY If Filename is not on the same drive as StartPath, Filename is returned.
@@ -232,34 +232,34 @@ Attribute RelativeFilename.VB_Description = "Converts an absolute pathname to a 
   'Remove trailing slash if necessary
   If Right(StartPath, 1) = "\" Then StartPath = Left(StartPath, Len(StartPath) - 1)
   
-  If Len(Filename) > 2 Then
-    If Left(Filename, 3) = "..\" Then
+  If Len(filename) > 2 Then
+    If Left(filename, 3) = "..\" Then
       'Concatenate StartPath and Filename
-      Filename = StartPath & "\" & Filename
+      filename = StartPath & "\" & filename
     End If
   End If
   
   'Adjust path for Filename as necessary
-  slashposFilename = InStr(Filename, "\..\")
+  slashposFilename = InStr(filename, "\..\")
   While slashposFilename > 0
-    slashposPath = InStrRev(Filename, "\", slashposFilename - 1)
+    slashposPath = InStrRev(filename, "\", slashposFilename - 1)
     If slashposPath = 0 Then
       slashposFilename = 0
     Else
-      Filename = Left(Filename, slashposPath) & Mid(Filename, slashposFilename + 4)
-      slashposFilename = InStr(Filename, "\..\")
+      filename = Left(filename, slashposPath) & Mid(filename, slashposFilename + 4)
+      slashposFilename = InStr(filename, "\..\")
     End If
   Wend
       
-  If InStr(Filename, "\") = 0 Then
+  If InStr(filename, "\") = 0 Then
     'No path to check, so assume it is a file in StartPath
-  ElseIf LCase(Left(Filename, 2)) <> LCase(Left(StartPath, 2)) Then
+  ElseIf LCase(Left(filename, 2)) <> LCase(Left(StartPath, 2)) Then
     'filename is already relative or is on different drive
   Else
     'Reconcile StartPath and Filename
     slashposPath = Len(StartPath)
-    If Mid(Filename, slashposPath + 1, 1) = "\" Then 'Filename might include whole path
-      If LCase(Left(Filename, slashposPath)) = LCase(StartPath) Then
+    If Mid(filename, slashposPath + 1, 1) = "\" Then 'Filename might include whole path
+      If LCase(Left(filename, slashposPath)) = LCase(StartPath) Then
         sameUntil = slashposPath + 1
         GoTo FoundSameUntil
       End If
@@ -268,9 +268,9 @@ Attribute RelativeFilename.VB_Description = "Converts an absolute pathname to a 
     slashposPath = 0
     'Search for point of divergence between StartPath and Filename
     While slashposFilename = slashposPath
-      If LCase(Left(Filename, slashposPath)) = LCase(Left(StartPath, slashposPath)) Then
+      If LCase(Left(filename, slashposPath)) = LCase(Left(StartPath, slashposPath)) Then
         sameUntil = slashposPath
-        slashposFilename = InStr(slashposPath + 1, Filename, "\")
+        slashposFilename = InStr(slashposPath + 1, filename, "\")
         slashposPath = InStr(slashposPath + 1, StartPath, "\")
         If slashposPath = 0 Then slashposPath = -1 'If neither has another \, must end loop
       Else
@@ -280,15 +280,15 @@ Attribute RelativeFilename.VB_Description = "Converts an absolute pathname to a 
     Wend
 FoundSameUntil:
     'Set relative path from point of divergence between StartPath and Filename
-    Filename = Mid(Filename, sameUntil + 1)
+    filename = Mid(filename, sameUntil + 1)
     If sameUntil < 1 Then sameUntil = 1
     slashposPath = InStr(sameUntil, StartPath, "\")
     While slashposPath > 0
-      Filename = "..\" & Filename
+      filename = "..\" & filename
       slashposPath = InStr(slashposPath + 1, StartPath, "\")
     Wend
   End If
-  RelativeFilename = Filename
+  RelativeFilename = filename
 End Function
 
 Public Sub MkDirPath(ByVal newPath As String)
@@ -1264,7 +1264,7 @@ Attribute ReplaceString.VB_Description = "Replaces Find in Source with Replace (
 End Function
 
 Public Sub ReplaceStringToFile(ByRef Source As String, ByRef Find As String, _
-                               ByRef Replace As String, ByRef Filename As String)
+                               ByRef Replace As String, ByRef filename As String)
 Attribute ReplaceStringToFile.VB_Description = "Saves new string like Source to Filename with occurences of Find in Source replaced with Replace."
 ' ##SUMMARY Saves new string like Source to Filename with _
  occurences of Find in Source replaced with Replace.
@@ -1292,7 +1292,7 @@ Attribute ReplaceStringToFile.VB_Description = "Saves new string like Source to 
       lastFindEnd = 1
       On Error GoTo ErrorWriting
       OutFile = FreeFile(0)
-      Open Filename For Output As OutFile
+      Open filename For Output As OutFile
       While findPos > 0
         Print #OutFile, Mid(Source, lastFindEnd, findPos - lastFindEnd) & Replace;
         lastFindEnd = findPos + findlen
@@ -1301,15 +1301,15 @@ Attribute ReplaceStringToFile.VB_Description = "Saves new string like Source to 
       Print #OutFile, Mid(Source, lastFindEnd);
       Close OutFile
     Else
-      SaveFileString Filename, Source
+      SaveFileString filename, Source
     End If
   Else
-    SaveFileString Filename, Source
+    SaveFileString filename, Source
   End If
   Exit Sub
 
 ErrorWriting:
-  MsgBox "Error writing '" & Filename & "'" & vbCr & vbCr & Err.Description, vbOKOnly, "ReplaceStringToFile"
+  MsgBox "Error writing '" & filename & "'" & vbCr & vbCr & Err.Description, vbOKOnly, "ReplaceStringToFile"
 End Sub
 
 Public Sub StrTrim(ByRef istr As String)
@@ -1325,7 +1325,7 @@ Attribute StrTrim.VB_Description = "Removes all blanks from a string."
     lstr = ""
     bpos = InStr(istr, " ")
     While bpos > 0
-      lstr = lstr & Mid(istr, 1, bpos)
+      lstr = lstr & Trim(Mid(istr, 1, bpos))
       istr = LTrim(Mid(istr, bpos))
       bpos = InStr(istr, " ")
     Wend
@@ -1832,7 +1832,7 @@ Attribute Byte2String.VB_Description = "Converts sequence of members in Byte arr
   Byte2String = s
 End Function
 
-Public Function WholeFileString(ByRef Filename As String) As String
+Public Function WholeFileString(ByRef filename As String) As String
 Attribute WholeFileString.VB_Description = "Converts specified text file to a string."
 ' ##SUMMARY Converts specified text file to a string.
 ' ##PARAM FileName I Name of text file
@@ -1846,7 +1846,7 @@ StartOver:
   On Error GoTo ErrorReading
   
   inFile = FreeFile(0)
-  Open Filename For Binary As inFile
+  Open filename For Binary As inFile
   FileLength = LOF(inFile)
   WholeFileString = Space(FileLength)
   Get #inFile, , WholeFileString
@@ -1860,7 +1860,7 @@ ErrorReading:
     WholeFileString = "binary file could not be read as string"
     Resume Next
   Else
-    If MsgBox("Error reading '" & Filename & "'" & vbCr & vbCr _
+    If MsgBox("Error reading '" & filename & "'" & vbCr & vbCr _
             & Err.Description, vbRetryCancel, "WholeFileString") = vbRetry Then
        Resume StartOver
     Else
@@ -1870,7 +1870,7 @@ ErrorReading:
 End Function
 
 
-Public Function WholeFileBytes(ByRef Filename As String) As Byte()
+Public Function WholeFileBytes(ByRef filename As String) As Byte()
 Attribute WholeFileBytes.VB_Description = "Converts specified text file to Byte array"
 ' ##SUMMARY Converts specified text file to Byte array
 ' ##PARAM FileName I Name of text file
@@ -1883,7 +1883,7 @@ Attribute WholeFileBytes.VB_Description = "Converts specified text file to Byte 
   On Error GoTo ErrorReading
   
   inFile = FreeFile(0)
-  Open Filename For Binary As inFile
+  Open filename For Binary As inFile
   FileLength = LOF(inFile)
   ReDim retval(FileLength)
   Get #inFile, , retval
@@ -1892,7 +1892,7 @@ Attribute WholeFileBytes.VB_Description = "Converts specified text file to Byte 
   Exit Function
 
 ErrorReading:
-  MsgBox "Error reading '" & Filename & "'" & vbCr & vbCr & Err.Description, vbOKOnly, "WholeFileBytes"
+  MsgBox "Error reading '" & filename & "'" & vbCr & vbCr & Err.Description, vbOKOnly, "WholeFileBytes"
 End Function
 
 Public Function FirstMismatch(ByRef filename1 As String, ByRef filename2 As String) As Long
@@ -1969,7 +1969,7 @@ ErrorReading:
   Close InFile2
 End Function
 
-Public Sub SaveFileString(ByRef Filename As String, ByRef FileContents As String)
+Public Sub SaveFileString(ByRef filename As String, ByRef FileContents As String)
 Attribute SaveFileString.VB_Description = "Saves incoming string to a text file."
 ' ##SUMMARY Saves incoming string to a text file.
 ' ##PARAM FileName I Name of output text file
@@ -1979,19 +1979,19 @@ Attribute SaveFileString.VB_Description = "Saves incoming string to a text file.
   
   On Error GoTo ErrorWriting
   
-  MkDirPath PathNameOnly(Filename)
+  MkDirPath PathNameOnly(filename)
   
   OutFile = FreeFile(0)
-  Open Filename For Output As OutFile
+  Open filename For Output As OutFile
   Print #OutFile, FileContents;
   Close OutFile
   Exit Sub
 
 ErrorWriting:
-  MsgBox "Error writing '" & Filename & "'" & vbCr & vbCr & Err.Description, vbOKOnly, "SaveFileString"
+  MsgBox "Error writing '" & filename & "'" & vbCr & vbCr & Err.Description, vbOKOnly, "SaveFileString"
 End Sub
 
-Public Sub SaveFileBytes(ByRef Filename As String, ByRef FileContents() As Byte)
+Public Sub SaveFileBytes(ByRef filename As String, ByRef FileContents() As Byte)
 Attribute SaveFileBytes.VB_Description = "Saves incoming Byte array to a text file."
 ' ##SUMMARY Saves incoming Byte array to a text file.
 ' ##PARAM FileName I Name of output text file
@@ -2001,19 +2001,19 @@ Attribute SaveFileBytes.VB_Description = "Saves incoming Byte array to a text fi
   
   On Error GoTo ErrorWriting
   
-  MkDirPath PathNameOnly(Filename)
+  MkDirPath PathNameOnly(filename)
   
   OutFile = FreeFile(0)
-  Open Filename For Binary As OutFile
+  Open filename For Binary As OutFile
   Put #OutFile, , FileContents
   Close OutFile
   Exit Sub
 
 ErrorWriting:
-  MsgBox "Error writing '" & Filename & "'" & vbCr & vbCr & Err.Description, vbOKOnly, "SaveFileBytes"
+  MsgBox "Error writing '" & filename & "'" & vbCr & vbCr & Err.Description, vbOKOnly, "SaveFileBytes"
 End Sub
 
-Public Sub AppendFileString(ByRef Filename As String, ByRef appendString As String)
+Public Sub AppendFileString(ByRef filename As String, ByRef appendString As String)
 Attribute AppendFileString.VB_Description = "Appends incoming string to existing text file."
 ' ##SUMMARY Appends incoming string to existing text file.
 ' ##PARAM FileName I Name of existing text file
@@ -2023,16 +2023,16 @@ Attribute AppendFileString.VB_Description = "Appends incoming string to existing
   
   On Error GoTo ErrorWriting
   
-  MkDirPath PathNameOnly(Filename)
+  MkDirPath PathNameOnly(filename)
   
   OutFile = FreeFile(0)
-  Open Filename For Append As OutFile
+  Open filename For Append As OutFile
   Print #OutFile, appendString;
   Close OutFile
   Exit Sub
 
 ErrorWriting:
-  MsgBox "Error writing '" & Filename & "'" & vbCr & vbCr & Err.Description, vbOKOnly, "AppendFileString"
+  MsgBox "Error writing '" & filename & "'" & vbCr & vbCr & Err.Description, vbOKOnly, "AppendFileString"
 End Sub
 
 Public Sub SortIntegerArray(ByRef opt As Long, ByRef cnt As Long, ByRef iVal() As Long, ByRef pos() As Long)
