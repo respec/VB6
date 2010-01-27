@@ -53,10 +53,10 @@ Public Property Let NSSName(ByVal newValue As String)
   pNSSName = newValue
 End Property
 
-Public Property Get ID() As Long
-  ID = pID
+Public Property Get Id() As Long
+  Id = pID
 End Property
-Public Property Let ID(ByVal newValue As Long)
+Public Property Let Id(ByVal newValue As Long)
   pID = newValue
 End Property
 
@@ -154,7 +154,7 @@ End Property
 Public Function Add(ByVal Region As nssRegion, ByVal StatLabel As String, _
     ByVal Min As String, ByVal Max As String, ByVal ConvFlag As String) As Boolean
   Dim myRec As Recordset, myRec2 As Recordset
-  Dim ID As Long
+  Dim Id As Long
   Dim statLabelCode As String, sql As String
   
   statLabelCode = GetLabelID(StatLabel, Region.DB)
@@ -164,25 +164,25 @@ Public Function Add(ByVal Region As nssRegion, ByVal StatLabel As String, _
       If .RecordCount > 0 Then
         'check to see if parameter with this name already exists for this region
         .FindFirst "StatisticLabelID=" & statLabelCode & _
-                   " AND RegionID=" & Region.ID
+                   " AND RegionID=" & Region.Id
       End If
       If .NoMatch Or .RecordCount = 0 Then  'OK to add
         'find an unused ID
         If .RecordCount > 0 Then
           .MoveLast
-          ID = !ParmID
+          Id = !ParmID
         Else
-          ID = 1
+          Id = 1
         End If
-        .FindFirst "ParmID=" & ID
+        .FindFirst "ParmID=" & Id
         While Not .NoMatch
-          ID = !ParmID + 1
-          .FindFirst "ParmID=" & ID
+          Id = !ParmID + 1
+          .FindFirst "ParmID=" & Id
         Wend
-        Me.ID = ID
+        Me.Id = Id
         .AddNew
-        !Regionid = Region.ID
-        !ParmID = ID
+        !Regionid = Region.Id
+        !ParmID = Id
         !StatisticLabelID = statLabelCode
         'get long label name from STATLABEL table and assign to Parameter field
         Set myRec2 = Region.DB.DB.OpenRecordset("STATLABEL", dbOpenDynaset)
@@ -208,13 +208,13 @@ End Function
 Public Function AddROIUserParm(ByVal Region As nssRegion, ByVal StatLabel As String, _
     ByVal CorrelationType As String, ByVal SimVar As Boolean, ByVal RegVar As Boolean) As Boolean
   Dim myRec As Recordset
-  Dim ID As Long
+  Dim Id As Long
   Dim statLabelCode As String, sql As String
   
   statLabelCode = GetLabelID(StatLabel, Region.DB)
   sql = "SELECT ROIUserParms.* " & _
         "From ROIUserParms " & _
-        "WHERE RegionID=" & Me.Region.ID & ";"
+        "WHERE RegionID=" & Me.Region.Id & ";"
   Set myRec = Region.DB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     If .RecordCount > 0 Then
@@ -222,7 +222,7 @@ Public Function AddROIUserParm(ByVal Region As nssRegion, ByVal StatLabel As Str
     End If
     If .NoMatch Or .RecordCount = 0 Then
       .AddNew
-      !Regionid = Me.Region.ID
+      !Regionid = Me.Region.Id
       !StatisticLabelID = statLabelCode
       If IsNumeric(CorrelationType) Then !PosNegCorrelation = CorrelationType
       !SimVar = SimVar
@@ -238,17 +238,19 @@ Public Function Delete() As Boolean
   Dim myRec As Recordset
   Dim sql$
   
-  sql = "SELECT * FROM Parameters WHERE RegionID=" & Me.Region.ID
-  Set myRec = Me.Region.DB.DB.OpenRecordset("Parameters", dbOpenDynaset)
-  With myRec
-    .FindFirst "ParmID=" & Me.ID
-    If Not .NoMatch Then
-      .Delete
-      Delete = True
-    Else
-      Delete = False
-    End If
-  End With
+  If Me.Id > 0 Then 'don't delete negative ParmIds reserved for special operations
+    sql = "SELECT * FROM Parameters WHERE RegionID=" & Me.Region.Id
+    Set myRec = Me.Region.DB.DB.OpenRecordset("Parameters", dbOpenDynaset)
+    With myRec
+      .FindFirst "ParmID=" & Me.Id
+      If Not .NoMatch Then
+        .Delete
+        Delete = True
+      Else
+        Delete = False
+      End If
+    End With
+  End If
 End Function
 
 Public Sub Edit(ByVal StatLabel As String, ByVal Min As String, _
@@ -259,7 +261,7 @@ Public Sub Edit(ByVal StatLabel As String, ByVal Min As String, _
   With myRec
     If .RecordCount = 0 Then Exit Sub
     .MoveLast
-    .FindFirst "ParmID=" & Me.ID
+    .FindFirst "ParmID=" & Me.Id
     If Not .NoMatch Then
       .Edit
       !StatisticLabelID = GetLabelID(StatLabel, Me.Region.DB)
