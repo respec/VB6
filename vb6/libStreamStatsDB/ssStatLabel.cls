@@ -22,6 +22,7 @@ Private pName As String
 Private pUnits As String
 Private pIsNew As Boolean
 Private pDefinition As String
+Private pAlias As String
 
 Public Property Get DB() As nssDatabase
   Set DB = pDB
@@ -30,10 +31,10 @@ Public Property Set DB(newValue As nssDatabase)
   Set pDB = newValue
 End Property
 
-Public Property Get ID() As Long
-  ID = pID
+Public Property Get Id() As Long
+  Id = pID
 End Property
-Public Property Let ID(ByVal newValue As Long)
+Public Property Let Id(ByVal newValue As Long)
   pID = newValue
 End Property
 
@@ -51,10 +52,10 @@ Public Property Let TypeName(ByVal newValue As String)
   pTypeName = newValue
 End Property
 
-Public Property Get Code() As String
-  Code = pCode
+Public Property Get code() As String
+  code = pCode
 End Property
-Public Property Let Code(ByVal newValue As String)
+Public Property Let code(ByVal newValue As String)
   pCode = newValue
 End Property
 
@@ -86,6 +87,13 @@ Public Property Let Definition(ByVal newValue As String)
   pDefinition = newValue
 End Property
 
+Public Property Get Alias() As String
+  Alias = pAlias
+End Property
+Public Property Let Alias(ByVal newValue As String)
+  pAlias = newValue
+End Property
+
 Public Sub Add(ByRef NewValues() As String, StatIndex As Long)
   'NewValues(dim 1) - 0, 1, or 2, with 2 being the modified value
   'NewValues(dim 2) - index in array of stations (always? 1 in StreamStatsDB)
@@ -94,6 +102,7 @@ Public Sub Add(ByRef NewValues() As String, StatIndex As Long)
   '                   3 = Full Name (must include underscores between words)
   '                   4 = Units
   '                   5 = Full Definition (no underscores needed)
+  '                   6 = Alias (alternative to Code)
   Dim myRec As Recordset
   Dim fld&
   Dim sql$
@@ -129,10 +138,15 @@ Public Sub Add(ByRef NewValues() As String, StatIndex As Long)
     .Fields("StatisticLabel") = Trim(ReplaceString(NewValues(2, StatIndex, 3), " ", "_"))
     'convert unit string to numeric
     .Fields("UnitID") = GetUnitCode(Trim(NewValues(2, StatIndex, 4)))
-    If UBound(NewValues, 3) < 5 Then 'include description field, no underscores
+    If UBound(NewValues, 3) < 5 Then 'just use StatisticLabel field, no underscores
       .Fields("Definition") = Trim(ReplaceString(NewValues(2, StatIndex, 3), "_", " "))
     Else
       .Fields("Definition") = Trim(NewValues(2, StatIndex, 5))
+    End If
+    If UBound(NewValues, 3) < 6 Then 'just use StatLabel field
+      .Fields("Alias") = .Fields("StatLabel")
+    Else
+      .Fields("Alias") = Trim(NewValues(2, StatIndex, 6))
     End If
     .Update
   End With
@@ -143,7 +157,7 @@ Public Sub Delete()
   
   Set myRec = pDB.DB.OpenRecordset("STATLABEL", dbOpenDynaset)
   With myRec
-    .FindFirst "StatisticLabelID=" & Me.ID
+    .FindFirst "StatisticLabelID=" & Me.Id
     If Not .NoMatch Then
       .Delete
     End If
@@ -158,12 +172,13 @@ Public Sub Edit(ByRef NewValues() As String, StatIndex As Long)
   '                   3 = Full Name (must include underscores between words)
   '                   4 = Units
   '                   5 = Full Definition (no underscores needed)
+  '                   6 = Alias (alternative to Code)
   Dim myRec As Recordset
   Dim fld&
   
   Set myRec = pDB.DB.OpenRecordset("STATLABEL", dbOpenDynaset)
   With myRec
-    .FindFirst "StatisticLabelID=" & Me.ID
+    .FindFirst "StatisticLabelID=" & Me.Id
     If Not .NoMatch Then
       .Edit
       .Fields("StatisticTypeID") = GetStatTypeID(Trim(NewValues(2, StatIndex, 1)))
@@ -173,10 +188,15 @@ Public Sub Edit(ByRef NewValues() As String, StatIndex As Long)
       .Fields("StatisticLabel") = Trim(ReplaceString(NewValues(2, StatIndex, 3), " ", "_"))
       'convert unit string to numeric
       .Fields("UnitID") = GetUnitCode(Trim(NewValues(2, StatIndex, 4)))
-      If UBound(NewValues, 3) < 5 Then 'include description field, no underscores
+      If UBound(NewValues, 3) < 5 Then 'just use StatisticLabel field, no underscores
         .Fields("Definition") = Trim(ReplaceString(NewValues(2, StatIndex, 3), "_", " "))
       Else
         .Fields("Definition") = Trim(NewValues(2, StatIndex, 5))
+      End If
+      If UBound(NewValues, 3) < 6 Then 'just use StatLabel field
+        .Fields("Alias") = .Fields("StatLabel")
+      Else
+        .Fields("Alias") = Trim(NewValues(2, StatIndex, 6))
       End If
       .Update
     Else

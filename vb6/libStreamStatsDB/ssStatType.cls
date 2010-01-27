@@ -25,17 +25,17 @@ Public Property Set DB(newValue As nssDatabase)
   Set pDB = newValue
 End Property
 
-Public Property Get ID() As String
-  ID = pID
+Public Property Get Id() As String
+  Id = pID
 End Property
-Public Property Let ID(ByVal newValue As String)
+Public Property Let Id(ByVal newValue As String)
   pID = newValue
 End Property
 
-Public Property Get Code() As String
-  Code = pCode
+Public Property Get code() As String
+  code = pCode
 End Property
-Public Property Let Code(ByVal newValue As String)
+Public Property Let code(ByVal newValue As String)
   pCode = newValue
 End Property
 
@@ -67,23 +67,24 @@ Private Sub PopulateStatLabels()
 '        "' AND StatisticLabelCode > 0 ORDER BY StatisticLabelCode;"
     sql = "SELECT STATLABEL.* FROM STATTYPE INNER JOIN STATLABEL ON " & _
         "STATTYPE.StatisticTypeCode = STATLABEL.StatisticTypeCode " & _
-        "WHERE STATTYPE.StatisticTypeCode='" & Me.Code & _
+        "WHERE STATTYPE.StatisticTypeCode='" & Me.code & _
         "' AND StatisticLabelID > 0 ORDER BY StatisticLabelID;"
     Set statRec = pDB.DB.OpenRecordset(sql)
     While Not statRec.EOF
       Set newStatLabel = New ssStatLabel
       With newStatLabel
         Set .DB = pDB
-        .ID = statRec.Fields("StatisticLabelID")
-        .TypeCode = Me.Code
+        .Id = statRec.Fields("StatisticLabelID")
+        .TypeCode = Me.code
         .TypeName = Me.Name
-        .Code = statRec.Fields("StatLabel")
+        .code = statRec.Fields("StatLabel")
         .Name = statRec.Fields("StatisticLabel")
         .Units = statRec.Fields("UnitID")
         .IsNew = False
         .Definition = statRec.Fields("Definition")
+        .Alias = statRec.Fields("Alias")
       End With
-      pStatLabels.Add newStatLabel, newStatLabel.Code
+      pStatLabels.Add newStatLabel, newStatLabel.code
       Set newStatLabel = Nothing
       statRec.MoveNext
     Wend
@@ -91,7 +92,7 @@ Private Sub PopulateStatLabels()
   End If
 End Sub
 
-Public Sub Add(Code As String, Name As String)
+Public Sub Add(code As String, Name As String)
   Dim myRec As Recordset
   Dim flds&
   Dim sql$
@@ -100,9 +101,9 @@ Public Sub Add(Code As String, Name As String)
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     If .RecordCount > 0 Then 'check to see if Stat Type with this Code or Name already exists
-      .FindFirst "StatisticTypeCode='" & Code & "'"
+      .FindFirst "StatisticTypeCode='" & code & "'"
       If Not .NoMatch Then  'Statistic with this code already exists for this state
-        ssMessageBox "There is already a Statistic with the code " & Code & "." & _
+        ssMessageBox "There is already a Statistic with the code " & code & "." & _
             vbCrLf & "No new Statistic was created.", _
             vbCritical, "Code already exists"
         Exit Sub
@@ -119,13 +120,13 @@ Public Sub Add(Code As String, Name As String)
     flds = !StatisticTypeID + 1
     .AddNew
     !StatisticTypeID = flds
-    !StatisticTypeCode = Code
+    !StatisticTypeCode = code
     !StatisticType = Name
     .Update
   End With
 End Sub
 
-Public Sub Edit(Code As String, Name As String)
+Public Sub Edit(code As String, Name As String)
   Dim myRec As Recordset
   
   Set myRec = pDB.DB.OpenRecordset("STATTYPE", dbOpenDynaset)
@@ -133,9 +134,9 @@ Public Sub Edit(Code As String, Name As String)
     If .RecordCount = 0 Then
       Exit Sub
     Else
-      .FindFirst "StatisticTypeID=" & Me.ID
+      .FindFirst "StatisticTypeID=" & Me.Id
       .Edit
-      !StatisticTypeCode = Code
+      !StatisticTypeCode = code
       !StatisticType = Name
       .Update
     End If
@@ -147,7 +148,7 @@ Public Sub Delete()
   
   Set myRec = pDB.DB.OpenRecordset("STATTYPE", dbOpenDynaset)
   With myRec
-    .FindFirst "StatisticTypeID=" & Me.ID
+    .FindFirst "StatisticTypeID=" & Me.Id
     If Not .NoMatch Then
       .Delete
     End If

@@ -123,7 +123,7 @@ Public Property Get XML() As String
   retval = "<NSSproject"
   retval = retval & " name=""" & Me.Name & """"
   retval = retval & " username=""" & Me.UserName & """"
-  retval = retval & " state=""" & Me.State.Code & """"
+  retval = retval & " state=""" & Me.State.code & """"
   retval = retval & " metric=""" & Me.Metric & """"
   retval = retval & " currentrural=""" & Me.CurrentRuralScenario & """"
   retval = retval & " currenturban=""" & Me.CurrentUrbanScenario & """"
@@ -264,10 +264,10 @@ ReadProblem:
   ssMessageBox "Problem Reading Project XML" & vbCr & Err.Description
 End Property
 
-Public Property Get Filename() As String
-  Filename = pFileName
+Public Property Get filename() As String
+  filename = pFileName
 End Property
-Public Property Let Filename(newValue As String)
+Public Property Let filename(newValue As String)
   pFileName = newValue
 End Property
 
@@ -282,13 +282,13 @@ Public Property Get DB() As nssDatabase
   Set DB = pDB
 End Property
 
-Public Sub LoadNSSdatabase(Filename As String)
+Public Sub LoadNSSdatabase(filename As String)
   Set pDB = Nothing
   Set pDB = New nssDatabase
-  pDB.Filename = Filename
+  pDB.filename = filename
   Set pNationalState = New nssState
   pNationalState.Name = "Nation"
-  pNationalState.Code = "00"
+  pNationalState.code = "00"
   Set pNationalState.DB = pDB
   Set pNationalUrban = pNationalState.Regions(1)
   Clear
@@ -328,7 +328,7 @@ Public Function Report() As String
   retval = retval & "Version 4.0" ' & App.Major & "." & App.Minor '& "." & App.Revision & vbCrLf
   retval = retval & vbCrLf
   retval = retval & "Based on Techniques and Methods Book 4-A6" & vbCrLf
-  retval = retval & "Equations from database " & pDB.Filename & vbCrLf
+  retval = retval & "Equations from database " & pDB.filename & vbCrLf
   retval = retval & "Updated by " & pDB.LastEdited & vbCrLf
   retval = retval & "Equations for " & Me.State.Name & " developed using "
   If Me.State.Metric Then
@@ -339,7 +339,7 @@ Public Function Report() As String
   retval = retval & vbCrLf
   retval = retval & "Site: " & Me.Name & ", " & Me.State.Name & vbCrLf
   retval = retval & "User: " & Me.UserName & vbCrLf
-  retval = retval & "Date: " & Format(Date, "Long Date") & " " & Format(Time, "hh:mm ampm") & vbCrLf
+  'retval = retval & "Date: " & Format(Date, "Long Date") & " " & Format(Time, "hh:mm ampm") & vbCrLf
   retval = retval & vbCrLf
   
 '  For Each vScenario In Me.RuralScenarios
@@ -486,85 +486,91 @@ On Error GoTo BEErrHandler
   EqtnStr = "Equations used:" & vbCrLf
   Set lRegion = aScenario.UserRegions(1).Region
   For Each vDepVar In lRegion.DepVars
-    InMultExp = False
-    If vDepVar.Constant <> 0 And vDepVar.Constant <> 1 Then
-      EqtnStr = EqtnStr & vDepVar.Name & " = " & vDepVar.Constant
-    Else
-      EqtnStr = EqtnStr & vDepVar.Name & " = "
-    End If
-    If vDepVar.Components.Count > 0 Then
-      For Each vComp In vDepVar.Components
-        If Not InMultExp Then
-          If vComp.ParmID = -2 Then
-            BaseVar = "Rural Dis"
-          ElseIf vComp.ParmID = -1 Then
-            BaseVar = "Rural DA"
-          ElseIf vComp.ParmID > 0 Then
-            If vComp.ExpID = -999 Then
-              BaseVar = "ln(" & vComp.Parameter.Abbrev & ")"
-            Else
-              BaseVar = vComp.Parameter.Abbrev
-            End If
-          Else
-            BaseVar = ""
-          End If
-          Select Case vComp.BaseMod
-            Case Is > 0: BaseStr = "(" & BaseVar & "+" & vComp.BaseMod & ")"
-            Case Is < 0: BaseStr = "(" & BaseVar & "-" & vComp.BaseMod & ")"
-            Case Else: BaseStr = "(" & BaseVar & ")"
-          End Select
-          If vComp.BaseCoeff <> 1 Then
-            BaseStr = "(" & vComp.BaseCoeff & BaseStr & ")"
-          End If
-          If aScenario.ProbEqtn Then
-            EqtnStr = EqtnStr & "+ " & BaseStr
-          Else
-            EqtnStr = EqtnStr & "  " & BaseStr
-          End If
-        End If
-        If vComp.BaseExp <> 1 Then
-          If Not InMultExp And vComp.ParmID = -3 Then '1st instance of multiple parms in exponent
-            EqtnStr = EqtnStr & "^(" & vComp.BaseExp
-          ElseIf InMultExp Then
-            If vComp.BaseExp < 0 Then
-              EqtnStr = EqtnStr & " " & vComp.BaseExp
-            Else
-              EqtnStr = EqtnStr & " +" & vComp.BaseExp
-            End If
-          Else
-            EqtnStr = EqtnStr & "^" & vComp.BaseExp
-          End If
-        End If
-        If vComp.ExpID <= 0 Then
-          ExpStr = ""
-        Else
-          ExpStr = vComp.ExponentParameter.Abbrev
-          Select Case vComp.ExpMod
-            Case Is > 0: ExpStr = "(" & ExpStr & "+" & vComp.ExpMod & ")"
-            Case Is < 0: ExpStr = "(" & ExpStr & "-" & vComp.ExpMod & ")"
-            Case Else: ExpStr = "(" & ExpStr & ")"
-          End Select
-          If vComp.ExpExp > 0 And vComp.ExpExp <> 1 Then
-            ExpStr = ExpStr & "^" & vComp.ExpExp
-          End If
-        End If
-        EqtnStr = EqtnStr & ExpStr
-        If vComp.ParmID = -3 Then 'indicates multiple parms in exponent and not the last
-          InMultExp = True
-        ElseIf vComp.ParmID = -4 Then 'last of multiple parms in this exponent
-          InMultExp = False
-          EqtnStr = EqtnStr & ")"
-        End If
-      Next
+    EqtnStr = EqtnStr & vDepVar.Name & " = "
+    If Len(vDepVar.Equation) > 0 Then
+      EqtnStr = EqtnStr & vDepVar.Equation & vbCrLf
     ElseIf vDepVar.Name = "PK500" Then 'extrapolated 500-year value
-      EqtnStr = EqtnStr & "<extrapolated>"
+      EqtnStr = EqtnStr & "<extrapolated>" & vbCrLf
     End If
-    If aScenario.ProbEqtn Then
-      i = InStr(EqtnStr, "=")
-      EqtnStr = Left(EqtnStr, i + 1) & "e^(" & Mid(EqtnStr, i + 2) & ")/1+e^(" & Mid(EqtnStr, i + 2) & ")" & vbCrLf
-    Else
-      EqtnStr = EqtnStr & vbCrLf
-    End If
+'    InMultExp = False
+'    If vDepVar.Constant <> 0 And vDepVar.Constant <> 1 Then
+'      EqtnStr = EqtnStr & vDepVar.Name & " = " & vDepVar.Constant
+'    Else
+'      EqtnStr = EqtnStr & vDepVar.Name & " = "
+'    End If
+'    If vDepVar.Components.Count > 0 Then
+'      For Each vComp In vDepVar.Components
+'        If Not InMultExp Then
+'          If vComp.ParmID = -2 Then
+'            BaseVar = "Rural Dis"
+'          ElseIf vComp.ParmID = -1 Then
+'            BaseVar = "Rural DA"
+'          ElseIf vComp.ParmID > 0 Then
+'            If vComp.ExpID = -999 Then
+'              BaseVar = "ln(" & vComp.Parameter.Abbrev & ")"
+'            Else
+'              BaseVar = vComp.Parameter.Abbrev
+'            End If
+'          Else
+'            BaseVar = ""
+'          End If
+'          Select Case vComp.BaseMod
+'            Case Is > 0: BaseStr = "(" & BaseVar & "+" & vComp.BaseMod & ")"
+'            Case Is < 0: BaseStr = "(" & BaseVar & "-" & vComp.BaseMod & ")"
+'            Case Else: BaseStr = "(" & BaseVar & ")"
+'          End Select
+'          If vComp.BaseCoeff <> 1 Then
+'            BaseStr = "(" & vComp.BaseCoeff & BaseStr & ")"
+'          End If
+'          If aScenario.ProbEqtn Then
+'            EqtnStr = EqtnStr & "+ " & BaseStr
+'          Else
+'            EqtnStr = EqtnStr & "  " & BaseStr
+'          End If
+'        End If
+'        If vComp.BaseExp <> 1 Then
+'          If Not InMultExp And vComp.ParmID = -3 Then '1st instance of multiple parms in exponent
+'            EqtnStr = EqtnStr & "^(" & vComp.BaseExp
+'          ElseIf InMultExp Then
+'            If vComp.BaseExp < 0 Then
+'              EqtnStr = EqtnStr & " " & vComp.BaseExp
+'            Else
+'              EqtnStr = EqtnStr & " +" & vComp.BaseExp
+'            End If
+'          Else
+'            EqtnStr = EqtnStr & "^" & vComp.BaseExp
+'          End If
+'        End If
+'        If vComp.ExpID <= 0 Then
+'          ExpStr = ""
+'        Else
+'          ExpStr = vComp.ExponentParameter.Abbrev
+'          Select Case vComp.ExpMod
+'            Case Is > 0: ExpStr = "(" & ExpStr & "+" & vComp.ExpMod & ")"
+'            Case Is < 0: ExpStr = "(" & ExpStr & "-" & vComp.ExpMod & ")"
+'            Case Else: ExpStr = "(" & ExpStr & ")"
+'          End Select
+'          If vComp.ExpExp > 0 And vComp.ExpExp <> 1 Then
+'            ExpStr = ExpStr & "^" & vComp.ExpExp
+'          End If
+'        End If
+'        EqtnStr = EqtnStr & ExpStr
+'        If vComp.ParmID = -3 Then 'indicates multiple parms in exponent and not the last
+'          InMultExp = True
+'        ElseIf vComp.ParmID = -4 Then 'last of multiple parms in this exponent
+'          InMultExp = False
+'          EqtnStr = EqtnStr & ")"
+'        End If
+'      Next
+'    ElseIf vDepVar.Name = "PK500" Then 'extrapolated 500-year value
+'      EqtnStr = EqtnStr & "<extrapolated>"
+'    End If
+'    If aScenario.ProbEqtn Then
+'      i = InStr(EqtnStr, "=")
+'      EqtnStr = Left(EqtnStr, i + 1) & "e^(" & Mid(EqtnStr, i + 2) & ")/1+e^(" & Mid(EqtnStr, i + 2) & ")" & vbCrLf
+'    Else
+'      EqtnStr = EqtnStr & vbCrLf
+'    End If
   Next
   BuildEquations = EqtnStr & vbCrLf
   Return
