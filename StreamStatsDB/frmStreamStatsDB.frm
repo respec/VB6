@@ -1,12 +1,12 @@
 VERSION 5.00
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "Comdlg32.ocx"
-Object = "{BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0"; "TABCTL32.OCX"
+Object = "{BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0"; "Tabctl32.ocx"
 Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmStreamStatsDB 
    Caption         =   "Stream Stats DB"
    ClientHeight    =   8625
    ClientLeft      =   165
-   ClientTop       =   780
+   ClientTop       =   735
    ClientWidth     =   10800
    Icon            =   "frmStreamStatsDB.frx":0000
    LinkTopic       =   "Form1"
@@ -940,16 +940,16 @@ Private Sub cmdNWIS_Click()
   PathName = GetSetting("StreamStatsDB", "Defaults", "NWISImportPath")
   With frmCDLG.CDLG
     .DialogTitle = "Select a file for import"
-    If Len(PathName) > 0 Then .Filename = PathName & "*.xls"
+    If Len(PathName) > 0 Then .filename = PathName & "*.xls"
     .Filter = "(*.xls)|*.xls"
     .filterIndex = 1
     .CancelError = True
     .ShowOpen
-    If Len(Dir(.Filename, vbDirectory)) > 1 Then
-      PathName = Left(.Filename, Len(.Filename) - Len(.fileTitle))
+    If Len(Dir(.filename, vbDirectory)) > 1 Then
+      PathName = Left(.filename, Len(.filename) - Len(.fileTitle))
       SaveSetting "StreamStatsDB", "Defaults", "NWISImportPath", PathName
       Me.MousePointer = vbHourglass
-      NWISImport .Filename
+      NWISImport .filename
       'Reassign class structure to previous selections
       cboState_Click
     End If
@@ -968,14 +968,14 @@ Private Sub cmdBCF_Click()
   PathName = GetSetting("StreamStatsDB", "Defaults", "BCFImportPath")
   With frmCDLG.CDLG
     .DialogTitle = "Select a file for import"
-    If Len(PathName) > 0 Then .Filename = PathName & "*.txt"
+    If Len(PathName) > 0 Then .filename = PathName & "*.txt"
     .Filter = "(*.txt)|*.txt"
     .filterIndex = 1
     .CancelError = True
     .ShowOpen
-    If Len(Dir(.Filename, vbDirectory)) > 1 Then
-      PathName = PathNameOnly(.Filename)
-      PathName = Left(.Filename, Len(.Filename) - Len(.fileTitle))
+    If Len(Dir(.filename, vbDirectory)) > 1 Then
+      PathName = PathNameOnly(.filename)
+      PathName = Left(.filename, Len(.filename) - Len(.fileTitle))
       SaveSetting "StreamStatsDB", "Defaults", "BCFImportPath", PathName
       Me.MousePointer = vbHourglass
       i = InStr(1, UCase(.fileTitle), "BC")
@@ -999,7 +999,7 @@ Private Sub cmdBCF_Click()
            (stName = LCase(SSDB.States(i).Abbrev)) Then Exit For
       Next i
       cboState.ListIndex = i - 1
-      BCFImport .Filename
+      BCFImport .filename
       cboState.ListIndex = i - 1
       Set SSDB.state.Stations = Nothing
       cboState_Click
@@ -1406,7 +1406,7 @@ Private Sub grdGenInfo_RowColChange()
                 Next i
                 .ComboCheckValidValues = True
         Case 3: For i = 1 To SSDB.Units.Count
-                  .addValue SSDB.Units(i).EnglishLabel
+                  .addValue SSDB.Units(i).englishlabel
                 Next i
                 .ComboCheckValidValues = True
       End Select
@@ -1849,7 +1849,9 @@ Private Sub ChangesMade(madeChanges As Boolean)
         OldVals(row, 1) = SSDB.SelStats(row).TypeName
         OldVals(row, 2) = SSDB.SelStats(row).code
         OldVals(row, 3) = SSDB.SelStats(row).Name
-        OldVals(row, 4) = SSDB.SelStats(row).Units
+        OldVals(row, 4) = SSDB.Units(SSDB.SelStats(row).Units).englishlabel
+        OldVals(row, 5) = SSDB.SelStats(row).Definition
+        OldVals(row, 6) = SSDB.SelStats(row).Alias
       End If
     Next row
   End If
@@ -2023,8 +2025,9 @@ Private Sub ResetGrid()
           .TextMatrix(row, 0) = SSDB.SelStats(row).TypeName
           .TextMatrix(row, 1) = SSDB.SelStats(row).code
           .TextMatrix(row, 2) = SSDB.SelStats(row).Name
-          .TextMatrix(row, 3) = SSDB.SelStats(row).Units
+          .TextMatrix(row, 3) = SSDB.Units(SSDB.SelStats(row).Units).englishlabel
           .TextMatrix(row, 4) = SSDB.SelStats(row).Definition
+          .TextMatrix(row, 5) = SSDB.SelStats(row).Alias
         End If
       Next row
       .row = 1
@@ -2101,6 +2104,7 @@ Private Sub Initialize(TabIndex As Long)
     StatFields(3) = "Full Name"
     StatFields(4) = "Units"
     StatFields(5) = "Definition"
+    StatFields(6) = "Alias"
     With grdGenInfo
       .Clear
       .FixedRows = 1
