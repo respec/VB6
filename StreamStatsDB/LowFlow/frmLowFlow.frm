@@ -1,6 +1,6 @@
 VERSION 5.00
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "Comdlg32.ocx"
-Object = "*\A..\..\ATCoCtl\ATCoCtl.vbp"
+Object = "{872F11D5-3322-11D4-9D23-00A0C9768F70}#1.10#0"; "ATCoCtl.ocx"
 Begin VB.Form frmLowFlow 
    Caption         =   "Streamflow Equation Editor"
    ClientHeight    =   9075
@@ -12,14 +12,6 @@ Begin VB.Form frmLowFlow
    ScaleHeight     =   9075
    ScaleWidth      =   10725
    StartUpPosition =   3  'Windows Default
-   Begin VB.CommandButton cmdConvert 
-      Caption         =   "Convert"
-      Height          =   375
-      Left            =   9840
-      TabIndex        =   38
-      Top             =   6240
-      Width           =   735
-   End
    Begin VB.OptionButton rdoMainOpt 
       Caption         =   "Probability"
       BeginProperty Font 
@@ -313,7 +305,7 @@ Begin VB.Form frmLowFlow
          EndProperty
          Height          =   2175
          Left            =   120
-         TabIndex        =   39
+         TabIndex        =   38
          Top             =   1680
          Width           =   9375
          Begin VB.CommandButton cmdTest 
@@ -329,7 +321,7 @@ Begin VB.Form frmLowFlow
             EndProperty
             Height          =   255
             Left            =   6960
-            TabIndex        =   45
+            TabIndex        =   44
             Top             =   240
             Width           =   735
          End
@@ -347,7 +339,7 @@ Begin VB.Form frmLowFlow
             Left            =   2160
             MaxLength       =   255
             MultiLine       =   -1  'True
-            TabIndex        =   42
+            TabIndex        =   41
             Top             =   600
             Width           =   7095
          End
@@ -363,7 +355,7 @@ Begin VB.Form frmLowFlow
             EndProperty
             Height          =   1425
             Left            =   120
-            TabIndex        =   40
+            TabIndex        =   39
             Top             =   600
             Width           =   1815
          End
@@ -380,7 +372,7 @@ Begin VB.Form frmLowFlow
             EndProperty
             Height          =   495
             Left            =   7800
-            TabIndex        =   44
+            TabIndex        =   43
             Top             =   120
             Width           =   1455
          End
@@ -397,7 +389,7 @@ Begin VB.Form frmLowFlow
             EndProperty
             Height          =   255
             Left            =   2160
-            TabIndex        =   43
+            TabIndex        =   42
             Top             =   360
             Width           =   2295
          End
@@ -414,7 +406,7 @@ Begin VB.Form frmLowFlow
             EndProperty
             Height          =   255
             Left            =   120
-            TabIndex        =   41
+            TabIndex        =   40
             Top             =   360
             Width           =   1695
          End
@@ -433,7 +425,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   484
+         Rows            =   488
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -867,42 +859,42 @@ Private Sub cmdCancel_Click()
 End Sub
 
 Private Sub cmdComponent_Click(Index As Integer)
-  Dim Resp As Integer, i As Integer
-
-  Resp = vbYes
-  With grdComps
-    If Index = 0 Then 'add row
-      For i = 1 To .Rows 'make sure there isn't a blank row already
-        If Len(.TextMatrix(i, 0)) = 0 Then
-          Resp = MsgBox("There is already a blank component row available for adding a component." & vbCrLf & _
-                 "Are you sure you want to add another component row?", vbYesNo + vbExclamation, "Add Component")
-          Exit For
-        End If
-      Next i
-      If Resp = vbYes Then
-        .Rows = .Rows + 1
-        .TextMatrix(.Rows, 1) = "0"
-        .TextMatrix(.Rows, 2) = "1"
-        .TextMatrix(.Rows, 4) = "none"
-        .TextMatrix(.Rows, 5) = "0"
-        .TextMatrix(.Rows, 6) = "0"
-        .TextMatrix(.Rows, 7) = "0"
-      End If
-    ElseIf .Rows > 1 Then 'delete row
-      If Len(.TextMatrix(.row, 0)) > 0 Then 'confirm delete of existing component
-        Resp = MsgBox("Are you sure you want to delete the component " & .TextMatrix(.row, 0) & "?", vbYesNo + vbInformation, "Remove Component")
-      End If
-      If Resp = vbYes Then .Rows = .Rows - 1
-    End If
-  End With
-  With grdMatrix
-    .Rows = grdComps.Rows + 1
-    .cols = .Rows
-    For i = 0 To .cols - 1
-      .ColEditable(i) = True
-      .colWidth(i) = 1000
-    Next i
-  End With
+'  Dim Resp As Integer, i As Integer
+'
+'  Resp = vbYes
+'  With grdComps
+'    If Index = 0 Then 'add row
+'      For i = 1 To .Rows 'make sure there isn't a blank row already
+'        If Len(.TextMatrix(i, 0)) = 0 Then
+'          Resp = MsgBox("There is already a blank component row available for adding a component." & vbCrLf & _
+'                 "Are you sure you want to add another component row?", vbYesNo + vbExclamation, "Add Component")
+'          Exit For
+'        End If
+'      Next i
+'      If Resp = vbYes Then
+'        .Rows = .Rows + 1
+'        .TextMatrix(.Rows, 1) = "0"
+'        .TextMatrix(.Rows, 2) = "1"
+'        .TextMatrix(.Rows, 4) = "none"
+'        .TextMatrix(.Rows, 5) = "0"
+'        .TextMatrix(.Rows, 6) = "0"
+'        .TextMatrix(.Rows, 7) = "0"
+'      End If
+'    ElseIf .Rows > 1 Then 'delete row
+'      If Len(.TextMatrix(.row, 0)) > 0 Then 'confirm delete of existing component
+'        Resp = MsgBox("Are you sure you want to delete the component " & .TextMatrix(.row, 0) & "?", vbYesNo + vbInformation, "Remove Component")
+'      End If
+'      If Resp = vbYes Then .Rows = .Rows - 1
+'    End If
+'  End With
+'  With grdMatrix
+'    .Rows = grdComps.Rows + 1
+'    .cols = .Rows
+'    For i = 0 To .cols - 1
+'      .ColEditable(i) = True
+'      .colWidth(i) = 1000
+'    Next i
+'  End With
 End Sub
 
 Private Sub cmdConvert_Click()
@@ -940,10 +932,10 @@ End Sub
 
 Private Sub cmdDatabase_Click()
   Dim lDBFName As String
-  lDBFName = DB.filename
+  lDBFName = DB.Filename
 
   SetDB (True)
-  If lDBFName <> DB.filename Then 'database changed
+  If lDBFName <> DB.Filename Then 'database changed
     rdoMainOpt(0).Value = False
     rdoMainOpt(1).Value = False
     rdoMainOpt(2).Value = False
@@ -956,14 +948,14 @@ End Sub
 
 Private Sub cmdExit_Click()
   Dim Resp As Integer
-  On Error GoTo x
+  On Error GoTo X
   Resp = vbYes
   If ChangesMade Then
     Resp = MsgBox("You have unsaved values.  Are you sure you want to exit without saving them?", vbExclamation + vbYesNo, "Exit Confirmation")
   End If
   If Resp = vbYes Then
     If Len(Dir(DBPath)) > 0 Then MyRegion.DB.DB.Close
-x:
+X:
     Unload Me
   End If
 End Sub
@@ -971,19 +963,19 @@ End Sub
 Private Sub cmdHelp_Click()
   Dim helpFilePath As String
   
-  On Error GoTo x
+  On Error GoTo X
   
   helpFilePath = GetSetting("SEE", "Defaults", "HelpPath", App.path & "\SEE.chm")
   If Len(Dir(helpFilePath)) = 0 Then
     With cdlgFileSel
 BadFile:
       .DialogTitle = "Select the help file"
-      .filename = App.path
+      .Filename = App.path
       .Filter = "(*.chm)|*.chm"
       .FilterIndex = 1
       .CancelError = True
       .ShowOpen
-      helpFilePath = .filename
+      helpFilePath = .Filename
       If Len(Dir(helpFilePath)) = 0 Then
         MsgBox "Could not find '" & helpFilePath & "'."
         GoTo BadFile
@@ -991,7 +983,7 @@ BadFile:
     End With
     SaveSetting "SEE", "Defaults", "HelpPath", helpFilePath
   End If
-x:
+X:
   If Len(Dir(helpFilePath)) > 0 Then
     OpenFile helpFilePath, cdlgFileSel
   Else
@@ -1002,13 +994,13 @@ End Sub
 Private Sub cmdImport_Click()
   Dim i&, j&, k&, m&, inFile&, regnCnt&, parmCnt&, depVarCnt&, _
       compCnt&, flds&, DepVarID&, response&
-  Dim filename$, str$, regnName$, flowFlag$
+  Dim Filename$, str$, regnName$, flowFlag$
   Dim urban As Boolean, isReturn As Boolean
   Dim regnVals() As Integer
   Dim parmVals() As String, depVarVals() As String, compVals() As String
   Dim covArray() As String
 
-  On Error GoTo x
+  On Error GoTo X
   
   response = myMsgBox.Show("Importing peak-flow or low-flow data will replace " & _
         "all such data in the database for that state." & vbCrLf & vbCrLf & _
@@ -1020,23 +1012,23 @@ TryAgain:
   With cdlgFileSel
     .DialogTitle = "Select import file"
     If RDO = 0 Then
-      filename = GetSetting("SEE", "Defaults", "NSSExportFile", filename)
+      Filename = GetSetting("SEE", "Defaults", "NSSExportFile", Filename)
     ElseIf RDO >= 1 Then
-      filename = GetSetting("SEE", "Defaults", "LowFlowExportFile", filename)
+      Filename = GetSetting("SEE", "Defaults", "LowFlowExportFile", Filename)
     End If
-    If Len(Dir(filename, vbDirectory)) = 0 Then
-      filename = CurDir & "\Import.txt"
+    If Len(Dir(Filename, vbDirectory)) = 0 Then
+      Filename = CurDir & "\Import.txt"
     Else
-      filename = filename & "\Import.txt"
+      Filename = Filename & "\Import.txt"
     End If
-    .filename = filename
+    .Filename = Filename
     .Filter = "(*.txt)|*.txt"
     .FilterIndex = 1
     .CancelError = True
     .ShowOpen
-    filename = .filename
+    Filename = .Filename
   End With
-  If Len(Dir(filename, vbDirectory)) = 0 Then
+  If Len(Dir(Filename, vbDirectory)) = 0 Then
     MsgBox "The filename you selected does not exist." & vbCrLf & _
            "Try again or cancel out of the dialog box."
     GoTo TryAgain
@@ -1044,7 +1036,7 @@ TryAgain:
 
   Me.MousePointer = vbHourglass
   inFile = FreeFile
-  Open filename For Input As inFile
+  Open Filename For Input As inFile
   'read in state info
   Line Input #inFile, str
   Set DB.State = DB.States(StrRetRem(str))
@@ -1203,9 +1195,9 @@ TryAgain:
 '  ResetRegion
   cboState_Click
   Me.MousePointer = vbDefault
-  MsgBox "Completed import from file " & filename, , "SEE Import"
+  MsgBox "Completed import from file " & Filename, , "SEE Import"
   Exit Sub
-x:
+X:
   Me.MousePointer = vbDefault
   If Err.Number = 32755 Then Exit Sub
   MsgBox "The format of the import file is not correct." & vbCrLf & _
@@ -1216,10 +1208,10 @@ End Sub
 
 Private Sub cmdExport_Click()
   Dim i&, j&, k&, OutFile&, tmpCnt&, compCnt&, row&, col&
-  Dim filename$, str$
+  Dim Filename$, str$
   Dim covArray() As String
   
-  On Error GoTo x
+  On Error GoTo X
   
   If cboState.ListIndex < 0 Then
     MsgBox "You must select a state before exporting"
@@ -1232,50 +1224,50 @@ Private Sub cmdExport_Click()
   With cdlgFileSel
     .DialogTitle = "Assign name of export file"
     If RDO = 0 Then
-      filename = GetSetting("SEE", "Defaults", "NSSExportFile")
+      Filename = GetSetting("SEE", "Defaults", "NSSExportFile")
     ElseIf RDO = 1 Then
-      filename = GetSetting("SEE", "Defaults", "LowFlowExportFile")
+      Filename = GetSetting("SEE", "Defaults", "LowFlowExportFile")
     ElseIf RDO = 2 Then
-      filename = GetSetting("SEE", "Defaults", "ProbabilityExportFile")
+      Filename = GetSetting("SEE", "Defaults", "ProbabilityExportFile")
     End If
-    If Len(Dir(filename, vbDirectory)) <= 1 Then
-      filename = CurDir & "\" & DB.State.Abbrev & "_Export"
+    If Len(Dir(Filename, vbDirectory)) <= 1 Then
+      Filename = CurDir & "\" & DB.State.Abbrev & "_Export"
     Else
-      filename = filename & "\" & DB.State.Abbrev & "_Export"
+      Filename = Filename & "\" & DB.State.Abbrev & "_Export"
     End If
     If RDO = 0 Then
-      filename = filename & "-PeakFlow"
+      Filename = Filename & "-PeakFlow"
     ElseIf RDO = 1 Then
-      filename = filename & "-LowFlow"
+      Filename = Filename & "-LowFlow"
     ElseIf RDO = 2 Then
-      filename = filename & "-Probability"
+      Filename = Filename & "-Probability"
     End If
     'Increment output file name if files already exported for state
-    While Len(Dir(filename & ".txt")) > 0
+    While Len(Dir(Filename & ".txt")) > 0
       i = i + 1
-      If i > 2 Then filename = Left(filename, Len(filename) - 2)
-      filename = filename & "-" & i
+      If i > 2 Then Filename = Left(Filename, Len(Filename) - 2)
+      Filename = Filename & "-" & i
     Wend
-    .filename = filename
+    .Filename = Filename
     .Filter = "(*.txt)|*.txt"
     .FilterIndex = 1
     .CancelError = True
     .ShowSave
-    filename = .filename
+    Filename = .Filename
     If RDO = 0 Then
-      SaveSetting "SEE", "Defaults", "NSSExportFile", PathNameOnly(filename)
+      SaveSetting "SEE", "Defaults", "NSSExportFile", PathNameOnly(Filename)
       j = 0
     ElseIf RDO = 1 Then
-      SaveSetting "SEE", "Defaults", "LowFlowExportFile", PathNameOnly(filename)
+      SaveSetting "SEE", "Defaults", "LowFlowExportFile", PathNameOnly(Filename)
       j = 1
     ElseIf RDO = 2 Then
-      SaveSetting "SEE", "Defaults", "ProbabilityExportFile", PathNameOnly(filename)
+      SaveSetting "SEE", "Defaults", "ProbabilityExportFile", PathNameOnly(Filename)
       j = 2
     End If
   End With
   
   OutFile = FreeFile
-  Open filename For Output As OutFile
+  Open Filename For Output As OutFile
   If DB.State.Metric Then
     Print #OutFile, DB.State.code & ", " & DB.State.Name & ", " & j & ", " & lstRegions.ListCount & ", 1"
   Else
@@ -1352,14 +1344,14 @@ nextRegion:
   Next i
   Close OutFile
   
-  MsgBox "Completed Export to file " & filename, vbOKOnly, "SEE Export"
+  MsgBox "Completed Export to file " & Filename, vbOKOnly, "SEE Export"
   If lstRegions.SelCount > 0 Then
     Set MyRegion = DB.State.Regions(lstRegions.List(lstRegions.ListIndex))
   Else
     Set MyRegion = Nothing
   End If
 
-x:
+X:
   Me.MousePointer = vbDefault
 
 End Sub
@@ -1709,7 +1701,7 @@ Private Sub rdoMainOpt_Click(Index As Integer)
   Dim stIndex&, selState&, i&
   
   If NotNew Then Exit Sub
-  On Error GoTo x
+  On Error GoTo X
 
   Set MyRegion = Nothing
   
@@ -1745,7 +1737,7 @@ Private Sub rdoMainOpt_Click(Index As Integer)
   End If
   FocusOnRegions
   Exit Sub
-x:
+X:
   If RDO > -1 Then
     NotNew = True
     rdoMainOpt(RDO) = True
@@ -1835,130 +1827,130 @@ Private Sub cboState_Click()
 End Sub
 
 Private Sub grdComps_RowColChange()
-  Dim i&
-  Dim EqtnStr As String, BaseVar As String, BaseStr As String
-  Dim EqtnModStr As String
-  Dim ExpStr As String
-  Dim BaseMod As Single, ExpMod As Single
-  Dim InMultExp As Boolean
-  
-  With grdComps
-    .ClearValues
-    If .col = 0 Or .col = 4 Then 'build list of parameters for base or exponent variable
-      For i = 0 To lstParms.ListCount - 1
-        If Not (.col = 4 And lstParms.ItemData(i) < 0) Then _
-            .addValue GetAbbrev(lstParms.ItemData(i))
-      Next i
-      If .col = 0 And RDO = 2 Then 'allow natural log for probability equations
-        For i = 0 To lstParms.ListCount - 1
-          If lstParms.ItemData(i) >= 0 Then _
-            .addValue "ln(" & GetAbbrev(lstParms.ItemData(i)) & ")"
-        Next i
-      End If
-      If .col = 4 Then 'allow log transformations in exponent
-        For i = 0 To lstParms.ListCount - 1
-          If lstParms.ItemData(i) >= 0 Then _
-            .addValue "log(" & GetAbbrev(lstParms.ItemData(i)) & ")"
-        Next i
-      End If
-      .addValue "none"
-    ElseIf .col = 7 And Len(.TextMatrix(.row, .col)) > 0 Then 'set allowable indices for exponent
-      .addValue "0"
-      .addValue "1" 'allows for first exponent with multiple parms to be selected
-      For i = 1 To .Rows
-        If Len(.TextMatrix(i, 7)) > 0 And .TextMatrix(i, 7) <> "0" Then
-          'allows for next exponent with mutliple parms to be entered
-          .addValue CStr(CInt(.TextMatrix(i, 7)) + 1)
-        End If
-      Next i
-    End If
-
-    'update equation display
-    EqtnModStr = grdInterval.TextMatrix(1, 5)
-    If Len(EqtnModStr) > 0 And EqtnModStr <> "1" Then
-      EqtnStr = lstRetPds.List(lstRetPds.ListIndex) & " = " & EqtnModStr
-    Else
-      EqtnStr = lstRetPds.List(lstRetPds.ListIndex) & " ="
-    End If
-    InMultExp = False
-    For i = 1 To .Rows
-      If Not InMultExp Then
-        If Len(.TextMatrix(i, 0)) > 0 Then
-          If .TextMatrix(i, 0) = "none" Then
-            BaseVar = ""
-          Else
-            BaseVar = .TextMatrix(i, 0)
-          End If
-          If Len(.TextMatrix(i, 1)) > 0 Then
-            BaseMod = CSng(.TextMatrix(i, 1))
-          Else
-            BaseMod = 0
-          End If
-          Select Case BaseMod
-            Case Is > 0: BaseStr = "(" & BaseVar & "+" & BaseMod & ")"
-            Case Is < 0: BaseStr = "(" & BaseVar & BaseMod & ")"
-            Case Else: BaseStr = "(" & BaseVar & ")"
-          End Select
-          If Len(.TextMatrix(i, 2)) > 0 And .TextMatrix(i, 2) <> "1" Then
-            BaseStr = "(" & .TextMatrix(i, 2) & BaseStr & ")"
-          End If
-        End If
-        If RDO = 2 Then
-          EqtnStr = EqtnStr & "+ " & BaseStr
-        Else
-          EqtnStr = EqtnStr & "  " & BaseStr
-        End If
-      End If
-      If Len(.TextMatrix(i, 3)) > 0 And .TextMatrix(i, 3) <> "1" Then
-        If Not InMultExp And .TextMatrix(i, 7) <> "0" Then '1st instance of multiple parms in exponent
-          EqtnStr = EqtnStr & "^(" & .TextMatrix(i, 3)
-        ElseIf InMultExp Then
-          EqtnStr = EqtnStr & .TextMatrix(i, 3)
-        Else
-          EqtnStr = EqtnStr & "^" & .TextMatrix(i, 3)
-        End If
-      End If
-      If Len(.TextMatrix(i, 4)) > 0 Then
-        If .TextMatrix(i, 4) = "none" Then
-          ExpStr = ""
-        Else
-          ExpStr = .TextMatrix(i, 4)
-          If Len(.TextMatrix(i, 5)) > 0 Then
-            ExpMod = CSng(.TextMatrix(i, 5))
-          Else
-            ExpMod = 0
-          End If
-          Select Case ExpMod
-            Case Is > 0: ExpStr = "(" & ExpStr & "+" & ExpMod & ")" '"^" & "(" & ExpStr & "+" & ExpMod & ")"
-            Case Is < 0: ExpStr = "(" & ExpStr & ExpMod & ")" '"^" & "(" & ExpStr & "-" & ExpMod & ")"
-            Case Else: ExpStr = "(" & ExpStr & ")" '"^" & "(" & ExpStr & ")"
-          End Select
-          If Len(.TextMatrix(i, 6)) > 0 And .TextMatrix(i, 6) <> "1" Then
-            ExpStr = ExpStr & "^" & .TextMatrix(i, 6)
-          End If
-        End If
-        EqtnStr = EqtnStr & ExpStr
-        If .TextMatrix(i, 7) <> "0" Then 'indicates multiple parms in exponent
-          If i < .Rows Then 'see if next row's parm also belongs in this exponent
-            If .TextMatrix(i + 1, 7) = .TextMatrix(i, 7) Then 'yes, it's part of this exponent
-              InMultExp = True
-            Else 'no, this is the last parm in this exponent
-              InMultExp = False
-              EqtnStr = EqtnStr & ")"
-            End If
-          Else 'must be last of multiple parms in exponent
-            EqtnStr = EqtnStr & ")"
-          End If
-        End If
-      End If
-    Next i
-    If RDO = 2 Then
-      i = InStr(EqtnStr, "=")
-      lblEquation.Caption = Left(EqtnStr, i + 1) & "e^(" & Mid(EqtnStr, i + 2) & ")/1+e^(" & Mid(EqtnStr, i + 2) & ")"
-    Else
-      lblEquation.Caption = EqtnStr
-    End If
-  End With
+'  Dim i&
+'  Dim EqtnStr As String, BaseVar As String, BaseStr As String
+'  Dim EqtnModStr As String
+'  Dim ExpStr As String
+'  Dim BaseMod As Single, ExpMod As Single
+'  Dim InMultExp As Boolean
+'
+'  With grdComps
+'    .ClearValues
+'    If .col = 0 Or .col = 4 Then 'build list of parameters for base or exponent variable
+'      For i = 0 To lstParms.ListCount - 1
+'        If Not (.col = 4 And lstParms.ItemData(i) < 0) Then _
+'            .addValue GetAbbrev(lstParms.ItemData(i))
+'      Next i
+'      If .col = 0 And RDO = 2 Then 'allow natural log for probability equations
+'        For i = 0 To lstParms.ListCount - 1
+'          If lstParms.ItemData(i) >= 0 Then _
+'            .addValue "ln(" & GetAbbrev(lstParms.ItemData(i)) & ")"
+'        Next i
+'      End If
+'      If .col = 4 Then 'allow log transformations in exponent
+'        For i = 0 To lstParms.ListCount - 1
+'          If lstParms.ItemData(i) >= 0 Then _
+'            .addValue "log(" & GetAbbrev(lstParms.ItemData(i)) & ")"
+'        Next i
+'      End If
+'      .addValue "none"
+'    ElseIf .col = 7 And Len(.TextMatrix(.row, .col)) > 0 Then 'set allowable indices for exponent
+'      .addValue "0"
+'      .addValue "1" 'allows for first exponent with multiple parms to be selected
+'      For i = 1 To .Rows
+'        If Len(.TextMatrix(i, 7)) > 0 And .TextMatrix(i, 7) <> "0" Then
+'          'allows for next exponent with mutliple parms to be entered
+'          .addValue CStr(CInt(.TextMatrix(i, 7)) + 1)
+'        End If
+'      Next i
+'    End If
+'
+'    'update equation display
+'    EqtnModStr = grdInterval.TextMatrix(1, 5)
+'    If Len(EqtnModStr) > 0 And EqtnModStr <> "1" Then
+'      EqtnStr = lstRetPds.List(lstRetPds.ListIndex) & " = " & EqtnModStr
+'    Else
+'      EqtnStr = lstRetPds.List(lstRetPds.ListIndex) & " ="
+'    End If
+'    InMultExp = False
+'    For i = 1 To .Rows
+'      If Not InMultExp Then
+'        If Len(.TextMatrix(i, 0)) > 0 Then
+'          If .TextMatrix(i, 0) = "none" Then
+'            BaseVar = ""
+'          Else
+'            BaseVar = .TextMatrix(i, 0)
+'          End If
+'          If Len(.TextMatrix(i, 1)) > 0 Then
+'            BaseMod = CSng(.TextMatrix(i, 1))
+'          Else
+'            BaseMod = 0
+'          End If
+'          Select Case BaseMod
+'            Case Is > 0: BaseStr = "(" & BaseVar & "+" & BaseMod & ")"
+'            Case Is < 0: BaseStr = "(" & BaseVar & BaseMod & ")"
+'            Case Else: BaseStr = "(" & BaseVar & ")"
+'          End Select
+'          If Len(.TextMatrix(i, 2)) > 0 And .TextMatrix(i, 2) <> "1" Then
+'            BaseStr = "(" & .TextMatrix(i, 2) & BaseStr & ")"
+'          End If
+'        End If
+'        If RDO = 2 Then
+'          EqtnStr = EqtnStr & "+ " & BaseStr
+'        Else
+'          EqtnStr = EqtnStr & "  " & BaseStr
+'        End If
+'      End If
+'      If Len(.TextMatrix(i, 3)) > 0 And .TextMatrix(i, 3) <> "1" Then
+'        If Not InMultExp And .TextMatrix(i, 7) <> "0" Then '1st instance of multiple parms in exponent
+'          EqtnStr = EqtnStr & "^(" & .TextMatrix(i, 3)
+'        ElseIf InMultExp Then
+'          EqtnStr = EqtnStr & .TextMatrix(i, 3)
+'        Else
+'          EqtnStr = EqtnStr & "^" & .TextMatrix(i, 3)
+'        End If
+'      End If
+'      If Len(.TextMatrix(i, 4)) > 0 Then
+'        If .TextMatrix(i, 4) = "none" Then
+'          ExpStr = ""
+'        Else
+'          ExpStr = .TextMatrix(i, 4)
+'          If Len(.TextMatrix(i, 5)) > 0 Then
+'            ExpMod = CSng(.TextMatrix(i, 5))
+'          Else
+'            ExpMod = 0
+'          End If
+'          Select Case ExpMod
+'            Case Is > 0: ExpStr = "(" & ExpStr & "+" & ExpMod & ")" '"^" & "(" & ExpStr & "+" & ExpMod & ")"
+'            Case Is < 0: ExpStr = "(" & ExpStr & ExpMod & ")" '"^" & "(" & ExpStr & "-" & ExpMod & ")"
+'            Case Else: ExpStr = "(" & ExpStr & ")" '"^" & "(" & ExpStr & ")"
+'          End Select
+'          If Len(.TextMatrix(i, 6)) > 0 And .TextMatrix(i, 6) <> "1" Then
+'            ExpStr = ExpStr & "^" & .TextMatrix(i, 6)
+'          End If
+'        End If
+'        EqtnStr = EqtnStr & ExpStr
+'        If .TextMatrix(i, 7) <> "0" Then 'indicates multiple parms in exponent
+'          If i < .Rows Then 'see if next row's parm also belongs in this exponent
+'            If .TextMatrix(i + 1, 7) = .TextMatrix(i, 7) Then 'yes, it's part of this exponent
+'              InMultExp = True
+'            Else 'no, this is the last parm in this exponent
+'              InMultExp = False
+'              EqtnStr = EqtnStr & ")"
+'            End If
+'          Else 'must be last of multiple parms in exponent
+'            EqtnStr = EqtnStr & ")"
+'          End If
+'        End If
+'      End If
+'    Next i
+'    If RDO = 2 Then
+'      i = InStr(EqtnStr, "=")
+'      lblEquation.Caption = Left(EqtnStr, i + 1) & "e^(" & Mid(EqtnStr, i + 2) & ")/1+e^(" & Mid(EqtnStr, i + 2) & ")"
+'    Else
+'      lblEquation.Caption = EqtnStr
+'    End If
+'  End With
 End Sub
 
 Private Sub lstParms_GotFocus()
@@ -2143,7 +2135,7 @@ Private Sub ResetDB()
   
   Set DB = Nothing
   Set DB = New nssDatabase
-  DB.filename = DBPath
+  DB.Filename = DBPath
   Set DB.State = DB.States(cboState.ListIndex + 1) 'DB.States.ItemByKey(CStr(cboState.ItemData(cboState.ListIndex)))
   DB.State.Regions.Clear
   Set DB.State.Regions = Nothing
@@ -2422,7 +2414,7 @@ Private Sub cmdSave_Click()
   
   'Check for changes and write them to an array
   If Not ChangesMade Then
-    GoTo x
+    GoTo X
   End If
   
   'Make sure user wants to overwrite existing values
@@ -2455,13 +2447,13 @@ Private Sub cmdSave_Click()
   If response = 1 Then
   'Overwrite values in DB
     frmUserInfo.Show vbModal, Me
-    If Not UserInfoOK Then GoTo x
+    If Not UserInfoOK Then GoTo X
     Me.MousePointer = vbHourglass
     If fraEdit(0).Visible Then 'editing region
       If MyRegion.IsNew Then
         Set MyRegion.DB = DB
         If Not MyRegion.Add(RDO, txtRegName.Text, rdoRegOpt(1), _
-            chkRuralInput.Value, chkPredInt.Value, -1) Then GoTo x
+            chkRuralInput.Value, chkPredInt.Value, -1) Then GoTo X
 '?????? add possible 2 parms to DB?
         ResetDB
         lstRegions.ListIndex = lstRegions.ListCount - 1
@@ -2488,7 +2480,7 @@ Private Sub cmdSave_Click()
         If MyParm.IsNew Then
           With grdParms
             If Not MyParm.Add(MyRegion, .TextMatrix(i, 2), _
-                .TextMatrix(i, 3), .TextMatrix(i, 4), UnitID) Then GoTo x
+                .TextMatrix(i, 3), .TextMatrix(i, 4), UnitID) Then GoTo X
           End With
           'Write changes to DetailedLog table
           For k = 0 To UBound(Changes, 3)
@@ -2551,7 +2543,7 @@ Private Sub cmdSave_Click()
             grdInterval.TextMatrix(1, 3), grdInterval.TextMatrix(1, 4), _
              BCF, tdist, Variance, ExpDA, txtEquation.Text)
             'grdInterval.TextMatrix(1, 5), BCF, tdist, Variance, ExpDA)
-        If tmpID = -1 Then GoTo x
+        If tmpID = -1 Then GoTo X
         ResetDB
         lstRetPds.Clear
         PopulateDepVars
@@ -2606,7 +2598,7 @@ Private Sub cmdSave_Click()
       fraEdit(2).Visible = True
     End If
   End If
-x:
+X:
   Me.MousePointer = vbDefault
 End Sub
 
@@ -3260,7 +3252,7 @@ Private Sub SaveChanges()
   If MyRegion Is Nothing Then Exit Sub
 
   If fraEdit(0).Visible Then
-    On Error GoTo x
+    On Error GoTo X
     i = MsgBox("Do you want to save the new information for " & _
         vbCrLf & txtRegName.Text & ", " & State & " to the database?", _
         vbYesNo, "User Action Verification")
@@ -3268,13 +3260,13 @@ Private Sub SaveChanges()
     If i = vbYes Then
       cmdSave_Click
     Else
-x:
+X:
       cmdCancel_Click
     End If
     Skip = False
   ElseIf fraEdit(1).Visible Then
     ChoseParms = True
-      On Error GoTo y
+      On Error GoTo Y
       i = MsgBox("Do you want to save the Parameter changes " & _
           vbCrLf & "to the database for " & MyRegion.Name & "?", _
           vbYesNo, "User Action Verification")
@@ -3282,7 +3274,7 @@ x:
       If i = vbYes Then
         cmdSave_Click
       Else
-y:
+Y:
         cmdCancel_Click
       End If
       Skip = False
@@ -3369,7 +3361,7 @@ FindDB:
   
   If Len(DBPath) > 0 Then
     Set DB = New nssDatabase
-    DB.filename = DBPath
+    DB.Filename = DBPath
     If Not DBCheck(DBPath) Then
       GoTo FindDB
     End If
@@ -3385,7 +3377,7 @@ FindDB:
     lstRetPds.Clear
     grdMatrix.Rows = 1
     grdMatrix.cols = 1
-    lblDatabase.Caption = "Database: " & DB.filename
+    lblDatabase.Caption = "Database: " & DB.Filename
     Me.Show
   End If
   Exit Sub
