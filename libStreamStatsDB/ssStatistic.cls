@@ -45,10 +45,10 @@ Public Property Set Station(newValue As ssStation)
   Set pStation = newValue
 End Property
 
-Public Property Get Code() As Long
-  Code = pCode
+Public Property Get code() As Long
+  code = pCode
 End Property
-Public Property Let Code(ByVal newValue As Long)
+Public Property Let code(ByVal newValue As Long)
   pCode = newValue
 End Property
 
@@ -162,7 +162,7 @@ Public Sub Add(ByRef NewValues() As String, StatIndex As Long, Optional NoWarnFl
   End If
   
   sql = "SELECT * FROM STATISTIC " & _
-        "WHERE StaID='" & Me.Station.ID & "';"
+        "WHERE StaID='" & Me.Station.Id & "';"
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     If .RecordCount > 0 Then
@@ -170,7 +170,7 @@ Public Sub Add(ByRef NewValues() As String, StatIndex As Long, Optional NoWarnFl
     End If
     If .NoMatch Or .RecordCount = 0 Then
       .AddNew
-      !StaID = Me.Station.ID
+      !StaID = Me.Station.Id
       !DataSourceID = GetSourceID(NewValues(2, StatIndex, 7))
       !StatisticLabelID = NewValues(2, StatIndex, 2)
       !StatisticValue = NewValues(2, StatIndex, 4)
@@ -207,7 +207,7 @@ Public Sub Add(ByRef NewValues() As String, StatIndex As Long, Optional NoWarnFl
       .Close
       If NoWarnFlg <> 1 Then
         ssMessageBox "The statistic '" & NewValues(2, StatIndex, 2) & _
-            "' already exists for station " & Me.Station.ID & "." & vbCrLf & _
+            "' already exists for station " & Me.Station.Id & "." & vbCrLf & _
             "The existing value will not be overwritten by the import value.", _
             vbCritical, "Statistic Already Exists"
       End If
@@ -220,9 +220,9 @@ Public Sub Delete()
   Dim sql$
   
   sql = "SELECT STATISTIC.StaID, STATLABEL.StatLabel FROM STATLABEL INNER JOIN " & _
-      "STATISTIC ON STATLABEL.StatisticLabelID = STATLABEL.StatisticLabelID " & _
-      "WHERE STATISTIC.StaID='" & Me.Station.ID & _
-      "' AND STATLABEL.StatisticLabelID=" & Me.Code
+      "STATISTIC ON STATISTIC.StatisticLabelID = STATLABEL.StatisticLabelID " & _
+      "WHERE STATISTIC.StaID='" & Me.Station.Id & _
+      "' AND STATLABEL.StatisticLabelID=" & Me.code
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     If .RecordCount > 0 Then
@@ -262,7 +262,7 @@ Public Sub Edit(ByRef NewValues() As String, StatIndex As Long)
   sql = "SELECT STATISTIC.* FROM STATLABEL INNER JOIN STATISTIC ON " & _
       "STATLABEL.StatisticLabelID = STATISTIC.StatisticLabelID " & _
       "WHERE STATLABEL.StatLabel='" & Me.Abbrev & _
-      "' AND STATISTIC.StaID='" & Me.Station.ID & "';"
+      "' AND STATISTIC.StaID='" & Me.Station.Id & "';"
   'using dbInconsistent to get recordset not read-only,
   'OK for this case since we are not updating StaID, to which the dbIconsistent option applies
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset, dbInconsistent)
