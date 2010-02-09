@@ -314,7 +314,7 @@ Public Function EquivalentYears() As Double()
         If retval(ReturnIndex) > 0 Then
           If pWeight.WeightType = 1 Then
             retval(ReturnIndex) = retval(ReturnIndex) + pWeight.GetGagedYears(CurReturn.Name)
-          ElseIf pWeight.WeightType = 2 Then
+          ElseIf pWeight.WeightType = 3 Then
             dArea2overG = 2 * Abs(pWeight.AreaGaged - Me.GetArea(Me.Project.Metric)) / pWeight.AreaGaged
             retval(ReturnIndex) = dArea2overG * retval(ReturnIndex) + (1 - dArea2overG) * (Me.GetArea(Me.Project.Metric) / pWeight.AreaGaged) ^ CurRegion.Region.DepVars(ReturnIndex).ExpDA * pWeight.GetGagedYears(CurReturn.Name)
           End If
@@ -916,6 +916,7 @@ Public Function WeightedDischarges() As Double()
   Dim ReturnIndex As Long
   Dim IntervalDischarges() As Double
   Dim ThisDischarge As Double
+  Dim ThisVariance As Double
   Dim Years() As Double
   Dim ThisInterval As nssDepVar
   IntervalDischarges = Me.Discharges
@@ -933,12 +934,22 @@ Public Function WeightedDischarges() As Double()
 '        End If
 '      End If
       Set ThisInterval = pUserRegions(1).Region.DepVars(ReturnIndex)
+      If pWeight.WeightType = 2 Then 'set variance of estimated flow
+        ThisVariance = ThisInterval.PreErr
+        If ThisVariance <= 0 Then 'no prediction error, look for alternative
+          If ThisInterval.EstErr > 0 Then 'estimate error exists
+            ThisVariance = ThisInterval.EstErr
+          Else 'just use standard error
+            ThisVariance = ThisInterval.StdErr
+          End If
+        End If
+      End If
       IntervalDischarges(ReturnIndex) = _
         pWeight.WeightedEstimate(ThisInterval.Name, _
                                  ThisDischarge, _
                                  Years(ReturnIndex), _
                                  Me.GetArea(pUserRegions(1).Region.State.Metric), _
-                                 ThisInterval.ExpDA)
+                                 ThisInterval.ExpDA, ThisVariance)
       
 '      If Me.Project.State.Metric <> Me.Project.Metric Then 'Convert from state units to project units
 '        If Me.Project.Metric Then
