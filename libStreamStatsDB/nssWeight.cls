@@ -18,6 +18,7 @@ Private pMaxIntervals As Long
 Private pWeightType As Long '0=no weight, 1=Gaged, 2=Ungaged
 Private pGagedValue() As Double
 Private pGagedYears() As Double
+Private pGagedVariance() As Double
 Private pIntervals() As String
 Private pIntervalsSet As Long 'Number of intervals with GagedYears and/or GagedValues
 Private pAreaGaged As Double
@@ -63,30 +64,34 @@ End Property
 Private Sub InitArrays()
   ReDim pGagedValue(pMaxIntervals)
   ReDim pGagedYears(pMaxIntervals)
+  ReDim pGagedVariance(pMaxIntervals)
   ReDim pIntervals(pMaxIntervals)
 End Sub
 Private Sub EnlargeArrays()
   pMaxIntervals = pMaxIntervals * 2
   ReDim Preserve pGagedValue(pMaxIntervals)
   ReDim Preserve pGagedYears(pMaxIntervals)
+  ReDim Preserve pGagedVariance(pMaxIntervals)
   ReDim Preserve pIntervals(pMaxIntervals)
 End Sub
 
 'Interval is the label of the interval, i.e. "10" for the 10-year interval
 'Area should be in the original state units rather than the project units since we store AreaGaged that way
-Public Function WeightedEstimate(ByVal Interval As String, ByVal RegressionFlow As Double, RegressionYears As Double, Area As Double, AreaExponent As Double) As Double
+Public Function WeightedEstimate(ByVal Interval As String, ByVal RegressionFlow As Double, RegressionYears As Double, Area As Double, AreaExponent As Double, RegressionVariance As Double) As Double
   Dim i&
   Dim Qtgw As Double
   Dim dArea2overG As Double
+  Dim lVarR As Double 'regression equation variance, from database
+  Dim lVarS As Double 'systematic variance value (entered by user)
   
   On Error GoTo ErrWeight
   Select Case pWeightType
     Case 0: WeightedEstimate = RegressionFlow
-    Case 1, 2
+    Case 1, 2, 3
       GoSub FindInterval
       If Abs(pGagedValue(i)) < 0.001 Then
         WeightedEstimate = RegressionFlow
-      ElseIf pWeightType = 1 Then
+      ElseIf pWeightType = 1 Then 'weight by equivalent years
         If Abs(pGagedYears(i)) < 0.001 Then
           WeightedEstimate = RegressionFlow
         ElseIf RegressionYears > 0 Then
@@ -95,7 +100,17 @@ Public Function WeightedEstimate(ByVal Interval As String, ByVal RegressionFlow 
         Else 'no equivalent years for equation, just use entered value
           WeightedEstimate = pGagedValue(i)
         End If
-      Else
+      ElseIf pWeightType = 2 Then 'weight by variance
+        If Abs(pGagedVariance(i)) < 0.001 Then
+          WeightedEstimate = RegressionFlow
+        ElseIf RegressionVariance > 0 Then
+          lVarR = 0.434 * Log10((RegressionVariance / 100) ^ 2 + 1)
+          lVarS = 0.434 * Log10((pGagedVariance(i) / 100) ^ 2 + 1)
+          WeightedEstimate = 10 ^ ((lVarR * Log10(pGagedValue(i)) + lVarS * Log10(RegressionFlow)) / (lVarR + lVarS))
+        Else 'no variance equation, just use entered value
+          WeightedEstimate = pGagedValue(i)
+        End If
+      Else 'weight using previous weighted estimate
         If Abs(pAreaGaged) < 0.001 Then
           WeightedEstimate = RegressionFlow
         Else
@@ -171,6 +186,31 @@ Public Function GetGagedYears(ByVal Interval As String) As Double
   For i = 1 To pIntervalsSet
     If pIntervals(i) = Interval Then
       GetGagedYears = pGagedYears(i)
+      Exit Function
+    End If
+  Next
+End Function
+
+Public Sub SetGagedVariance(ByVal Interval As String, ByVal GagedVariance As Double)
+  Dim i&
+  If pIntervalsSet = 0 Then InitArrays
+  For i = 1 To pIntervalsSet
+    If pIntervals(i) = Interval Then
+      pGagedVariance(i) = GagedVariance
+      Exit Sub
+    End If
+  Next
+  'Didn't already find interval, so add it
+  If i > pMaxIntervals Then EnlargeArrays
+  pIntervals(i) = Interval
+  pGagedVariance(i) = GagedVariance
+  pIntervalsSet = i
+End Sub
+Public Function GetGagedVariance(ByVal Interval As String) As Double
+  Dim i&
+  For i = 1 To pIntervalsSet
+    If pIntervals(i) = Interval Then
+      GetGagedVariance = pGagedVariance(i)
       Exit Function
     End If
   Next

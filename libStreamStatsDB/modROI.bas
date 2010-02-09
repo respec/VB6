@@ -7,12 +7,12 @@ Private Flows() As Single       'Flow values for each station
 Private RegVarCnt As Long       'number of elements used in regression
 Private StaLats() As Single     'Station latitudes
 Private StaLngs() As Single     'Station longitudes
-Private Sum() As Single         'Used in calcing SimVarSDs
+Private sum() As Single         'Used in calcing SimVarSDs
 Private INDX() As Integer       'dim(StaCnt) ranks Distance Distance(INDX(1)) = shortest distance
                                 'Vars(INDX(1), 13) = drainage area of closest station
 Private Mcon As Variant         '2-d from StateMatrices table
 Private Rhoc As Variant         '2-d from RHO table for NC, calculated for TX
-Private CF As Variant           '2-d from ClimateFactor table
+Private Cf As Variant           '2-d from ClimateFactor table
 Private Const MaxSites& = 60    'maximum number of sites that can be selected
 Private Const MaxInd& = 10      'maximum number of independent variables including the regression constant
 Private AkColl As FastCollection 'of constants that apply to return periods
@@ -27,15 +27,15 @@ Private OutFile As Long         'used for dummy outfile in current stand-alone p
 Private Const alpha_area = 1.5
 Private Yvar As Single, sig As Single, Alpha As Single, Theta As Single
 Private Sta(MaxSites) As Single             'time sampling error for stations
-Private X(MaxSites, MaxInd) As Single       'calculated x-coordinate for # of closest sites
-Private Y(MaxSites, 1) As Single            'calculated y-coordinate for # of closest sites
+Private x(MaxSites, MaxInd) As Single       'calculated x-coordinate for # of closest sites
+Private y(MaxSites, 1) As Single            'calculated y-coordinate for # of closest sites
 Private Xt(MaxInd, MaxSites) As Single
 Private XtXinv(MaxInd, MaxInd) As Single
 Private Cov(MaxSites, MaxSites) As Single   'covariance array
 Private Wt(MaxSites, MaxSites) As Single
 Private e(MaxSites, 1) As Single
 Private ET(1, MaxSites) As Single
-Private c1(1, 1) As Single
+Private C1(1, 1) As Single
 Private Bhat(MaxInd, 1) As Single
 Private Gamasq!, Atse!, Atscov!
 
@@ -182,7 +182,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   ReDim FlowSDs(1 To StaCnt)              'SD over range of flows at stations
   ReDim SimVars(1 To StaCnt, 1 To SimVarCnt)  'variables used for simulations
   ReDim RegVars(1 To StaCnt, 1 To RegVarCnt - 1) 'variables used for simulations
-  ReDim Sum(0 To SimVarCnt)                   'running total of data for stat analysis
+  ReDim sum(0 To SimVarCnt)                   'running total of data for stat analysis
   ReDim SimVarSDs(1 To SimVarCnt)             'std dev of Vars() array
   ReDim Distance(1 To StaCnt)             'similarity b/t stations
   ReDim INDX(1 To StaCnt)                 'station similarity rankings
@@ -212,12 +212,12 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   
   'Read in State Matrix, Climate Factor arrays; and for NC, RHO matrix from DB
   Mcon = Scenario.Matrix  '~4 secs for NC, ~15 secs for TX
-  If lROIData.ClimateFactor Then CF = Scenario.CF
+  If lROIData.ClimateFactor Then Cf = Scenario.Cf
 
   'Read in station attributes from STATION/STATISTIC tables: ~5 secs for NC
   For i = 1 To StaCnt
     Set myStation = lROIData.Stations(i)
-    StaIDs(i) = myStation.ID
+    StaIDs(i) = myStation.Id
     StaLats(i) = myStation.Latitude
     StaLngs(i) = myStation.Longitude
     If myStation.ROIRegionID <> 0 Then
@@ -232,7 +232,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     j = 0
     For Each vParm In lROIData.FlowStats
       j = j + 1
-      Flows(i, j) = Log10(myStation.Statistics(CStr(vParm.ID)).Value)
+      Flows(i, j) = Log10(myStation.Statistics(CStr(vParm.Id)).Value)
     Next vParm
     j = 0
     'Read in current station's stat values used in similarity calcs
@@ -242,10 +242,10 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
       If myStation.Statistics.KeyExists(CStr(vParm.LabelCode)) Then
         SimVars(i, j) = Log10(myStation.Statistics(CStr(vParm.LabelCode)).Value)
       Else
-        MsgBox "for " & myStation.ID & " no statlabel=" & vParm.LabelCode
+        MsgBox "for " & myStation.Id & " no statlabel=" & vParm.LabelCode
       End If
       'Keep running tally of vars for ensuing stat calcs
-      Sum(j) = Sum(j) + SimVars(i, j)
+      sum(j) = sum(j) + SimVars(i, j)
     Next vParm
     j = 0
     'Read in current station's stat values used in regression analysis
@@ -262,7 +262,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
       SimVars(i, dimDist) = TASKER_DISTANCE(Lat, StaLats(i), Lng, StaLngs(i))
       'Convert miles into kilometers if necessary
       If pMetric Then SimVars(i, dimDist) = SimVars(i, dimDist) * 1.609344
-      Sum(dimDist) = Sum(dimDist) + SimVars(i, dimDist)
+      sum(dimDist) = sum(dimDist) + SimVars(i, dimDist)
     End If
     If lROIData.ClimateFactor Then 'read in climate factors
       If Right(lROIData.StateCode, 2) = "47" Then
@@ -271,7 +271,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
       Else
         SimVars(i, dimCF) = Log10(myStation.Statistics("68").Value)
       End If
-      Sum(dimCF) = Sum(dimCF) + SimVars(i, dimCF)
+      sum(dimCF) = sum(dimCF) + SimVars(i, dimCF)
     End If
     If Not Scenario.LowFlow Then
       'Read in SD across flows for each station, or calc if not stored
@@ -297,12 +297,12 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     End If
   Else 'Compute St. Dev. of independent variables used in similarity calcs
     For i = 1 To SimVarCnt
-      SimVarSDs(i) = Sum(i) / StaCnt  'actually calcing avg of variable here
-      Sum(i) = 0
+      SimVarSDs(i) = sum(i) / StaCnt  'actually calcing avg of variable here
+      sum(i) = 0
       For j = 1 To StaCnt
-        Sum(i) = Sum(i) + (SimVars(j, i) - SimVarSDs(i)) ^ 2
+        sum(i) = sum(i) + (SimVars(j, i) - SimVarSDs(i)) ^ 2
       Next j
-      SimVarSDs(i) = (Sum(i) / (StaCnt - 1)) ^ 0.5
+      SimVarSDs(i) = (sum(i) / (StaCnt - 1)) ^ 0.5
     Next i
   End If
 
@@ -359,7 +359,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     'str = str & vParm.Abbrev & vbTab
   Next vParm
   For i = 1 To NumPeaks
-    str = str & "LOG(" & lROIData.FlowStats(i).Code & ")" & vbTab
+    str = str & "LOG(" & lROIData.FlowStats(i).code & ")" & vbTab
   Next i
   If lROIData.Distance Then 'write distance header
     str = str & "Distance" & vbTab
@@ -384,6 +384,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     sig = sig + FlowSDs(INDX(i))
   Next i
   sig = sig / Nsites  ' = avg StDev of peak flows across all stations
+  Print #OutFile,
   
   i = 1
   str = vbCrLf
@@ -422,9 +423,10 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
 '      str = str & "    : cf25 = " & Format(Cf25, "#0.00")
 '    End If
 '  End If
-  str = str & vbCrLf & vbCrLf & "RI" & vbTab & " PREDICTED(cfs)" & _
-        vbTab & "- SE (%)" & vbTab & "+ SE (%)" & vbTab & "90% PRED INT (cfs)" & vbCrLf
-  Print #OutFile, str
+
+'  str = str & vbCrLf & vbCrLf & "RI" & vbTab & " PREDICTED(cfs)" & _
+'        vbTab & "- SE (%)" & vbTab & "+ SE (%)" & vbTab & "90% PRED INT (cfs)" & vbCrLf
+'  Print #OutFile, str
         
   If Right(lROIData.StateCode, 2) = "48" Then 'build matrix on the fly for Texas
     BuildMatrix
@@ -460,33 +462,29 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     If lROIData.StateCode = "10047" Then
       'TN low flow ROI
       TNLFFD Abs(roiRegion) - 1, jpeak, ZeroAdjusted(jpeak), retval(jpeak), PredInts(1, jpeak), PredInts(2, jpeak)
-      Print #OutFile, PkLab(jpeak) _
-            & vbTab & Format(retval(jpeak), "#####0") _
-            & vbTab & vbTab & Trim(Format(PredInts(1, jpeak), "######0")) _
-            & " - " & Trim(Format(PredInts(2, jpeak), "######0"))
     Else
       'Reset station parameters in case of backward-step regression
       For i = 1 To Nsites
         'build the X matrix
-        X(i, 1) = 1#
+        x(i, 1) = 1#
         For j = 2 To RegVarCnt
-          X(i, j) = RegVars(INDX(i), j - 1)
+          x(i, j) = RegVars(INDX(i), j - 1)
         Next j
         'build the Xt-transpose matrix
         For j = 1 To RegVarCnt
-          Xt(j, i) = X(i, j)
+          Xt(j, i) = x(i, j)
         Next j
       Next i
       
       'Compute regional average standard deviation for each return period
-      Sum(0) = 0#
+      sum(0) = 0#
       ss = 0#
       For i = 1 To Nsites
-        Y(i, 1) = Flows(INDX(i), jpeak)
-        Sum(0) = Sum(0) + Y(i, 1)
-        ss = ss + Y(i, 1) ^ 2
+        y(i, 1) = Flows(INDX(i), jpeak)
+        sum(0) = sum(0) + y(i, 1)
+        ss = ss + y(i, 1) ^ 2
       Next i
-      Yvar = (ss - Sum(0) ^ 2 / Nsites) / (Nsites - 1#)
+      Yvar = (ss - sum(0) ^ 2 / Nsites) / (Nsites - 1#)
       'Compute time sampling error, sta(i), for each site
       Atse = 0#
       Atscov = 0#
@@ -568,8 +566,8 @@ Regress:
           'remove dropped variable from X matrix and its transpose
           For i = 1 To Nsites
             For j = iSave To RegVarCnt
-              X(i, j) = X(i, j + 1)
-              Xt(j, i) = X(i, j)
+              x(i, j) = x(i, j + 1)
+              Xt(j, i) = x(i, j)
             Next j
           Next i
           'Shift ungaged site parameters to account for dropped parameter
@@ -595,6 +593,17 @@ Regress:
       ysav = yhat
     End If
   Next jpeak
+  If lROIData.StateCode = "10047" Then
+    str = str & vbCrLf & vbCrLf & "Statistic" & vbTab & " PREDICTED(cfs)" & _
+          vbTab & vbTab & "90% PRED INT (cfs)" & vbCrLf
+    Print #OutFile, str
+    For jpeak = 1 To NumPeaks
+      Print #OutFile, PkLab(jpeak) _
+            & vbTab & Format(retval(jpeak), "#####0.0") _
+            & vbTab & vbTab & Trim(Format(PredInts(1, jpeak), "######0.0")) _
+            & " - " & Trim(Format(PredInts(2, jpeak), "######0.0"))
+    Next jpeak
+  End If
   Close OutFile
   ComputeROIdischarge = retval
 End Function
@@ -602,7 +611,7 @@ End Function
 Private Sub mltply(Prod() As Single, Xmat() As Single, Ymat() As Single, k1&, k2&, k3&, N1&, N2&, N3&)
 
   Dim i&, j&, k&
-  Dim Sum!
+  Dim sum!
 ' --------------------------------------------------------------
 '  Xmat IS K1*K2 MATRIX
 '  Ymat IS K2*K3 MATRIX
@@ -610,11 +619,11 @@ Private Sub mltply(Prod() As Single, Xmat() As Single, Ymat() As Single, k1&, k2
 ' --------------------------------------------------------------
   For i = 1 To k1
     For k = 1 To k3
-      Sum = 0#
+      sum = 0#
       For j = 1 To k2
-        Sum = Sum + Xmat(i, j) * Ymat(j, k)
+        sum = sum + Xmat(i, j) * Ymat(j, k)
       Next j
-      Prod(i, k) = Sum
+      Prod(i, k) = sum
     Next k
   Next i
 
@@ -623,15 +632,15 @@ End Sub
 Private Sub invert(n&, Ndim&, det!, CovInv() As Single, Cov() As Single)
 
   Dim i&, im&, j&, k&
-  Dim detl!, Sum!, temp!
-  Dim B() As Single, A() As Single
+  Dim detl!, sum!, temp!
+  Dim b() As Single, a() As Single
   '--------------------------------------------------------------
   '  COV IS AN N*N MATRIX
   '  SUBROUTINE COMPUTES DETERMINANT OF COV AS COVINV
   '  B IS THE LOWER TRIANGULAR DECOMPOSITION OF COV
   '--------------------------------------------------------------
-  ReDim B(n, n)
-  ReDim A(n, n)
+  ReDim b(n, n)
+  ReDim a(n, n)
   If n = 2 Then  'dimension of array is only 2
     det = Cov(1, 1) * Cov(2, 2) - Cov(1, 2) ^ 2
     temp = Cov(1, 1) / det
@@ -640,14 +649,14 @@ Private Sub invert(n&, Ndim&, det!, CovInv() As Single, Cov() As Single)
     CovInv(1, 2) = -Cov(1, 2) / det
     CovInv(2, 1) = CovInv(1, 2)
   Else
-    decomp n, Ndim, Cov(), B()
-    detl = B(1, 1)
+    decomp n, Ndim, Cov(), b()
+    detl = b(1, 1)
     For i = 2 To n
       If detl > 5E+19 Then
         ssMessageBox "ERROR--Numerical overflow on B(i,i) product expansion series."
 '        Stop
       End If
-      detl = detl * B(i, i)
+      detl = detl * b(i, i)
     Next i
    'Following if statement is a questionable fix
     If detl > 5E+19 Then
@@ -659,37 +668,37 @@ Private Sub invert(n&, Ndim&, det!, CovInv() As Single, Cov() As Single)
       det = detl ^ 2
     End If
     
-    A(1, 1) = 1# / B(1, 1)
-    A(2, 2) = 1# / B(2, 2)
-    A(2, 1) = -B(2, 1) * A(1, 1) * A(2, 2)
+    a(1, 1) = 1# / b(1, 1)
+    a(2, 2) = 1# / b(2, 2)
+    a(2, 1) = -b(2, 1) * a(1, 1) * a(2, 2)
 
     For i = 3 To n
-      A(i, i) = 1# / B(i, i)
+      a(i, i) = 1# / b(i, i)
       im = i - 1
       For k = 1 To im
-        Sum = 0#
+        sum = 0#
         For j = k To im
-          Sum = Sum + B(i, j) * A(j, k)
+          sum = sum + b(i, j) * a(j, k)
         Next j
-        A(i, k) = -Sum * A(i, i)
+        a(i, k) = -sum * a(i, i)
       Next k
     Next i
 
     For i = 1 To n
       For j = 1 To i
-        Sum = 0#
+        sum = 0#
         For k = i To n
-          Sum = Sum + A(k, i) * A(k, j)
+          sum = sum + a(k, i) * a(k, j)
         Next k
-        CovInv(i, j) = Sum
-        CovInv(j, i) = Sum
+        CovInv(i, j) = sum
+        CovInv(j, i) = sum
       Next j
     Next i
   End If
 
 End Sub
 
-Private Sub decomp(n&, Ndim&, XLAM() As Single, B() As Single)
+Private Sub decomp(n&, Ndim&, XLAM() As Single, b() As Single)
 
   Dim iis&, ism&, js&, jsm&, ks&
   Dim bh!, bn!
@@ -701,36 +710,36 @@ Private Sub decomp(n&, Ndim&, XLAM() As Single, B() As Single)
            & Ndim & XLAM(1, 1) & XLAM(2, 1) & XLAM(2, 2) & XLAM(1, 2) & vbCrLf & _
            " COVARIANCE MATRIX NOT POSITIVE DEFINITE"
   End If
-  B(1, 1) = XLAM(1, 1) ^ 0.5
-  B(1, 2) = 0#
-  B(2, 1) = XLAM(2, 1) / B(1, 1)
-  B(2, 2) = (XLAM(2, 2) - B(2, 1) ^ 2) ^ 0.5
+  b(1, 1) = XLAM(1, 1) ^ 0.5
+  b(1, 2) = 0#
+  b(2, 1) = XLAM(2, 1) / b(1, 1)
+  b(2, 2) = (XLAM(2, 2) - b(2, 1) ^ 2) ^ 0.5
 
   If n <= 2 Then '2x2 or 1x1 matrix, exit early
     Exit Sub
   End If
   'Main decomposition algorithm
   For iis = 3 To n
-    B(iis, 1) = XLAM(iis, 1) / B(1, 1)
-    bn = XLAM(iis, iis) - B(iis, 1) ^ 2
+    b(iis, 1) = XLAM(iis, 1) / b(1, 1)
+    bn = XLAM(iis, iis) - b(iis, 1) ^ 2
     ism = iis - 1
     For js = 2 To ism
       jsm = js - 1
       bh = XLAM(iis, js)
       For ks = 1 To jsm
-        bh = bh - B(iis, ks) * B(js, ks)
+        bh = bh - b(iis, ks) * b(js, ks)
       Next ks
-      B(iis, js) = bh / B(js, js)             '*******OVERFLOW!!!!!!!!!!
-      bn = bn - B(iis, js) ^ 2
+      b(iis, js) = bh / b(js, js)             '*******OVERFLOW!!!!!!!!!!
+      bn = bn - b(iis, js) ^ 2
     Next js
     If bn <= 0# Then
       ssMessageBox "COVARIANCE MATRIX NOT POSITIVE DEFINITE BN=" & bn
     End If
     'b(iis, iis) = (AMAX1(bn, 0#)) ^ 0.5
     If bn > 0 Then
-      B(iis, iis) = bn ^ 0.5
+      b(iis, iis) = bn ^ 0.5
     Else
-      B(iis, iis) = 0
+      b(iis, iis) = 0
     End If
   Next iis
 
@@ -738,8 +747,8 @@ End Sub
 
 Private Function STUTP(xx!, n&) As Single
 
-  Dim A!, B!, T!, yy!, z!
-  Dim j&, nn&, keeplooping%
+  Dim a!, b!, t!, yy!, z!
+  Dim j&, NN&, keeplooping%
   Const rhpi = 0.63661977
   'STUDENT T PROBABILITY
   'STUTP = PROB( STUDENT T WITH N DEG FR  .LT.  xx )
@@ -749,58 +758,58 @@ Private Function STUTP(xx!, n&) As Single
   'USGS - WK 12/79.
   STUTP = 0.5
   If n < 1 Then Exit Function
-  nn = n
+  NN = n
   z = 1#
-  T = xx ^ 2
-  yy = T / nn
-  B = 1# + yy
-  If Not (nn >= 20 And T < nn Or nn > 200) Then
-    If nn < 20 And T < 4# Then 'nested summation of cosine series
+  t = xx ^ 2
+  yy = t / NN
+  b = 1# + yy
+  If Not (NN >= 20 And t < NN Or NN > 200) Then
+    If NN < 20 And t < 4# Then 'nested summation of cosine series
       yy = yy ^ 0.5
-      A = yy
-      If nn = 1 Then A = 0#
+      a = yy
+      If NN = 1 Then a = 0#
     Else 'tail series for large t
-      A = B ^ 0.5
-      yy = A * nn
+      a = b ^ 0.5
+      yy = a * NN
       j = 0
       keeplooping = 1
       While keeplooping = 1
         j = j + 2
-        If (A = z) Then
-          nn = nn + 2
+        If (a = z) Then
+          NN = NN + 2
           z = 0#
           yy = 0#
-          A = -A
+          a = -a
           keeplooping = 0
         Else
-          z = A
-          yy = yy * (j - 1) / (B * j)
-          A = A + yy / (nn + j)
+          z = a
+          yy = yy * (j - 1) / (b * j)
+          a = a + yy / (NN + j)
         End If
       Wend
     End If
     keeplooping = 1
     While keeplooping = 1
-      nn = nn - 2
-      If nn <= 1 Then
-        If nn = 0 Then A = A / (B ^ 0.5)
-        If nn <> 0 Then A = (Atn(yy) + A / B) * rhpi
-        STUTP = 0.5 * (z - A)
+      NN = NN - 2
+      If NN <= 1 Then
+        If NN = 0 Then a = a / (b ^ 0.5)
+        If NN <> 0 Then a = (Atn(yy) + a / b) * rhpi
+        STUTP = 0.5 * (z - a)
         If xx > 0# Then STUTP = 1# - STUTP
         Exit Function
       Else
-        A = (nn - 1) / (B * nn) * A + yy
+        a = (NN - 1) / (b * NN) * a + yy
       End If
     Wend
   End If
 
   'asymptotic series for large or noninteger N
-  If yy > 0.000001 Then yy = Log(B)
-  A = nn - 0.5
-  B = 48# * A ^ 2
-  yy = A * yy
+  If yy > 0.000001 Then yy = Log(b)
+  a = NN - 0.5
+  b = 48# * a ^ 2
+  yy = a * yy
   yy = (((((-0.4 * yy - 3.3) * yy - 24#) * yy - 85.5) / _
-      (0.8 * yy ^ 2 + 100# + B) + yy + 3#) / B + 1#) * yy ^ 0.5
+      (0.8 * yy ^ 2 + 100# + b) + yy + 3#) / b + 1#) * yy ^ 0.5
   STUTP = gauscf(-yy)
   If xx > 0# Then STUTP = 1# - STUTP
 End Function
@@ -808,38 +817,38 @@ End Function
 Private Sub Secant()
 'function WLS was passed as argument in original Fortran
 
-  Dim f1!, f2!, f3!, fnew!, X1!, X2!, x3!, xnew!
+  Dim F1!, F2!, f3!, fnew!, x1!, X2!, x3!, xnew!
   Dim i&, j&
  
-  X1 = 0#
+  x1 = 0#
   x3 = 0#
   X2 = Yvar * 2#
-  f2 = WLS(X2)
-  f1 = WLS(X1)
-  If f1 < 0# Then 'midpoint good starting point for search
+  F2 = WLS(X2)
+  F1 = WLS(x1)
+  If F1 < 0# Then 'midpoint good starting point for search
     For j = 1 To 3
-      xnew = (X1 + X2) / 2#
+      xnew = (x1 + X2) / 2#
       fnew = WLS(xnew)
       If fnew < 0# Then
-        X1 = xnew
+        x1 = xnew
         fnew = fnew
       Else
         X2 = xnew
-        f2 = fnew
+        F2 = fnew
       End If
     Next j
 
     'Search for gama sq using secant search
     For i = 1 To 30
-      If (f2 - f1) = 0# Then
+      If (F2 - F1) = 0# Then
         ssMessageBox "STATUS: F2-F1 = 0, about to divide by 0"
 '        Stop
       End If
-      x3 = X1 - f1 * (X2 - X1) / (f2 - f1)
+      x3 = x1 - F1 * (X2 - x1) / (F2 - F1)
       If x3 < 0# Then
         'x3 = AMIN1(X2, X1) / 2#
-        If X1 < X2 Then
-          x3 = X1 / 2#
+        If x1 < X2 Then
+          x3 = x1 / 2#
         Else
           x3 = X2 / 2#
         End If
@@ -848,12 +857,12 @@ Private Sub Secant()
         f3 = WLS(x3)
       End If
       If Abs(f3) < 0.0001 Then Exit For
-      If Abs(f1) < Abs(f2) Then
+      If Abs(F1) < Abs(F2) Then
         X2 = x3
-        f2 = f3
+        F2 = f3
       Else
-        X1 = x3
-        f1 = f3
+        x1 = x3
+        F1 = f3
       End If
     Next i
   End If
@@ -886,7 +895,7 @@ Private Function WLS(GAMA2!) As Single
   'Multiply Xt-transpose by the inverted covariance array (Wt) and produce work
   Call mltply(work(), Xt(), Wt(), RegVarCnt, Nsites, Nsites, MaxInd, MaxInd, MaxSites)
   'Multiply Xt*Wt (work) by X to produce XtX
-  Call mltply(xtx(), work(), X(), RegVarCnt, Nsites, RegVarCnt, MaxInd, MaxInd, MaxSites)
+  Call mltply(xtx(), work(), x(), RegVarCnt, Nsites, RegVarCnt, MaxInd, MaxInd, MaxSites)
 
   'COMPUTE THE REGRESSION COEFFICIENTS
   'Invert the Xt*Wt-1*X matrix
@@ -896,23 +905,23 @@ Private Function WLS(GAMA2!) As Single
   'Multiply the results of above the Wt matrix
   Call mltply(work2, work, Wt, RegVarCnt, Nsites, Nsites, MaxInd, MaxInd, MaxSites)
   'Estimate the coefficients Bhat
-  Call mltply(Bhat, work2, Y, RegVarCnt, Nsites, 1, MaxInd, MaxInd, MaxSites)
+  Call mltply(Bhat, work2, y, RegVarCnt, Nsites, 1, MaxInd, MaxInd, MaxSites)
 
   'ERROR ESTIMATION
   'Determine the Error matrix E from by first estimating E as
   '  product of the independent variables and the coefficients
-  Call mltply(e, X, Bhat, Nsites, RegVarCnt, 1, MaxSites, MaxSites, MaxInd)
+  Call mltply(e, x, Bhat, Nsites, RegVarCnt, 1, MaxSites, MaxSites, MaxInd)
   'The fill the E matrix with the residuals and make the transpose
   For k = 1 To Nsites
-    e(k, 1) = Y(k, 1) - e(k, 1)
+    e(k, 1) = y(k, 1) - e(k, 1)
     ET(1, k) = e(k, 1)
   Next k
   'Multiply Et by Wt to produce a vector of error weights
   Call mltply(work1, ET, Wt, 1, Nsites, Nsites, 1, 1, MaxSites)
   'Multiply work1 by the Errors to produce a single value of error
-  Call mltply(c1, work1, e, 1, Nsites, 1, 1, 1, MaxSites)
+  Call mltply(C1, work1, e, 1, Nsites, 1, 1, 1, MaxSites)
   'WLS is the weighted SSE sum of square error
-  WLS = (Nsites - RegVarCnt) / c1(1, 1) - 1#
+  WLS = (Nsites - RegVarCnt) / C1(1, 1) - 1#
 
 End Function
 
@@ -921,18 +930,18 @@ Private Sub CFX(icall, Latitude As Double, Longitude As Double)
   Dim sql$
   Dim C2a(30, 26) As Single, C25a(30, 26) As Single, C100a(30, 26) As Single, _
       sx As Single, sy As Single
-  Dim q As Double, q0 As Double, q1 As Double, q2 As Double
+  Dim Q As Double, q0 As Double, q1 As Double, q2 As Double
   Dim phi As Double, phi0 As Double, phi1 As Double, phi2 As Double
   Dim e As Double, e2 As Double
   Dim m1 As Double, m2 As Double, n As Double
   Dim RHO As Double, rho0 As Double
-  Dim A As Double, c As Double
+  Dim a As Double, c As Double
   Dim theta1 As Double
   Dim lam As Double, lam0 As Double
-  Dim X As Double, Y As Double
+  Dim x As Double, y As Double
   Dim xoff As Double, yoff As Double
-  Dim dp As Double, mp As Double, sp As Double
-  Dim dm As Double, mm As Double, sm As Double
+  Dim dp As Double, mp As Double, SP As Double
+  Dim dm As Double, mm As Double, SM As Double
   Dim one As Double, two As Double, tpi As Double
   Dim i As Integer, ix As Integer, iy As Integer, j As Integer
   
@@ -956,7 +965,7 @@ Private Sub CFX(icall, Latitude As Double, Longitude As Double)
    '  XOFF = offset to x-coordinate to make all positive for KRIGING.
    '  YOFF = offset to y-coordinate to make all positive for KRIGING.
 
-  A = 6378206.4
+  a = 6378206.4
   e2 = 0.006768658
   tpi = 6.2831853
   phi1 = 29.5
@@ -982,7 +991,7 @@ Private Sub CFX(icall, Latitude As Double, Longitude As Double)
   m2 = Cos(phi2) / (one - e2 * Sin(phi2) * Sin(phi2)) ^ 0.5
   n = (m1 * m1 - m2 * m2) / (q2 - q1)
   c = m1 * m1 + n * q1
-  rho0 = A * (c - n * q0) ^ 0.5 / n
+  rho0 = a * (c - n * q0) ^ 0.5 / n
 
   If icall = 0 Then 'init and read in Kriged climate factors
     For i = 1 To 30
@@ -992,12 +1001,12 @@ Private Sub CFX(icall, Latitude As Double, Longitude As Double)
         C100a(i, j) = 0#
       Next j
     Next i
-    For i = 1 To UBound(CF, 1)
-      ix = CF(i, 1)
-      iy = CF(i, 2)
-      C2a(ix, iy) = CF(i, 3)
-      C25a(ix, iy) = CF(i, 4)
-      C100a(ix, iy) = CF(i, 5)
+    For i = 1 To UBound(Cf, 1)
+      ix = Cf(i, 1)
+      iy = Cf(i, 2)
+      C2a(ix, iy) = Cf(i, 3)
+      C25a(ix, iy) = Cf(i, 4)
+      C100a(ix, iy) = Cf(i, 5)
     Next i
   End If
   
@@ -1007,27 +1016,27 @@ Private Sub CFX(icall, Latitude As Double, Longitude As Double)
   'dm = CDbl(StaLong(1))
   'mm = CDbl(StaLong(2))
   'sm = CDbl(StaLong(3))
-  mp = mp + sp / 60#
+  mp = mp + SP / 60#
   phi = (dp + mp / 60#) * tpi / 360#
-  mm = mm + sm / 60#
+  mm = mm + SM / 60#
   lam = (dm + mm / 60#)
-  q = (one - e2) * (Sin(phi) / (one - e2 * Sin(phi) * Sin(phi)) - (one / (two * e)) _
+  Q = (one - e2) * (Sin(phi) / (one - e2 * Sin(phi) * Sin(phi)) - (one / (two * e)) _
      * Log((one - e * Sin(phi)) / (one + e * Sin(phi))))
   theta1 = n * (lam0 - lam) * tpi / 360#
-  RHO = A * (c - n * q) ^ 0.5 / n
-  X = RHO * Sin(theta1) / 1000# + xoff
-  Y = (rho0 - RHO * Cos(theta1)) / 1000# + yoff
-  sx = CSng(X)
-  sy = CSng(Y)
+  RHO = a * (c - n * Q) ^ 0.5 / n
+  x = RHO * Sin(theta1) / 1000# + xoff
+  y = (rho0 - RHO * Cos(theta1)) / 1000# + yoff
+  sx = CSng(x)
+  sy = CSng(y)
   
   wgt sx, sy, C2a(), C25a(), C100a()
       
 End Sub
 
-Private Sub wgt(X As Single, Y As Single, C2a() As Single, C25a() As Single, C100a() As Single)
-  Dim cp As Single, r1 As Single, r2 As Single, r3 As Single, _
+Private Sub wgt(x As Single, y As Single, C2a() As Single, C25a() As Single, C100a() As Single)
+  Dim cp As Single, R1 As Single, r2 As Single, r3 As Single, _
       r4 As Single, rx As Single, ry As Single, wr1 As Single, wr2 As Single, _
-      wr3 As Single, wr4 As Single, xr As Single, yr As Single
+      wr3 As Single, wr4 As Single, XR As Single, yr As Single
   Dim ix As Integer, ixp As Integer, iy As Integer, iyp As Integer
       
   wr1 = 0#
@@ -1037,36 +1046,36 @@ Private Sub wgt(X As Single, Y As Single, C2a() As Single, C25a() As Single, C10
 '  ESTIMATE CLIMATE FACTOR FROM INTERPOLATION OF KRIGED VALUES AT 4 POINTS
 '  SURROUNDING X,Y LOCATION OF INTEREST.  HOWEVER, USE KRIGED VALUE IF
 '  DISTANCE TO NEAREST POINT IS 10KM OR LESS.
-  ix = Fix(X / 100#)
+  ix = Fix(x / 100#)
   rx = ix
-  xr = X - 100# * rx
-  iy = Fix(Y / 100#)
+  XR = x - 100# * rx
+  iy = Fix(y / 100#)
   ry = iy
-  yr = Y - 100# * ry
+  yr = y - 100# * ry
   ix = ix + 1
   iy = iy + 1
-  r1 = (xr ^ 2 + yr ^ 2) ^ 0.5
-  If r1 <= 10# Then
+  R1 = (XR ^ 2 + yr ^ 2) ^ 0.5
+  If R1 <= 10# Then
     wr1 = 1#
     GoTo 100
   End If
-  r2 = (xr ^ 2 + (100# - yr) ^ 2) ^ 0.5
+  r2 = (XR ^ 2 + (100# - yr) ^ 2) ^ 0.5
   If r2 <= 10# Then
     wr2 = 1#
     GoTo 100
   End If
-  r3 = ((100# - xr) ^ 2 + (100# - yr) ^ 2) ^ 0.5
+  r3 = ((100# - XR) ^ 2 + (100# - yr) ^ 2) ^ 0.5
   If r3 <= 10# Then
     wr3 = 1#
     GoTo 100
   End If
-  r4 = ((100# - xr) ^ 2 + yr ^ 2) ^ 0.5
+  r4 = ((100# - XR) ^ 2 + yr ^ 2) ^ 0.5
   If r4 <= 10# Then
     wr4 = 1#
     GoTo 100
   End If
-  cp = 1# / (1# / r1 + 1# / r2 + 1# / r3 + 1# / r4)
-  wr1 = cp / r1
+  cp = 1# / (1# / R1 + 1# / r2 + 1# / r3 + 1# / r4)
+  wr1 = cp / R1
   wr2 = cp / r2
   wr3 = cp / r3
   wr4 = cp / r4
@@ -1086,7 +1095,7 @@ Private Sub INDEXX(n As Long, ARRIN() As Single, INDX() As Integer)
 ' array INDX such that ARRIN(INDX(J)) is in ascending order for
 ' J=1,2,..,N. The input quantities ARRIN and N are not changed
 '     (ref. Numerical Recipes, p. 233)
-  Dim q As Double
+  Dim Q As Double
   Dim i&, indxt&, ir&, j&, l&
 
   For j = 1 To n
@@ -1098,10 +1107,10 @@ Private Sub INDEXX(n As Long, ARRIN() As Single, INDX() As Integer)
   If (l > 1) Then
     l = l - 1
     indxt = INDX(l)
-    q = ARRIN(indxt)
+    Q = ARRIN(indxt)
   Else
     indxt = INDX(ir)
-    q = ARRIN(indxt)
+    Q = ARRIN(indxt)
     INDX(ir) = INDX(1)
     ir = ir - 1
     If (ir = 1) Then
@@ -1116,7 +1125,7 @@ Private Sub INDEXX(n As Long, ARRIN() As Single, INDX() As Integer)
     If (j < ir) Then
       If (ARRIN(INDX(j)) < ARRIN(INDX(j + 1))) Then j = j + 1
     End If
-    If (q < ARRIN(INDX(j))) Then
+    If (Q < ARRIN(INDX(j))) Then
       INDX(i) = INDX(j)
       i = j
       j = j + j
@@ -1131,17 +1140,17 @@ End Sub
 
 Private Function gauscf(xx!) As Single
   'cumulative probability function
-  Dim ax!, T!, d!
+  Dim ax!, t!, d!
   Const xlim! = 18.3
 
   ax = Abs(xx)
   gauscf = 1#
   If ax <= xlim Then
-    T = 1# / (1# + 0.2316419 * ax)
+    t = 1# / (1# + 0.2316419 * ax)
     d = 0.3989423 * Exp(-xx * xx * 0.5)
     gauscf = 1# - _
-             d * T * ((((1.330274 * T - 1.821256) * T + 1.781478) * T - 0.3565638) _
-             * T + 0.3193815)
+             d * t * ((((1.330274 * t - 1.821256) * t + 1.781478) * t - 0.3565638) _
+             * t + 0.3193815)
   End If
   If xx < 0 Then gauscf = 1# - gauscf
 End Function
@@ -1166,7 +1175,7 @@ Private Sub OutPut(IOUT As Long, IPK As Integer, pru As Single, _
       press As Single, prx As Single, maxlev As Single, _
       pv4 As Single, resid As Single, samerr As Single, sdbeta As Single, _
       sepc As Single, sepu As Single, arhoc As Single, MEV As Single
-  Dim ssam As Single, stdres As Single, Sum As Single, tbeta As Single, _
+  Dim ssam As Single, stdres As Single, sum As Single, tbeta As Single, _
       hatdigtest As Single, cooktest As Single, tstat As Single, tv4 As Single, _
       varres As Single, vpu As Single, asep As Single, splus As Single, _
       sminu As Single
@@ -1194,18 +1203,18 @@ Private Sub OutPut(IOUT As Long, IPK As Integer, pru As Single, _
     
     If (IOUT < 99) Then Exit Sub
     
-    Call mltply(work1(), X(), Bhat(), Nsites, RegVarCnt, 1, MaxSites, MaxSites, MaxInd)
+    Call mltply(work1(), x(), Bhat(), Nsites, RegVarCnt, 1, MaxSites, MaxSites, MaxInd)
     ssam = 0
     press = 0
     hmax = 0
     maxlev = 0
     'ensuing 10 and 50 are max # of ind vars and stations, respectively
     Call mltply(work3, XtXinv, Xt, RegVarCnt, RegVarCnt, Nsites, MaxInd, MaxInd, MaxInd)
-    Call mltply(hats, X, work3, Nsites, RegVarCnt, Nsites, MaxSites, MaxSites, MaxInd)
+    Call mltply(hats, x, work3, Nsites, RegVarCnt, Nsites, MaxSites, MaxSites, MaxInd)
     Call mltply(hat, hats, Wt, Nsites, Nsites, Nsites, MaxSites, MaxSites, MaxSites)
     For i = 1 To Nsites
       pru = work1(i, 1)
-      resid = Y(i, 1) - work1(i, 1)
+      resid = y(i, 1) - work1(i, 1)
       samerr = hats(i, i)
       ssam = ssam + samerr
       If (samerr > hmax) Then hmax = samerr
@@ -1250,17 +1259,17 @@ Private Sub OutPut(IOUT As Long, IPK As Integer, pru As Single, _
     'Calculate the error variance specific to the ungaged site
     ' in relation to the other sites in the regression model
     For i = 1 To RegVarCnt
-      Sum = 0#
+      sum = 0#
       For j = 1 To RegVarCnt
-        Sum = Sum + XtXinv(i, j) * UserRegressVars(j)
+        sum = sum + XtXinv(i, j) * UserRegressVars(j)
       Next j
-      work2(i, 1) = Sum
+      work2(i, 1) = sum
     Next i
-    Sum = 0#
+    sum = 0#
     For j = 1 To RegVarCnt
-      Sum = Sum + UserRegressVars(j) * work2(j, 1)
+      sum = sum + UserRegressVars(j) * work2(j, 1)
     Next j
-    sepu = Sum
+    sepu = sum
     vpu = Gamasq + sepu
     eqyrs = sig ^ 2 * (1# + Ak(IPK) ^ 2 / 2#) / vpu
     
@@ -1341,7 +1350,7 @@ Private Function TASKER_DISTANCE(ByVal latxin As Single, _
 ' The projection is Albers Equal-Area Conic Projection (with Earth as an
 ' elipsoid) Ref. Snyder, J.P., 1982, "Map Projections Used by The U.S.
 ' Geological Survey", U. S. Geological Survey Bulletin 1532, p. 96-99.
-  Dim radian As Single, A As Single, e2 As Single, latx As Single, _
+  Dim radian As Single, a As Single, e2 As Single, latx As Single, _
       laty As Single, longx As Single, longy As Single, _
       latdiff As Single, longdiff As Single, latave As Single, _
       op1 As Single, op2 As Single, op3 As Single
@@ -1360,7 +1369,7 @@ Private Function TASKER_DISTANCE(ByVal latxin As Single, _
   End If
   If latyin > 99999 Then latyin = Left(latyin, 2) + Mid(latyin, 3, 2) / 60 + Mid(latyin, 5) / 3600
   
-  A = 6378206.4
+  a = 6378206.4
   e2 = 0.00676866
   radian = 3.14159265 / 180
   latx = latxin * radian
@@ -1371,7 +1380,7 @@ Private Function TASKER_DISTANCE(ByVal latxin As Single, _
   latdiff = Abs(latx - laty)
   longdiff = Abs(longx - longy)
   latave = (latx + laty) / 2#
-  op1 = A / (1# - e2 * Sin(latave) ^ 2) ^ 0.5
+  op1 = a / (1# - e2 * Sin(latave) ^ 2) ^ 0.5
   op2 = ((1# - e2) ^ 2 * (latdiff) ^ 2)
   op2 = op2 / ((1# - e2 * Sin(latave) ^ 2) ^ 2)
   op3 = Cos(latave) ^ 2 * longdiff ^ 2
@@ -1427,59 +1436,59 @@ Private Function STUTX(p As Single, n As Long) As Single
   ' SUBPGMS USED -- GAUSAB     (GAUSSIAN ABSCISSA)
   'REF - G. W. HILL (1970) ACM ALGO 396.  COMM ACM 13(10)619-20.
   '           REV BY WKIRBY 10/76. 2/79.  10/79.
-  Dim q As Single, A As Single, B As Single, c As Single, d As Single, _
-      HPI As Single, FN As Single, X As Single, Y As Single
-  Dim sign As Long, IER As Long
+  Dim Q As Single, a As Single, b As Single, c As Single, d As Single, _
+      HPI As Single, FN As Single, x As Single, y As Single
+  Dim Sign As Long, IER As Long
 
       HPI = 1.5707963268
-      sign = 1#
-      If p < 0.5 Then sign = -1#
-      q = 2# * p
-      If q > 1# Then q = 2# * (1# - p)
-      If q < 1# Then GoTo Next1
+      Sign = 1#
+      If p < 0.5 Then Sign = -1#
+      Q = 2# * p
+      If Q > 1# Then Q = 2# * (1# - p)
+      If Q < 1# Then GoTo Next1
       STUTX = 0#
       Exit Function
 Next1:
       FN = n
-      If (n >= 1 And q > 0# And q < 1#) Then GoTo Next2
+      If (n >= 1 And Q > 0# And Q < 1#) Then GoTo Next2
       IER = 3
       If n >= 1 Then IER = 2
-      STUTX = sign * 1E+38
+      STUTX = Sign * 1E+38
       Exit Function
 Next2:
       If n <> 1 Then GoTo Next3
 '  -- 1 DEG FR - EXACT
-      STUTX = sign / Tan(HPI * q)
+      STUTX = Sign / Tan(HPI * Q)
       Exit Function
 Next3:
       If n <> 2 Then GoTo Next4
 '  -- 2 DEG FR - EXACT
-      STUTX = ((2# / (q * (2# - q)) - 2#) ^ 0.5) * sign
+      STUTX = ((2# / (Q * (2# - Q)) - 2#) ^ 0.5) * Sign
       Exit Function
 Next4:
 '  -- EXPANSION FOR N .GT. 2
-      A = 1# / (FN - 0.5)
-      B = 48# / (A * A)
-      c = ((20700# * A / B - 98#) * A - 16#) * A + 96.36
-      d = ((94.5 / (B + c) - 3#) / B + 1#) * ((A * HPI) ^ 0.5) * FN
-      X = d * q
-      Y = X ^ (2# / FN)
-      If Y > (A + 0.05) Then GoTo Next5
-      Y = ((1# / (((FN + 6#) / (FN * Y) - 0.089 * d - 0.822) * (FN + 2#) * 3#) + _
-          0.5 / (FN + 4#)) * Y - 1#) * (FN + 1#) / (FN + 2#) + 1# / Y
-      STUTX = ((FN * Y) ^ 0.5) * sign
+      a = 1# / (FN - 0.5)
+      b = 48# / (a * a)
+      c = ((20700# * a / b - 98#) * a - 16#) * a + 96.36
+      d = ((94.5 / (b + c) - 3#) / b + 1#) * ((a * HPI) ^ 0.5) * FN
+      x = d * Q
+      y = x ^ (2# / FN)
+      If y > (a + 0.05) Then GoTo Next5
+      y = ((1# / (((FN + 6#) / (FN * y) - 0.089 * d - 0.822) * (FN + 2#) * 3#) + _
+          0.5 / (FN + 4#)) * y - 1#) * (FN + 1#) / (FN + 2#) + 1# / y
+      STUTX = ((FN * y) ^ 0.5) * Sign
       Exit Function
 Next5:
 '   -- ASYMPTOTIC INVERSE EXPANSION ABOUT NORMAL
-      X = GausAB(0.5 * q)
-      Y = X * X
-      If FN < 5# Then c = c + 0.3 * (FN - 4.5) * (X + 0.6)
-      c = (((0.05 * d * X - 5#) * X - 7#) * X - 2#) * X + B + c
-      Y = (((((0.4 * Y + 6.3) * Y + 36#) * Y + 94.5) / c - Y - 3#) / B + 1#) * X
-      X = A * Y ^ 2
-      Y = X + 0.5 * X ^ 2
-      If X > 0.002 Then Y = Exp(X) - 1#
-      STUTX = ((FN * Y) ^ 0.5) * sign
+      x = GausAB(0.5 * Q)
+      y = x * x
+      If FN < 5# Then c = c + 0.3 * (FN - 4.5) * (x + 0.6)
+      c = (((0.05 * d * x - 5#) * x - 7#) * x - 2#) * x + b + c
+      y = (((((0.4 * y + 6.3) * y + 36#) * y + 94.5) / c - y - 3#) / b + 1#) * x
+      x = a * y ^ 2
+      y = x + 0.5 * x ^ 2
+      If x > 0.002 Then y = Exp(x) - 1#
+      STUTX = ((FN * y) ^ 0.5) * Sign
 End Function
   
 Private Function GausAB(CUMPRB As Single) As Single
@@ -1490,16 +1499,16 @@ Private Function GausAB(CUMPRB As Single) As Single
 '76-05-04 WK -- TRAP UNDERFLOWS IN EXP IN GUASCF AND DY.
 '02-07-17 R.Dusenbury -- converted from FORTRAN to VB (DOES NOT WORK PROPERLY!!!)
 
-  Dim p As Single, pr As Single, T As Single, c0 As Single, c1 As Single, _
-      C2 As Single, d1 As Single, d2 As Single, d3 As Single
+  Dim p As Single, pr As Single, t As Single, C0 As Single, C1 As Single, _
+      C2 As Single, D1 As Single, d2 As Single, d3 As Single
   Dim numerat!, denom!
 
   On Error GoTo 0
   
-  c0 = 2.515517
-  c1 = 0.802853
+  C0 = 2.515517
+  C1 = 0.802853
   C2 = 0.010328
-  d1 = 1.432788
+  D1 = 1.432788
   d2 = 0.189269
   d3 = 0.001308
   GausAB = 0#
@@ -1511,11 +1520,11 @@ Private Function GausAB(CUMPRB As Single) As Single
   Else 'compute value
     pr = p
     If p > 0.5 Then pr = 1# - pr
-    T = (-2# * Log10(pr)) ^ 0.5
-    T = (-2# * Log(pr)) ^ 0.5
-    numerat = (c0 + T * (c1 + T * C2))
-    denom = (1# + T * (d1 + T * (d2 + T * d3)))
-    GausAB = T - numerat / denom
+    t = (-2# * Log10(pr)) ^ 0.5
+    t = (-2# * Log(pr)) ^ 0.5
+    numerat = (C0 + t * (C1 + t * C2))
+    denom = (1# + t * (D1 + t * (d2 + t * d3)))
+    GausAB = t - numerat / denom
     If p > 0.5 Then GausAB = -GausAB
   End If
 End Function
@@ -1530,14 +1539,14 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
   Dim probz30 As Single
   Dim probzd As Single
   Dim sesav(4, 17) As Single
-  Dim q(1050, 17) As Single
+  Dim Q(1050, 17) As Single
   Dim pv4(4, 17) As Single
   Dim tbeta(4, 17) As Single
   Dim bsav(4, 17) As Single
   Dim mxt As Single
   Dim myt As Single
-  Dim A As Single
-  Dim B As Single
+  Dim a As Single
+  Dim b As Single
   Dim xL As Single
   Dim sumx As Single
   Dim sumy As Single
@@ -1570,7 +1579,7 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
   Dim Area As Single
   Dim gf As Single
   Dim gfc As Single
-  Dim CF As Single
+  Dim Cf As Single
   Dim sf As Single
   Dim uss As Single
   Dim pru As Double
@@ -1601,7 +1610,7 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
   Dim loguss As Single
   Dim det As Single
   Dim sumsq As Single
-  Dim df As Single
+  Dim DF As Single
   Dim se As Single
   Dim sep As Single
   Dim seb As Single
@@ -1671,16 +1680,16 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
   For k = 1 To Nsites
     sumsq = sumsq + (yv(k, 1) - e(k, 1)) ^ 2
   Next k
-  df = Nsites - ne
+  DF = Nsites - ne
   Call mltply(work2, xot, XtXinv, 1, ne, ne, 1, 1, 10)
   Call mltply(hat, work2, xo, 1, ne, 1, 1, 1, 10)
-  se = Sqr(sumsq / df)
+  se = Sqr(sumsq / DF)
   seb = Sqr(1# + hat(1, 1))
   sep = se * seb
   tstat = 1.68 * sep
 
 '     Output final regression step
-  ndf = df
+  ndf = DF
   pMax = 0#
   For k = 2 To ne
     sesav(k, jpeak) = se * Sqr(XtXinv(k, k))
@@ -1701,6 +1710,11 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
   cu90 = 10 ^ (tstat + pru)
   cl90 = 10 ^ (-tstat + pru)
   pred = 10 ^ pru
+  
+  Print #OutFile, "ROI Regression for " & PkLab(jpeak)
+  For k = 1 To ne
+    Print #OutFile, bsav(k, jpeak), sesav(k, jpeak), tbeta(k, jpeak), pv4(k, jpeak)
+  Next k
 
   'Logistic zero-flow testing
   Area = 10 ^ logda
@@ -1740,7 +1754,7 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
       End If
   End If
 
-      If (jpeak = 2) Then
+  If (jpeak = 2) Then
       'Zero-flow-30Q5 transition equation West region
       If jreg = 1 And Area < 50 And gf < 40 Or _
          jreg = 1 And Area < 2.5 And gf < 60 Then
@@ -1773,10 +1787,10 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
             cl90 = 0#
           End If
       End If
-      End If
-      'Zero-flow-duration transition equation for West region
-      If jreg = 1 And Area < 50 And gf < 40 Or _
-         jreg = 1 And Area < 2.5 And gf < 60 Then
+  End If
+  'Zero-flow-duration transition equation for West region
+  If jreg = 1 And Area < 50 And gf < 40 Or _
+     jreg = 1 And Area < 2.5 And gf < 60 Then
       'D99.5
       If (jpeak = 5) Then
         If (probzd >= 0.00375) Then
@@ -1972,10 +1986,11 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
         End If
       End If
-      End If
-      'Zero-flow-duration transition equation for Central+East region
-      If jreg = 0 And Area < 100 And gf < 40 Or _
-         jreg = 0 And Area < 2.5 And gf < 60 Then
+  End If
+  
+  'Zero-flow-duration transition equation for Central+East region
+  If jreg = 0 And Area < 100 And gf < 40 Or _
+     jreg = 0 And Area < 2.5 And gf < 60 Then
       'D99.5
       If (jpeak = 5) Then
         If probzd > 0.00375 Then
@@ -2171,6 +2186,6 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
         End If
       End If
-    End If
+  End If
 
 End Sub

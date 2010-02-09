@@ -2,24 +2,41 @@ VERSION 5.00
 Object = "{872F11D5-3322-11D4-9D23-00A0C9768F70}#1.10#0"; "ATCoCtl.ocx"
 Begin VB.Form frmEditWeight 
    Caption         =   "Edit Weight"
-   ClientHeight    =   4605
+   ClientHeight    =   4740
    ClientLeft      =   45
    ClientTop       =   270
-   ClientWidth     =   5670
+   ClientWidth     =   6180
    HelpContextID   =   27
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
-   LockControls    =   -1  'True
-   ScaleHeight     =   4605
-   ScaleWidth      =   5670
+   ScaleHeight     =   4740
+   ScaleWidth      =   6180
    StartUpPosition =   3  'Windows Default
+   Begin VB.OptionButton optWeight 
+      Caption         =   "Weight for gaged site using observed data and variance"
+      BeginProperty Font 
+         Name            =   "MS Sans Serif"
+         Size            =   8.25
+         Charset         =   0
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   735
+      Index           =   1
+      Left            =   2280
+      TabIndex        =   38
+      Top             =   120
+      Width           =   1935
+   End
    Begin ATCoCtl.ATCoGrid grdWgt 
       Height          =   2175
       Left            =   120
       TabIndex        =   4
-      Top             =   1320
-      Width           =   5295
-      _ExtentX        =   9340
+      Top             =   1680
+      Width           =   5895
+      _ExtentX        =   10398
       _ExtentY        =   3836
       SelectionToggle =   0   'False
       AllowBigSelection=   0   'False
@@ -28,7 +45,7 @@ Begin VB.Form frmEditWeight
       AllowSorting    =   0   'False
       Rows            =   2
       Cols            =   4
-      ColWidthMinimum =   300
+      ColWidthMinimum =   1000
       gridFontBold    =   0   'False
       gridFontItalic  =   0   'False
       gridFontName    =   "MS Sans Serif"
@@ -64,15 +81,15 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   372
-      Index           =   1
-      Left            =   2640
+      Height          =   735
+      Index           =   2
+      Left            =   4440
       TabIndex        =   1
       Top             =   120
-      Width           =   3012
+      Width           =   1695
    End
    Begin VB.OptionButton optWeight 
-      Caption         =   "Weight for gaged site using observed data"
+      Caption         =   "Weight for gaged site using observed data and equivalent years"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
          Size            =   8.25
@@ -82,12 +99,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   372
+      Height          =   735
       Index           =   0
       Left            =   120
       TabIndex        =   0
       Top             =   120
-      Width           =   2412
+      Width           =   1935
    End
    Begin VB.CommandButton cmdApply 
       Caption         =   "&Apply"
@@ -104,7 +121,7 @@ Begin VB.Form frmEditWeight
       Index           =   1
       Left            =   1680
       TabIndex        =   6
-      Top             =   4080
+      Top             =   4440
       Width           =   972
    End
    Begin VB.CommandButton cmdCancel 
@@ -122,7 +139,7 @@ Begin VB.Form frmEditWeight
       Height          =   372
       Left            =   3000
       TabIndex        =   7
-      Top             =   4080
+      Top             =   4440
       Width           =   972
    End
    Begin VB.TextBox txtYears 
@@ -130,14 +147,14 @@ Begin VB.Form frmEditWeight
       Height          =   252
       Left            =   3000
       TabIndex        =   3
-      Top             =   720
+      Top             =   1080
       Width           =   972
    End
    Begin VB.ComboBox cboWgtSelect 
       Height          =   315
       Left            =   3000
       TabIndex        =   2
-      Top             =   720
+      Top             =   1080
       Width           =   2172
    End
    Begin VB.Label lblWgtSelect 
@@ -152,11 +169,11 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   492
+      Height          =   495
       Left            =   120
       TabIndex        =   37
-      Top             =   720
-      Width           =   2892
+      Top             =   1080
+      Width           =   2895
    End
    Begin VB.Label lblEstimated 
       BackStyle       =   0  'Transparent
@@ -169,12 +186,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   8
       Left            =   1560
       TabIndex        =   36
-      Top             =   3600
-      Width           =   1296
+      Top             =   3960
+      Width           =   1290
    End
    Begin VB.Label lblEstimated 
       BackStyle       =   0  'Transparent
@@ -187,12 +204,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   7
       Left            =   1560
       TabIndex        =   35
-      Top             =   3360
-      Width           =   1296
+      Top             =   3720
+      Width           =   1290
    End
    Begin VB.Label lblEstimated 
       BackStyle       =   0  'Transparent
@@ -205,12 +222,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   6
       Left            =   1560
       TabIndex        =   34
-      Top             =   3120
-      Width           =   1296
+      Top             =   3480
+      Width           =   1290
    End
    Begin VB.Label lblEstimated 
       BackStyle       =   0  'Transparent
@@ -223,12 +240,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   5
       Left            =   1560
       TabIndex        =   33
-      Top             =   2880
-      Width           =   1296
+      Top             =   3240
+      Width           =   1290
    End
    Begin VB.Label lblEstimated 
       BackStyle       =   0  'Transparent
@@ -241,12 +258,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   4
       Left            =   1560
       TabIndex        =   32
-      Top             =   2640
-      Width           =   1296
+      Top             =   3000
+      Width           =   1290
    End
    Begin VB.Label lblEstimated 
       BackStyle       =   0  'Transparent
@@ -259,12 +276,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   3
       Left            =   1560
       TabIndex        =   31
-      Top             =   2400
-      Width           =   1296
+      Top             =   2760
+      Width           =   1290
    End
    Begin VB.Label lblEstimated 
       BackStyle       =   0  'Transparent
@@ -277,12 +294,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   2
       Left            =   1560
       TabIndex        =   30
-      Top             =   2160
-      Width           =   1296
+      Top             =   2520
+      Width           =   1290
    End
    Begin VB.Label lblInterval 
       Alignment       =   1  'Right Justify
@@ -296,12 +313,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   8
       Left            =   240
       TabIndex        =   29
-      Top             =   3600
-      Width           =   612
+      Top             =   3960
+      Width           =   615
    End
    Begin VB.Label lblInterval 
       Alignment       =   1  'Right Justify
@@ -315,12 +332,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   7
       Left            =   240
       TabIndex        =   28
-      Top             =   3360
-      Width           =   612
+      Top             =   3720
+      Width           =   615
    End
    Begin VB.Label lblInterval 
       Alignment       =   1  'Right Justify
@@ -334,12 +351,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   6
       Left            =   240
       TabIndex        =   27
-      Top             =   3120
-      Width           =   612
+      Top             =   3480
+      Width           =   615
    End
    Begin VB.Label lblInterval 
       Alignment       =   1  'Right Justify
@@ -353,12 +370,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   5
       Left            =   240
       TabIndex        =   26
-      Top             =   2880
-      Width           =   612
+      Top             =   3240
+      Width           =   615
    End
    Begin VB.Label lblInterval 
       Alignment       =   1  'Right Justify
@@ -372,12 +389,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   4
       Left            =   240
       TabIndex        =   25
-      Top             =   2640
-      Width           =   612
+      Top             =   3000
+      Width           =   615
    End
    Begin VB.Label lblInterval 
       Alignment       =   1  'Right Justify
@@ -391,12 +408,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   3
       Left            =   240
       TabIndex        =   24
-      Top             =   2400
-      Width           =   612
+      Top             =   2760
+      Width           =   615
    End
    Begin VB.Label lblInterval 
       Alignment       =   1  'Right Justify
@@ -410,12 +427,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   2
       Left            =   240
       TabIndex        =   23
-      Top             =   2160
-      Width           =   612
+      Top             =   2520
+      Width           =   615
    End
    Begin VB.Label lblYears 
       BackStyle       =   0  'Transparent
@@ -429,11 +446,11 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Left            =   120
       TabIndex        =   22
-      Top             =   720
-      Width           =   3132
+      Top             =   1080
+      Width           =   3135
    End
    Begin VB.Label Label1 
       BackStyle       =   0  'Transparent
@@ -447,11 +464,11 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Left            =   120
       TabIndex        =   21
-      Top             =   1080
-      Width           =   4212
+      Top             =   1440
+      Width           =   4215
    End
    Begin VB.Label lblInterval 
       Alignment       =   1  'Right Justify
@@ -465,12 +482,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   1
       Left            =   240
       TabIndex        =   20
-      Top             =   1920
-      Width           =   612
+      Top             =   2280
+      Width           =   615
    End
    Begin VB.Label lblEstimated 
       BackStyle       =   0  'Transparent
@@ -483,12 +500,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   1
       Left            =   1560
       TabIndex        =   19
-      Top             =   1920
-      Width           =   1296
+      Top             =   2280
+      Width           =   1290
    End
    Begin VB.Label lblRes 
       BackStyle       =   0  'Transparent
@@ -501,12 +518,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   1
       Left            =   4320
       TabIndex        =   18
-      Top             =   1920
-      Width           =   1092
+      Top             =   2280
+      Width           =   1095
    End
    Begin VB.Label lblRes 
       BackStyle       =   0  'Transparent
@@ -519,12 +536,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   2
       Left            =   4320
       TabIndex        =   17
-      Top             =   2160
-      Width           =   1092
+      Top             =   2520
+      Width           =   1095
    End
    Begin VB.Label lblRes 
       BackStyle       =   0  'Transparent
@@ -537,12 +554,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   3
       Left            =   4320
       TabIndex        =   16
-      Top             =   2400
-      Width           =   1092
+      Top             =   2760
+      Width           =   1095
    End
    Begin VB.Label lblRes 
       BackStyle       =   0  'Transparent
@@ -555,12 +572,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   4
       Left            =   4320
       TabIndex        =   15
-      Top             =   2640
-      Width           =   1092
+      Top             =   3000
+      Width           =   1095
    End
    Begin VB.Label lblRes 
       BackStyle       =   0  'Transparent
@@ -573,12 +590,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   5
       Left            =   4320
       TabIndex        =   14
-      Top             =   2880
-      Width           =   1092
+      Top             =   3240
+      Width           =   1095
    End
    Begin VB.Label lblRes 
       BackStyle       =   0  'Transparent
@@ -591,12 +608,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   6
       Left            =   4320
       TabIndex        =   13
-      Top             =   3120
-      Width           =   1092
+      Top             =   3480
+      Width           =   1095
    End
    Begin VB.Label lblRes 
       BackStyle       =   0  'Transparent
@@ -609,12 +626,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   7
       Left            =   4320
       TabIndex        =   12
-      Top             =   3360
-      Width           =   1092
+      Top             =   3720
+      Width           =   1095
    End
    Begin VB.Label lblRes 
       BackStyle       =   0  'Transparent
@@ -627,12 +644,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   252
+      Height          =   255
       Index           =   8
       Left            =   4320
       TabIndex        =   11
-      Top             =   3600
-      Width           =   1092
+      Top             =   3960
+      Width           =   1095
    End
    Begin VB.Label lblCol 
       BackStyle       =   0  'Transparent
@@ -646,12 +663,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   372
+      Height          =   375
       Index           =   0
       Left            =   120
       TabIndex        =   10
-      Top             =   1440
-      Width           =   1332
+      Top             =   1800
+      Width           =   1335
    End
    Begin VB.Label lblCol 
       BackStyle       =   0  'Transparent
@@ -665,12 +682,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   372
+      Height          =   375
       Index           =   1
       Left            =   1560
       TabIndex        =   9
-      Top             =   1440
-      Width           =   1092
+      Top             =   1800
+      Width           =   1095
    End
    Begin VB.Label lblCol 
       BackStyle       =   0  'Transparent
@@ -684,12 +701,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   492
+      Height          =   495
       Index           =   2
-      Left            =   3048
+      Left            =   3045
       TabIndex        =   8
-      Top             =   1440
-      Width           =   1092
+      Top             =   1800
+      Width           =   1095
    End
    Begin VB.Label lblCol 
       BackStyle       =   0  'Transparent
@@ -703,12 +720,12 @@ Begin VB.Form frmEditWeight
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   372
+      Height          =   375
       Index           =   3
       Left            =   4320
       TabIndex        =   5
-      Top             =   1440
-      Width           =   1092
+      Top             =   1800
+      Width           =   1095
    End
 End
 Attribute VB_Name = "frmEditWeight"
@@ -731,12 +748,9 @@ Public Property Set Scenario(newValue As nssScenario)
   Set pScenario = newValue
   Set pSaveWeight = pScenario.Weight
   Set pScenario.Weight = pSaveWeight.Copy
-  Select Case pScenario.Weight.WeightType
-    Case 0, 1
-      pScenario.Weight.WeightType = 1
-    Case 2
-      pScenario.Weight.WeightType = 2
-  End Select
+  If pScenario.Weight.WeightType = 0 Then
+    pScenario.Weight.WeightType = 1
+  End If
   Me.Caption = "Editing weight for """ & pScenario.Name & """"
   PopulateIntervals
   pFinishedInit = True
@@ -744,10 +758,11 @@ Public Property Set Scenario(newValue As nssScenario)
     If IsNumeric(txtYears.Text) Then
       pScenario.Weight.SetGagedYears pFirstReturns(ReturnIndex).Name, txtYears.Text
     End If
-'    If IsNumeric(txtObs(ReturnIndex).Text) Then
-'      pScenario.Weight.SetGagedValue pFirstReturns(ReturnIndex).Name, txtObs(ReturnIndex).Text
     If IsNumeric(grdWgt.TextMatrix(ReturnIndex, 2)) Then
       pScenario.Weight.SetGagedValue pFirstReturns(ReturnIndex).Name, grdWgt.TextMatrix(ReturnIndex, 2)
+    End If
+    If pScenario.Weight.WeightType = 2 And IsNumeric(grdWgt.TextMatrix(ReturnIndex, 3)) Then 'include variance
+      pScenario.Weight.SetGagedVariance pFirstReturns(ReturnIndex).Name, grdWgt.TextMatrix(ReturnIndex, 3)
     End If
   Next
   PopulateResults
@@ -770,10 +785,6 @@ Private Sub PopulateIntervals()
     grdWgt.ColEditable(2) = True
     For ReturnIndex = 1 To pFirstReturns.Count
       Interval = pFirstReturns(ReturnIndex).Name
-'      lblInterval(ReturnIndex).Caption = Interval
-'      lblEstimated(ReturnIndex).Caption = StrPad(SignificantDigits(d(ReturnIndex), 3), 9)
-'      txtObs(ReturnIndex).Visible = True
-'      txtObs(ReturnIndex).Text = CDbl(pScenario.Weight.GetGagedValue(Interval))
       grdWgt.TextMatrix(ReturnIndex, 0) = Interval
       grdWgt.col = 0
       grdWgt.row = ReturnIndex
@@ -782,31 +793,21 @@ Private Sub PopulateIntervals()
       grdWgt.col = 1
       grdWgt.CellBackColor = &HE0E0E0
       grdWgt.TextMatrix(ReturnIndex, 2) = pScenario.Weight.GetGagedValue(Interval)
-      txtYears.Text = pScenario.Weight.GetGagedYears(Interval)
       grdWgt.col = 3
+      If pScenario.Weight.WeightType = 1 Then 'populate equiv years text box
+        txtYears.Text = pScenario.Weight.GetGagedYears(Interval)
+      ElseIf pScenario.Weight.WeightType = 2 Then 'populate variance values
+        grdWgt.TextMatrix(ReturnIndex, 3) = pScenario.Weight.GetGagedVariance(Interval)
+        grdWgt.col = 4
+      End If
       grdWgt.CellBackColor = &HE0E0E0
     Next
     grdWgt.Height = 242 * (pFirstReturns.Count + 2)
     cmdApply(1).Top = grdWgt.Top + grdWgt.Height + 120
     cmdCancel.Top = cmdApply(1).Top
     frmEditWeight.Height = cmdCancel.Top + cmdCancel.Height + 440
-'    While ReturnIndex <= txtObs.Count
-'      txtObs(ReturnIndex).Visible = False
-'      ReturnIndex = ReturnIndex + 1
-'    Wend
   End If
 End Sub
-
-'Private Sub chkArea_Click()
-'  If chkArea.Value = vbChecked Then
-'    txtGagedArea.Enabled = True
-'    pScenario.Weight.WeightType = 2
-'  Else
-'    txtGagedArea.Enabled = False
-'    pScenario.Weight.WeightType = 1
-'  End If
-'  PopulateResults
-'End Sub
 
 Private Sub cboWgtSelect_Click()
   Dim i&, d() As Double
@@ -833,11 +834,8 @@ Private Sub cboWgtSelect_Click()
   d = WgtScenario.WeightedDischarges
   e = WgtScenario.EquivalentYears
   For i = 1 To pScenario.UserRegions(1).Region.DepVars.Count
-'    txtObs(i).Text = StrPad(SignificantDigits(d(i), 3), 9)
     grdWgt.TextMatrix(i, 2) = StrPad(SignificantDigits(d(i), 3), 9)
-'    If IsNumeric(txtObs(i).Text) Then
     If IsNumeric(grdWgt.TextMatrix(i, 2)) Then
-'      pScenario.Weight.SetGagedValue pScenario.UserRegions(1).Region.DepVars(i).Name, txtObs(i).Text
       pScenario.Weight.SetGagedValue pScenario.UserRegions(1).Region.DepVars(i).Name, grdWgt.TextMatrix(i, 2)
       pScenario.Weight.SetGagedYears pScenario.UserRegions(1).Region.DepVars(i).Name, e(i)
     End If
@@ -884,12 +882,9 @@ Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
     If pCurrentControl = -1 Then pCurrentControl = 0
     If pCurrentControl + 1 > grdWgt.rows Then 'txtObs.Count Then
       cmdApply(1).SetFocus
-'    ElseIf Not (txtObs(pCurrentControl + 1).Visible And txtObs(pCurrentControl + 1).Visible) Then
-'      cmdApply(1).SetFocus
     Else
       grdWgt.SetFocus
       grdWgt.row = pCurrentControl + 1
-      'txtObs(pCurrentControl + 1).SetFocus
     End If
     KeyCode = 0 'Don't let individual controls see this key if we used it
   End If
@@ -925,6 +920,9 @@ Private Sub grdWgt_TextChange(ChangeFromRow As Long, ChangeToRow As Long, Change
     For ReturnIndex = 1 To pFirstReturns.Count
       If IsNumeric(grdWgt.TextMatrix(ReturnIndex, 2)) Then
         pScenario.Weight.SetGagedValue pFirstReturns(ReturnIndex).Name, grdWgt.TextMatrix(ReturnIndex, 2)
+        If pScenario.Weight.WeightType = 2 And IsNumeric(grdWgt.TextMatrix(ReturnIndex, 3)) Then
+          pScenario.Weight.SetGagedVariance pFirstReturns(ReturnIndex).Name, grdWgt.TextMatrix(ReturnIndex, 3)
+        End If
       End If
     Next
     PopulateResults
@@ -933,41 +931,56 @@ Private Sub grdWgt_TextChange(ChangeFromRow As Long, ChangeToRow As Long, Change
 End Sub
 
 Private Sub optWeight_Click(Index As Integer)
-  Dim i%
+  Dim i%, j%
+  Dim lLastCol As Long
+  Dim lWid As Long
 
-  If Index = 0 Then
+  If Index = 1 Then 'need extra field for Variance weighting
+    lLastCol = 4
+  Else
+    lLastCol = 3
+  End If
+  grdWgt.cols = lLastCol + 1
+  
+  If Index = 0 Then 'weight by Equivalent Years
     lblWgtSelect.Visible = False
     cboWgtSelect.Visible = False
     lblYears.Visible = True
     txtYears.Visible = True
     Label1.Visible = True
-'    lblCol(2).Caption = "Observed Flow"
     grdWgt.TextMatrix(-1, 2) = "Observed"
     grdWgt.TextMatrix(0, 2) = "Flow"
-'    For i = 1 To pScenario.UserRegions(1).Region.DepVars.Count
-'      txtObs(i).Enabled = True
-'    Next i
     grdWgt.ColEditable(2) = True
     pScenario.Weight.WeightType = 1
-  Else
+  ElseIf Index = 1 Then 'weight by Variance
+    lblWgtSelect.Visible = False
+    cboWgtSelect.Visible = False
+    lblYears.Visible = False
+    txtYears.Visible = False
+    Label1.Visible = True
+    grdWgt.TextMatrix(-1, 2) = "Observed"
+    grdWgt.TextMatrix(0, 2) = "Flow"
+    grdWgt.ColEditable(2) = True
+    grdWgt.TextMatrix(-1, 3) = "Observed"
+    grdWgt.TextMatrix(0, 3) = "Variance"
+    grdWgt.ColEditable(3) = True
+    pScenario.Weight.WeightType = 2
+  Else 'weight from previously weighted estimate
     lblWgtSelect.Visible = True
     cboWgtSelect.Visible = True
     lblYears.Visible = False
     txtYears.Visible = False
     Label1.Visible = False
-'    lblCol(2).Caption = "Weighted Gaged Flow"
     grdWgt.TextMatrix(-1, 2) = "Weighted"
     grdWgt.TextMatrix(0, 2) = "Gaged Flow"
-'    For i = 1 To pScenario.UserRegions(1).Region.DepVars.Count
-'      txtObs(i).Enabled = False
-'    Next i
     grdWgt.ColEditable(2) = False
-    pScenario.Weight.WeightType = 2
+    pScenario.Weight.WeightType = 3
     cboWgtSelect.Clear
     If pScenario.Project.RuralScenarios.Count > 0 Then
       'look for other scenarios that have gaged weighted results
       For i = 1 To pScenario.Project.RuralScenarios.Count
-        If pScenario.Project.RuralScenarios(i).Weight.WeightType = 1 Then
+        If pScenario.Project.RuralScenarios(i).Weight.WeightType = 1 Or _
+           pScenario.Project.RuralScenarios(i).Weight.WeightType = 2 Then
           'add to combo box list
           cboWgtSelect.AddItem pScenario.Project.RuralScenarios(i).Name
         End If
@@ -977,70 +990,44 @@ Private Sub optWeight_Click(Index As Integer)
       ssMessageBox "There are no scenarios with gaged weighted values that use the same region as the scenario being weighted." & vbCrLf & _
              "Thus, this type of weighting may not be performed currently.", vbExclamation, "Weighting Problem"
       optWeight(0).Value = True
+      Exit Sub
     Else
       cboWgtSelect.ListIndex = 0
     End If
   End If
-  grdWgt.col = 2
-  For i = 1 To grdWgt.rows
-    grdWgt.row = i
-    If Index = 0 Then
-      grdWgt.CellBackColor = grdWgt.BackColor
-    Else
-      grdWgt.CellBackColor = &HE0E0E0
-    End If
-  Next i
+  grdWgt.ColAlignment(lLastCol) = 7
+  grdWgt.ColEditable(lLastCol) = False
+  grdWgt.TextMatrix(-1, lLastCol) = "Weighted"
+  grdWgt.TextMatrix(0, lLastCol) = "Flow"
+  
+  If pScenario.Weight.WeightType = 2 Then
+    lWid = 1150
+  Else
+    lWid = 1450
+  End If
+  grdWgt.colWidth(0) = lWid
+  grdWgt.colWidth(1) = lWid
+  For j = 2 To lLastCol
+    grdWgt.colWidth(j) = lWid
+    grdWgt.col = j
+    For i = 1 To grdWgt.rows
+      grdWgt.row = i
+      If Index < 2 And j = 2 Then 'set observed flow column to white background for editing
+        grdWgt.CellBackColor = grdWgt.BackColor
+      ElseIf Index = 1 And j = 3 Then 'set observed variance column to white background for editing
+        grdWgt.CellBackColor = grdWgt.BackColor
+      Else 'column not editable for weighting using weighted estimate
+        grdWgt.CellBackColor = &HE0E0E0
+      End If
+    Next i
+  Next j
+  PopulateIntervals
+  PopulateResults
 End Sub
 
 Private Sub optWeight_GotFocus(Index As Integer)
   pCurrentControl = 0
 End Sub
-
-'Private Sub txtGagedArea_Change()
-'  pScenario.Weight.AreaGaged = txtGagedArea.Value
-'  PopulateResults
-'End Sub
-
-'Private Sub txtObs_Change(Index As Integer)
-'  Dim ReturnIndex As Long
-'  If pFinishedInit Then
-'    For ReturnIndex = 1 To pFirstReturns.Count
-'      If IsNumeric(txtObs(ReturnIndex).Text) Then
-'        pScenario.Weight.SetGagedValue pFirstReturns(ReturnIndex).Name, txtObs(ReturnIndex).Text
-'      End If
-'    Next
-'    PopulateResults
-'  End If
-'End Sub
-'
-'Private Sub txtObs_GotFocus(Index As Integer)
-'  pCurrentControl = Index
-'  txtObs(Index).SelStart = 0
-'  txtObs(Index).SelLength = Len(txtObs(Index).Text)
-'End Sub
-'
-'Private Sub txtObs_KeyDown(Index As Integer, KeyCode As Integer, Shift As Integer)
-'  Dim newIndex As Integer
-'  Select Case KeyCode
-'    Case vbKeyReturn, vbKeyDown, vbKeyUp
-'      If KeyCode = vbKeyUp Then newIndex = Index - 1 Else newIndex = Index + 1
-'      If newIndex < 1 Then
-'        If cboWgtSelect.Visible And cboWgtSelect.Enabled Then
-'          cboWgtSelect.SetFocus
-'        ElseIf txtYears.Visible And txtYears.Enabled Then
-'          txtYears.SetFocus
-'        End If
-'      ElseIf newIndex <= txtObs.Count Then
-'        If txtObs(newIndex).Visible Then
-'          txtObs(newIndex).SetFocus
-'        Else
-'          cmdApply(1).SetFocus
-'        End If
-'      Else
-'        cmdApply(1).SetFocus
-'      End If
-'  End Select
-'End Sub
 
 Private Sub txtYears_Change()
   Dim ReturnIndex As Long
@@ -1056,13 +1043,19 @@ End Sub
 Private Sub PopulateResults(Optional WhichResult As Long = -1)
   Dim ReturnIndex As Long
   Dim d() As Double
-  If pScenario.Weight.AreaGaged < 0.001 And pScenario.Weight.WeightType = 2 Then
+  Dim lLastCol As Long
+
+  If pScenario.Weight.WeightType = 2 Then 'weighting by variance, fill 4th column
+    lLastCol = 4
+  Else 'fill 3rd column
+    lLastCol = 3
+  End If
+  If pScenario.Weight.AreaGaged < 0.001 And pScenario.Weight.WeightType = 3 Then
     'Can't compute weighted extimate of this type with zero area gaged
   ElseIf pFinishedInit Then 'And txtYears.Value > 0.001 Then
     d = pScenario.WeightedDischarges
     For ReturnIndex = 1 To pFirstReturns.Count
-'      lblRes(ReturnIndex).Caption = StrPad(SignificantDigits(d(ReturnIndex), 3), 9)
-      grdWgt.TextMatrix(ReturnIndex, 3) = StrPad(SignificantDigits(d(ReturnIndex), 3), 9)
+      grdWgt.TextMatrix(ReturnIndex, lLastCol) = StrPad(SignificantDigits(d(ReturnIndex), 3), 9)
     Next
   End If
   
@@ -1070,8 +1063,7 @@ Private Sub PopulateResults(Optional WhichResult As Long = -1)
 
 ClearVals:
   For ReturnIndex = 1 To pFirstReturns.Count
-'    lblRes(ReturnIndex).Caption = ""
-    grdWgt.TextMatrix(ReturnIndex, 3) = ""
+    grdWgt.TextMatrix(ReturnIndex, lLastCol) = ""
   Next
 End Sub
 
@@ -1084,8 +1076,6 @@ End Sub
 Private Sub txtYears_KeyDown(KeyCode As Integer, Shift As Integer)
   Select Case KeyCode
     Case vbKeyDown
-'      If txtObs(1).Visible And txtObs(1).Enabled Then
-'        txtObs(1).SetFocus
       If pScenario.Weight.WeightType = 1 Then
         grdWgt.row = 1
         grdWgt.col = 2
