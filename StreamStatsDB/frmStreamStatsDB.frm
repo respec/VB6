@@ -53,8 +53,8 @@ Begin VB.Form frmStreamStatsDB
       TabCaption(1)   =   "Stat&istic Management"
       TabPicture(1)   =   "frmStreamStatsDB.frx":0326
       Tab(1).ControlEnabled=   0   'False
-      Tab(1).Control(0)=   "fraStatistics"
-      Tab(1).Control(1)=   "fraStatType"
+      Tab(1).Control(0)=   "fraStatType"
+      Tab(1).Control(1)=   "fraStatistics"
       Tab(1).ControlCount=   2
       Begin VB.Frame fraStatType 
          Caption         =   "Statistic Type"
@@ -780,7 +780,7 @@ Private Sub cmdClose_Click()
 End Sub
 
 Private Sub cmdDelete_Click()
-  Dim row&, col&, response&
+  Dim i&, j&, row&, col&, response&
   Dim staID As String
   
   If grdGenInfo.Rows = 0 Then Exit Sub
@@ -828,6 +828,11 @@ Private Sub cmdDelete_Click()
           While SSDB.SelStats(.row).id <> ListedStats(row).id
             row = row + 1
           Wend
+          j = UBound(ListedStats)
+          For i = row To j - 1
+            Set ListedStats(i) = ListedStats(i + 1)
+          Next i
+          ReDim Preserve ListedStats(j - 1)
           lstStats.RemoveItem (row - 1)
           SSDB.SelStats(.row).Delete
         End If
@@ -1060,6 +1065,16 @@ Private Sub cmdSave_Click()
       SaveSetting "StreamStatsDB", "Defaults", SSDB.state.code & str & "Stations", allStatIDs
       ResetClass "Stations"
     ElseIf tabMain.Tab = 1 Then  'editing selected statistics
+      If grdGenInfo.Rows > SSDB.SelStats.Count Then
+        'likely due to multiple rows of info being pasted into the grid
+        Dim i As Integer
+        i = SSDB.SelStats.Count
+        For row = i + 1 To grdGenInfo.Rows
+          SSDB.SelStats.Add New ssStatLabel
+          Set SSDB.SelStats(SSDB.SelStats.Count).DB = SSDB
+          SSDB.SelStats(SSDB.SelStats.Count).IsNew = True
+        Next row
+      End If
       For row = 1 To grdGenInfo.Rows
         If SSDB.SelStats(row).IsNew Then
           SSDB.SelStats(row).Add Changes(), row

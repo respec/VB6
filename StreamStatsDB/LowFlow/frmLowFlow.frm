@@ -1,6 +1,6 @@
 VERSION 5.00
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "Comdlg32.ocx"
-Object = "{872F11D5-3322-11D4-9D23-00A0C9768F70}#1.10#0"; "ATCoCtl.ocx"
+Object = "*\A..\..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmLowFlow 
    Caption         =   "Streamflow Equation Editor"
    ClientHeight    =   9075
@@ -425,7 +425,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   488
+         Rows            =   506
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -932,10 +932,10 @@ End Sub
 
 Private Sub cmdDatabase_Click()
   Dim lDBFName As String
-  lDBFName = DB.Filename
+  lDBFName = DB.FileName
 
   SetDB (True)
-  If lDBFName <> DB.Filename Then 'database changed
+  If lDBFName <> DB.FileName Then 'database changed
     rdoMainOpt(0).Value = False
     rdoMainOpt(1).Value = False
     rdoMainOpt(2).Value = False
@@ -948,14 +948,14 @@ End Sub
 
 Private Sub cmdExit_Click()
   Dim Resp As Integer
-  On Error GoTo X
+  On Error GoTo x
   Resp = vbYes
   If ChangesMade Then
     Resp = MsgBox("You have unsaved values.  Are you sure you want to exit without saving them?", vbExclamation + vbYesNo, "Exit Confirmation")
   End If
   If Resp = vbYes Then
     If Len(Dir(DBPath)) > 0 Then MyRegion.DB.DB.Close
-X:
+x:
     Unload Me
   End If
 End Sub
@@ -963,19 +963,19 @@ End Sub
 Private Sub cmdHelp_Click()
   Dim helpFilePath As String
   
-  On Error GoTo X
+  On Error GoTo x
   
   helpFilePath = GetSetting("SEE", "Defaults", "HelpPath", App.path & "\SEE.chm")
   If Len(Dir(helpFilePath)) = 0 Then
     With cdlgFileSel
 BadFile:
       .DialogTitle = "Select the help file"
-      .Filename = App.path
+      .FileName = App.path
       .Filter = "(*.chm)|*.chm"
       .FilterIndex = 1
       .CancelError = True
       .ShowOpen
-      helpFilePath = .Filename
+      helpFilePath = .FileName
       If Len(Dir(helpFilePath)) = 0 Then
         MsgBox "Could not find '" & helpFilePath & "'."
         GoTo BadFile
@@ -983,7 +983,7 @@ BadFile:
     End With
     SaveSetting "SEE", "Defaults", "HelpPath", helpFilePath
   End If
-X:
+x:
   If Len(Dir(helpFilePath)) > 0 Then
     OpenFile helpFilePath, cdlgFileSel
   Else
@@ -994,13 +994,14 @@ End Sub
 Private Sub cmdImport_Click()
   Dim i&, j&, k&, m&, inFile&, regnCnt&, parmCnt&, depVarCnt&, _
       compCnt&, flds&, DepVarID&, response&
-  Dim Filename$, str$, regnName$, flowFlag$
+  Dim FileName$, str$, regnName$, flowFlag$
   Dim urban As Boolean, isReturn As Boolean
   Dim regnVals() As Integer
   Dim parmVals() As String, depVarVals() As String, compVals() As String
   Dim covArray() As String
+  Dim lVarNotFound As Integer
 
-  On Error GoTo X
+  On Error GoTo x
   
   response = myMsgBox.Show("Importing peak-flow or low-flow data will replace " & _
         "all such data in the database for that state." & vbCrLf & vbCrLf & _
@@ -1012,23 +1013,23 @@ TryAgain:
   With cdlgFileSel
     .DialogTitle = "Select import file"
     If RDO = 0 Then
-      Filename = GetSetting("SEE", "Defaults", "NSSExportFile", Filename)
+      FileName = GetSetting("SEE", "Defaults", "NSSExportFile", FileName)
     ElseIf RDO >= 1 Then
-      Filename = GetSetting("SEE", "Defaults", "LowFlowExportFile", Filename)
+      FileName = GetSetting("SEE", "Defaults", "LowFlowExportFile", FileName)
     End If
-    If Len(Dir(Filename, vbDirectory)) = 0 Then
-      Filename = CurDir & "\Import.txt"
+    If Len(Dir(FileName, vbDirectory)) = 0 Then
+      FileName = CurDir & "\Import.csv"
     Else
-      Filename = Filename & "\Import.txt"
+      FileName = FileName & "\Import.csv"
     End If
-    .Filename = Filename
-    .Filter = "(*.txt)|*.txt"
+    .FileName = FileName
+    .Filter = "(*.csv)|*.csv"
     .FilterIndex = 1
     .CancelError = True
     .ShowOpen
-    Filename = .Filename
+    FileName = .FileName
   End With
-  If Len(Dir(Filename, vbDirectory)) = 0 Then
+  If Len(Dir(FileName, vbDirectory)) = 0 Then
     MsgBox "The filename you selected does not exist." & vbCrLf & _
            "Try again or cancel out of the dialog box."
     GoTo TryAgain
@@ -1036,7 +1037,7 @@ TryAgain:
 
   Me.MousePointer = vbHourglass
   inFile = FreeFile
-  Open Filename For Input As inFile
+  Open FileName For Input As inFile
   'read in state info
   Line Input #inFile, str
   Set DB.State = DB.States(StrRetRem(str))
@@ -1060,7 +1061,6 @@ TryAgain:
   DepVarFlds = 9 'always set to import all possible DepVar fields
   
   'read in number of regions and metric flag
-  'Line Input #inFile, str
   regnCnt = CLng(StrRetRem(str))
   If str = "1" Then Metric = True Else Metric = False
   
@@ -1084,7 +1084,6 @@ TryAgain:
     DB.State.PopulateRegions
     Set MyRegion = DB.State.Regions(regnName)
     'Read in parameters info - NOT ANY MORE, records merged 1/21/2010, prh
-    'Line Input #inFile, str
     parmCnt = StrRetRem(str)  'number or parameters for this region
     ReDim parmVals(parmCnt - 1, ParmFlds)
     depVarCnt = StrRetRem(str)  'number or RetPds/Statistics for this region
@@ -1100,7 +1099,7 @@ TryAgain:
       For k = 1 To ParmFlds - 1
         parmVals(j, k) = StrRetRem(str)
       Next k
-      If parmVals(j, 0) <> "RDA" And parmVals(j, 0) <> "CRD" Then
+      If parmVals(j, 0) <> "RURAL_DA" And parmVals(j, 0) <> "RURAL_DIS" Then
         'Write values to DB
         Set MyParm = New nssParameter
         MyParm.Add MyRegion, parmVals(j, 0), parmVals(j, 2), _
@@ -1133,8 +1132,6 @@ TryAgain:
           Exit For
         End If
       Next k
-'      compCnt = depVarVals(j, k - 1)
-'      If compCnt > 0 Then ReDim compVals(depVarCnt - 1, compCnt - 1, CompFlds)
       'Write values to DB
       Set MyDepVar = New nssDepVar
       DepVarID = MyDepVar.Add(isReturn, MyRegion, depVarVals(j, 0), depVarVals(j, 1), _
@@ -1144,38 +1141,34 @@ TryAgain:
       'check equation being imported
       If lMath.StoreExpression(depVarVals(j, 9)) Then
         compCnt = lMath.VarTop
+        lVarNotFound = 0
+        For m = 1 To lMath.VarTop
+          k = 0
+          While k < parmCnt
+            If UCase(lMath.VarName(m)) = UCase(parmVals(k, 0)) Then
+              k = parmCnt
+            End If
+            k = k + 1
+          Wend
+          If k = parmCnt Then 'didn't find variable in parameter list
+            lVarNotFound = m
+            Exit For
+          End If
+        Next m
+        If lVarNotFound > 0 Then
+          MsgBox "In Region " & MyRegion.Name & ", invalid Parameter in equation for DepVar: " & _
+                 depVarVals(j, 0) & vbCrLf & "Equation:  " & depVarVals(j, 9) & vbCrLf & _
+                 "Invalid Parameter is: " & lMath.VarName(m) & vbCrLf & _
+                 "Import will be stopped; correct Import file and try again.", vbCritical, "Import Error"
+          Err.Raise 32755
+        End If
       Else
-        compCnt = 0
         MsgBox "In Region " & MyRegion.Name & ", invalid equation format for DepVar: " & _
-               depVarVals(j, 0) & vbCrLf & "Equation:  " & depVarVals(j, 10) & vbCrLf & _
-               "If Prediction Intervals in use, covariance matrix will not be imported", vbCritical, "Import Error"
+               depVarVals(j, 0) & vbCrLf & "Equation:  " & depVarVals(j, 9) & vbCrLf & _
+               "Problem occurs at position: " & lMath.ErrorPos & _
+               "Import will be stopped; correct Import file and try again.", vbCritical, "Import Error"
+        Err.Raise 32755
       End If
-'      'Loop thru Components
-'      For k = 0 To compCnt - 1
-'        'Read in values
-'        Line Input #inFile, str
-'        str = Mid(str, 3)  'gets rid of initial 2 tabs
-'        For m = 0 To CompFlds
-'          If m = 0 Or m = 4 Then
-'            compVals(j, k, m) = GetCode(StrSplit(str, vbTab, ""))
-'          Else
-'            compVals(j, k, m) = StrRetRem(str)
-'          End If
-'        Next m
-'        If compVals(j, k, 0) < -10 Then 'indicates to take natural log
-'          compVals(j, k, 0) = Abs(compVals(j, k, 0))
-'          compVals(j, k, 4) = -999
-'        End If
-'        'Get rid of instructional equation on end of component string
-'        compVals(j, k, m - 1) = StrSplit(compVals(j, k, m - 1), vbTab, "")
-'        'Write values to DB
-'        Set MyComp = New nssComponent
-'        MyComp.Add MyRegion, DepVarID, CLng(compVals(j, k, 0)), compVals(j, k, 1), _
-'            compVals(j, k, 2), compVals(j, k, 3), CLng(compVals(j, k, 4)), _
-'            compVals(j, k, 5), compVals(j, k, 6)
-'      Next k
-      'Loop thru Covariance Matrix
-'      If compCnt > 0 And MyRegion.PredInt Then
       If MyRegion.PredInt Then
         ReDim covArray(1 To compCnt + 1, 1 To compCnt + 1)
         For k = 1 To compCnt + 1
@@ -1192,12 +1185,11 @@ TryAgain:
     Next j
   Next i
   Close inFile
-'  ResetRegion
   cboState_Click
   Me.MousePointer = vbDefault
-  MsgBox "Completed import from file " & Filename, , "SEE Import"
+  MsgBox "Completed import from file " & FileName, , "SEE Import"
   Exit Sub
-X:
+x:
   Me.MousePointer = vbDefault
   If Err.Number = 32755 Then Exit Sub
   MsgBox "The format of the import file is not correct." & vbCrLf & _
@@ -1208,10 +1200,11 @@ End Sub
 
 Private Sub cmdExport_Click()
   Dim i&, j&, k&, OutFile&, tmpCnt&, compCnt&, row&, col&
-  Dim Filename$, str$
+  Dim FileName$, str$
+  Dim lBlankPredsStr As String
   Dim covArray() As String
   
-  On Error GoTo X
+  On Error GoTo x
   
   If cboState.ListIndex < 0 Then
     MsgBox "You must select a state before exporting"
@@ -1224,108 +1217,101 @@ Private Sub cmdExport_Click()
   With cdlgFileSel
     .DialogTitle = "Assign name of export file"
     If RDO = 0 Then
-      Filename = GetSetting("SEE", "Defaults", "NSSExportFile")
+      FileName = GetSetting("SEE", "Defaults", "NSSExportFile")
     ElseIf RDO = 1 Then
-      Filename = GetSetting("SEE", "Defaults", "LowFlowExportFile")
+      FileName = GetSetting("SEE", "Defaults", "LowFlowExportFile")
     ElseIf RDO = 2 Then
-      Filename = GetSetting("SEE", "Defaults", "ProbabilityExportFile")
+      FileName = GetSetting("SEE", "Defaults", "ProbabilityExportFile")
     End If
-    If Len(Dir(Filename, vbDirectory)) <= 1 Then
-      Filename = CurDir & "\" & DB.State.Abbrev & "_Export"
+    If Len(Dir(FileName, vbDirectory)) <= 1 Then
+      FileName = CurDir & "\" & DB.State.Abbrev & "_Export"
     Else
-      Filename = Filename & "\" & DB.State.Abbrev & "_Export"
+      FileName = FileName & "\" & DB.State.Abbrev & "_Export"
     End If
     If RDO = 0 Then
-      Filename = Filename & "-PeakFlow"
+      FileName = FileName & "-PeakFlow"
     ElseIf RDO = 1 Then
-      Filename = Filename & "-LowFlow"
+      FileName = FileName & "-LowFlow"
     ElseIf RDO = 2 Then
-      Filename = Filename & "-Probability"
+      FileName = FileName & "-Probability"
     End If
     'Increment output file name if files already exported for state
-    While Len(Dir(Filename & ".txt")) > 0
+    While Len(Dir(FileName & ".csv")) > 0
       i = i + 1
-      If i > 2 Then Filename = Left(Filename, Len(Filename) - 2)
-      Filename = Filename & "-" & i
+      If i > 2 Then FileName = Left(FileName, Len(FileName) - 2)
+      FileName = FileName & "-" & i
     Wend
-    .Filename = Filename
-    .Filter = "(*.txt)|*.txt"
+    .FileName = FileName
+    .Filter = "(*.csv)|*.csv"
     .FilterIndex = 1
     .CancelError = True
     .ShowSave
-    Filename = .Filename
+    FileName = .FileName
     If RDO = 0 Then
-      SaveSetting "SEE", "Defaults", "NSSExportFile", PathNameOnly(Filename)
+      SaveSetting "SEE", "Defaults", "NSSExportFile", PathNameOnly(FileName)
       j = 0
     ElseIf RDO = 1 Then
-      SaveSetting "SEE", "Defaults", "LowFlowExportFile", PathNameOnly(Filename)
+      SaveSetting "SEE", "Defaults", "LowFlowExportFile", PathNameOnly(FileName)
       j = 1
     ElseIf RDO = 2 Then
-      SaveSetting "SEE", "Defaults", "ProbabilityExportFile", PathNameOnly(Filename)
+      SaveSetting "SEE", "Defaults", "ProbabilityExportFile", PathNameOnly(FileName)
       j = 2
     End If
   End With
   
   OutFile = FreeFile
-  Open Filename For Output As OutFile
+  Open FileName For Output As OutFile
   If DB.State.Metric Then
-    Print #OutFile, DB.State.code & ", " & DB.State.Name & ", " & j & ", " & lstRegions.ListCount & ", 1"
+    str = DB.State.code & "," & DB.State.Name & "," & j & "," & lstRegions.ListCount & ",1,,,,,,,,,,,,,,,,,,,,,"
   Else
-    Print #OutFile, DB.State.code & ", " & DB.State.Name & ", " & j & ", " & lstRegions.ListCount & ", 0"
+    str = DB.State.code & "," & DB.State.Name & "," & j & "," & lstRegions.ListCount & ",0,,,,,,,,,,,,,,,,,,,,,"
   End If
+  Print #OutFile, str
   'Loop thru Regions
   For i = 1 To lstRegions.ListCount
     Set MyRegion = DB.State.Regions(lstRegions.List(i - 1))
     If MyRegion.ROIRegnID <> "0" Then GoTo nextRegion
-    If MyRegion.urban Then j = 1 Else j = 0
-    str = MyRegion.Name & ", " & j
+    If MyRegion.urban Then
+      j = 1
+      AddUrbanNeedsRuralParms
+    Else
+      j = 0
+    End If
+    str = ",,,,," & MyRegion.Name & "," & j
     If MyRegion.UrbanNeedsRural Then j = 1 Else j = 0
-    str = str & ", " & j
+    str = str & "," & j
     If MyRegion.PredInt Then j = 1 Else j = 0
-    str = str & ", " & j
-    Print #OutFile, ",,,,, " & str & ", " & MyRegion.Parameters.Count & ", " & MyRegion.DepVars.Count
+    str = str & "," & j
+    'append blank fields at end of string to match Excel formatting
+    str = str & "," & MyRegion.Parameters.Count & "," & MyRegion.DepVars.Count & ",,,,,,,,,,,,,,,"
+    If MyRegion.PredInt Then
+      lBlankPredsStr = ""
+      For j = 1 To MyRegion.Parameters.Count + 1
+        lBlankPredsStr = lBlankPredsStr & ","
+      Next j
+      str = str & lBlankPredsStr
+    End If
+    Print #OutFile, str
     'Loop thru Parameters
     For j = 1 To MyRegion.Parameters.Count
       Set MyParm = MyRegion.Parameters(j)
-      'If MyParm.Abbrev <> "RDA" And MyParm.Abbrev <> "CRD" Then
-      str = ",,,,,,,,,,, " & MyParm.Abbrev & ", " & MyParm.Name & ", " & _
-            MyParm.GetMin(DB.State.Metric) & ", " & MyParm.GetMax(DB.State.Metric) & ", " & MyParm.Units.id
+      str = ",,,,,,,,,,," & MyParm.Abbrev & "," & MyParm.Name & "," & _
+            MyParm.GetMin(DB.State.Metric) & "," & MyParm.GetMax(DB.State.Metric) & "," & _
+            MyParm.Units.id & ",,,,,,,,,,"
+      If MyRegion.PredInt Then str = str & lBlankPredsStr
       Print #OutFile, str
-      'End If
     Next j
     'Loop thru Return Periods/Statistics
     For j = 1 To MyRegion.DepVars.Count
       Set MyDepVar = MyRegion.DepVars(j)
       compCnt = MyDepVar.Components.Count
-      Print #OutFile, ",,,,,,,,,,,,,,,, " & MyDepVar.Name & ", " & Round(MyDepVar.StdErr, 1) & ", " & _
-          Round(MyDepVar.EstErr, 1) & ", " & Round(MyDepVar.PreErr, 1) & ", " & _
-          Round(MyDepVar.EquivYears, 1) & ", " & MyDepVar.BCF & ", " & _
-          Round(MyDepVar.tdist, 4) & ", " & Round(MyDepVar.Variance, 4) & ", " & _
-          Round(MyDepVar.ExpDA, 4) & ", " & MyDepVar.Equation
-          '" " & Round(MyDepVar.ExpDA, 4) & " " & compCnt
-'      'Loop thru Components
-'      For k = 1 To compCnt
-'        Set MyComp = MyDepVar.Components(k)
-'        str = BldComponentEqtn(MyComp)
-'        With MyComp
-'          If .ParmID = -3 Or .ParmID = -4 Then
-'            Print #OutFile, vbTab & vbTab & GetAbbrev(.ParmID) & CStr(.ParmID) & vbTab & _
-'                .BaseMod & " " & .BaseCoeff & " " & _
-'                .BaseExp & " " & GetAbbrev(.expID) & vbTab & _
-'                .ExpMod & " " & .ExpExp & str
-'          ElseIf .expID = -999 Then
-'            Print #OutFile, vbTab & vbTab & "ln(" & GetAbbrev(.ParmID) & ")" & vbTab & _
-'                .BaseMod & " " & .BaseCoeff & " " & _
-'                .BaseExp & " " & GetAbbrev(.expID) & vbTab & _
-'                .ExpMod & " " & .ExpExp & str
-'          Else
-'            Print #OutFile, vbTab & vbTab & GetAbbrev(.ParmID) & vbTab & _
-'                .BaseMod & " " & .BaseCoeff & " " & _
-'                .BaseExp & " " & GetAbbrev(.expID) & vbTab & _
-'                .ExpMod & " " & .ExpExp & str
-'          End If
-'        End With
-'      Next k
+      str = ",,,,,,,,,,,,,,,," & MyDepVar.Name & "," & Round(MyDepVar.StdErr, 1) & "," & _
+            Round(MyDepVar.EstErr, 1) & "," & Round(MyDepVar.PreErr, 1) & "," & _
+            Round(MyDepVar.EquivYears, 1) & "," & MyDepVar.BCF & "," & _
+            Round(MyDepVar.tdist, 4) & "," & Round(MyDepVar.Variance, 4) & "," & _
+            Round(MyDepVar.ExpDA, 4) & "," & MyDepVar.Equation
+      If MyRegion.PredInt Then str = str & lBlankPredsStr
+      Print #OutFile, str
       If MyRegion.PredInt Then  'using prediction intervals
         covArray = MyDepVar.PopulateMatrix
         If UBound(covArray, 1) > 1 Then  'this Return/Stat has a covariance matrix
@@ -1333,9 +1319,9 @@ Private Sub cmdExport_Click()
           For row = 1 To UBound(covArray, 1)
             str = "" 'vbTab & vbTab & vbTab
             For col = 1 To UBound(covArray, 2)
-              str = str & covArray(row, col) & ", "
+              str = str & covArray(row, col) & ","
             Next col
-            Print #OutFile, ",,,,,,,,,,,,,,,,,,,,,,,,,,, " & Left(str, Len(str) - 2)
+            Print #OutFile, ",,,,,,,,,,,,,,,,,,,,,,,,,," & Left(str, Len(str) - 2)
           Next row
         End If
       End If
@@ -1344,14 +1330,14 @@ nextRegion:
   Next i
   Close OutFile
   
-  MsgBox "Completed Export to file " & Filename, vbOKOnly, "SEE Export"
+  MsgBox "Completed Export to file " & FileName, vbOKOnly, "SEE Export"
   If lstRegions.SelCount > 0 Then
     Set MyRegion = DB.State.Regions(lstRegions.List(lstRegions.ListIndex))
   Else
     Set MyRegion = Nothing
   End If
 
-X:
+x:
   Me.MousePointer = vbDefault
 
 End Sub
@@ -1498,7 +1484,7 @@ Private Sub cmdTest_Click()
     For i = 1 To lMath.VarTop
       j = 0
       While j < lstEqtnVars.ListCount
-        If lMath.VarName(i) = lstEqtnVars.List(j) Then
+        If UCase(lMath.VarName(i)) = UCase(lstEqtnVars.List(j)) Then
           j = lstEqtnVars.ListCount
           lVarCount = lVarCount + 1
         End If
@@ -1701,7 +1687,7 @@ Private Sub rdoMainOpt_Click(Index As Integer)
   Dim stIndex&, selState&, i&
   
   If NotNew Then Exit Sub
-  On Error GoTo X
+  On Error GoTo x
 
   Set MyRegion = Nothing
   
@@ -1737,7 +1723,7 @@ Private Sub rdoMainOpt_Click(Index As Integer)
   End If
   FocusOnRegions
   Exit Sub
-X:
+x:
   If RDO > -1 Then
     NotNew = True
     rdoMainOpt(RDO) = True
@@ -2135,7 +2121,7 @@ Private Sub ResetDB()
   
   Set DB = Nothing
   Set DB = New nssDatabase
-  DB.Filename = DBPath
+  DB.FileName = DBPath
   Set DB.State = DB.States(cboState.ListIndex + 1) 'DB.States.ItemByKey(CStr(cboState.ItemData(cboState.ListIndex)))
   DB.State.Regions.Clear
   Set DB.State.Regions = Nothing
@@ -2303,7 +2289,7 @@ Private Sub cmdDelete_Click()
         vbCrLf & "Parameters from the database for " & State & "?", _
         "User Action Verification", "+&Yes", "-&Cancel")
     If response = 1 Then
-      CheckRuralInput  'to make sure we don't delete RDA or CRD
+      CheckRuralInput  'to make sure we don't delete RURAL_DA or RURAL_DIS
       For i = 1 To SelParms.Count
         For Each tmpDepVar In MyRegion.DepVars
           For Each tmpComp In tmpDepVar.Components
@@ -2414,7 +2400,7 @@ Private Sub cmdSave_Click()
   
   'Check for changes and write them to an array
   If Not ChangesMade Then
-    GoTo X
+    GoTo x
   End If
   
   'Make sure user wants to overwrite existing values
@@ -2447,13 +2433,13 @@ Private Sub cmdSave_Click()
   If response = 1 Then
   'Overwrite values in DB
     frmUserInfo.Show vbModal, Me
-    If Not UserInfoOK Then GoTo X
+    If Not UserInfoOK Then GoTo x
     Me.MousePointer = vbHourglass
     If fraEdit(0).Visible Then 'editing region
       If MyRegion.IsNew Then
         Set MyRegion.DB = DB
         If Not MyRegion.Add(RDO, txtRegName.Text, rdoRegOpt(1), _
-            chkRuralInput.Value, chkPredInt.Value, -1) Then GoTo X
+            chkRuralInput.Value, chkPredInt.Value, -1) Then GoTo x
 '?????? add possible 2 parms to DB?
         ResetDB
         lstRegions.ListIndex = lstRegions.ListCount - 1
@@ -2480,7 +2466,7 @@ Private Sub cmdSave_Click()
         If MyParm.IsNew Then
           With grdParms
             If Not MyParm.Add(MyRegion, .TextMatrix(i, 2), _
-                .TextMatrix(i, 3), .TextMatrix(i, 4), UnitID) Then GoTo X
+                .TextMatrix(i, 3), .TextMatrix(i, 4), UnitID) Then GoTo x
           End With
           'Write changes to DetailedLog table
           For k = 0 To UBound(Changes, 3)
@@ -2543,7 +2529,7 @@ Private Sub cmdSave_Click()
             grdInterval.TextMatrix(1, 3), grdInterval.TextMatrix(1, 4), _
              BCF, tdist, Variance, ExpDA, txtEquation.Text)
             'grdInterval.TextMatrix(1, 5), BCF, tdist, Variance, ExpDA)
-        If tmpID = -1 Then GoTo X
+        If tmpID = -1 Then GoTo x
         ResetDB
         lstRetPds.Clear
         PopulateDepVars
@@ -2598,7 +2584,7 @@ Private Sub cmdSave_Click()
       fraEdit(2).Visible = True
     End If
   End If
-X:
+x:
   Me.MousePointer = vbDefault
 End Sub
 
@@ -2917,7 +2903,7 @@ Private Sub AddUrbanNeedsRuralParms()
     With MyParm
       Set .Region = MyRegion
       .id = -1
-      .Abbrev = "RDA"
+      .Abbrev = "RURAL_DA"
       .Name = "Rural Drainage Area"
       Set .Units = DB.Units("1")
       If MyRegion.Parameters.Count > 0 Then
@@ -2931,7 +2917,7 @@ Private Sub AddUrbanNeedsRuralParms()
     With MyParm
       Set .Region = MyRegion
       .id = -2
-      .Abbrev = "CRD"
+      .Abbrev = "RURAL_DIS"
       .Name = "Computed Rural Discharge"
       Set .Units = DB.Units("13")
       .SetMin 0.01, MyRegion.State.Metric
@@ -2986,8 +2972,8 @@ End Sub
 Private Function GetAbbrev(ByVal Parm As Long) As String
   Dim takeLog As Boolean
   Select Case Parm
-    Case -2: GetAbbrev = "rural_Dis"
-    Case -1: GetAbbrev = "rural_DA"
+    Case -2: GetAbbrev = "RURAL_DIS"
+    Case -1: GetAbbrev = "RURAL_DA"
     Case -999, -4, -3, 0: GetAbbrev = "none"
     Case Else:
       If Parm < 0 Then
@@ -3119,7 +3105,7 @@ Private Function ChangesMade() As Boolean
         If newval <> oldVals(j) Then
           Changes(0, row - 1, j) = oldVals(j)
           Changes(1, row - 1, j) = newval
-          If grdParms.TextMatrix(row, 2) = "CRD" Then
+          If grdParms.TextMatrix(row, 2) = "RURAL_DIS" Then
             MsgBox "The Computed Rural Discharge is not an editable field." & _
                 vbCrLf & "No changes will be saved for this parameter.", _
                 vbCritical, "Not an editable parameter"
@@ -3128,7 +3114,7 @@ Private Function ChangesMade() As Boolean
               grdParms.TextMatrix(row, k + 1) = oldVals(k)
             Next k
             Exit For
-          ElseIf grdParms.TextMatrix(row, 2) = "RDA" Then
+          ElseIf grdParms.TextMatrix(row, 2) = "RURAL_DA" Then
             MsgBox "The Rural Drainage Area is not an editable field." & _
                 vbCrLf & "No changes will be saved for this parameter.", _
                 vbCritical, "Not an editable field"
@@ -3252,7 +3238,7 @@ Private Sub SaveChanges()
   If MyRegion Is Nothing Then Exit Sub
 
   If fraEdit(0).Visible Then
-    On Error GoTo X
+    On Error GoTo x
     i = MsgBox("Do you want to save the new information for " & _
         vbCrLf & txtRegName.Text & ", " & State & " to the database?", _
         vbYesNo, "User Action Verification")
@@ -3260,13 +3246,13 @@ Private Sub SaveChanges()
     If i = vbYes Then
       cmdSave_Click
     Else
-X:
+x:
       cmdCancel_Click
     End If
     Skip = False
   ElseIf fraEdit(1).Visible Then
     ChoseParms = True
-      On Error GoTo Y
+      On Error GoTo y
       i = MsgBox("Do you want to save the Parameter changes " & _
           vbCrLf & "to the database for " & MyRegion.Name & "?", _
           vbYesNo, "User Action Verification")
@@ -3274,7 +3260,7 @@ X:
       If i = vbYes Then
         cmdSave_Click
       Else
-Y:
+y:
         cmdCancel_Click
       End If
       Skip = False
@@ -3361,7 +3347,7 @@ FindDB:
   
   If Len(DBPath) > 0 Then
     Set DB = New nssDatabase
-    DB.Filename = DBPath
+    DB.FileName = DBPath
     If Not DBCheck(DBPath) Then
       GoTo FindDB
     End If
@@ -3377,7 +3363,7 @@ FindDB:
     lstRetPds.Clear
     grdMatrix.Rows = 1
     grdMatrix.cols = 1
-    lblDatabase.Caption = "Database: " & DB.Filename
+    lblDatabase.Caption = "Database: " & DB.FileName
     Me.Show
   End If
   Exit Sub
