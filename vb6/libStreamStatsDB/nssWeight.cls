@@ -19,6 +19,8 @@ Private pWeightType As Long '0=no weight, 1=Gaged, 2=Ungaged
 Private pGagedValue() As Double
 Private pGagedYears() As Double
 Private pGagedVariance() As Double
+Private pVariance() As Double      'set within WeightedEstimate; read only
+Private pStandardError() As Double 'set within WeightedEstimate; read only
 Private pIntervals() As String
 Private pIntervalsSet As Long 'Number of intervals with GagedYears and/or GagedValues
 Private pAreaGaged As Double
@@ -66,6 +68,8 @@ Private Sub InitArrays()
   ReDim pGagedYears(pMaxIntervals)
   ReDim pGagedVariance(pMaxIntervals)
   ReDim pIntervals(pMaxIntervals)
+  ReDim pVariance(pMaxIntervals)
+  ReDim pStandardError(pMaxIntervals)
 End Sub
 Private Sub EnlargeArrays()
   pMaxIntervals = pMaxIntervals * 2
@@ -83,6 +87,7 @@ Public Function WeightedEstimate(ByVal Interval As String, ByVal RegressionFlow 
   Dim dArea2overG As Double
   Dim lVarR As Double 'regression equation variance, from database
   Dim lVarS As Double 'systematic variance value (entered by user)
+  Dim lVarLog As Double 'weighted variance, in log form
   
   On Error GoTo ErrWeight
   Select Case pWeightType
@@ -101,12 +106,18 @@ Public Function WeightedEstimate(ByVal Interval As String, ByVal RegressionFlow 
           WeightedEstimate = pGagedValue(i)
         End If
       ElseIf pWeightType = 2 Then 'weight by variance
-        If Abs(pGagedVariance(i)) < 0.001 Then
+        If Abs(pGagedVariance(i)) < 0.000001 Then
           WeightedEstimate = RegressionFlow
         ElseIf RegressionVariance > 0 Then
-          lVarR = 0.434 * Log10((RegressionVariance / 100) ^ 2 + 1)
-          lVarS = 0.434 * Log10((pGagedVariance(i) / 100) ^ 2 + 1)
+          'lVarR = 0.434 * Log10((RegressionVariance / 100) ^ 2 + 1) 'this assumes value is SE (%) from database
+          lVarR = RegressionVariance
+          'lVarS = 0.434 * Log10((pGagedVariance(i) / 100) ^ 2 + 1) 'this assumes user entered SE in %
+          'lVarS = Log10(pGagedVariance(i)) 'assumes user enters variance in non-log form
+          lVarS = pGagedVariance(i) 'assumes user enters variance in log form
           WeightedEstimate = 10 ^ ((lVarR * Log10(pGagedValue(i)) + lVarS * Log10(RegressionFlow)) / (lVarR + lVarS))
+          lVarLog = (lVarR * lVarS) / (lVarR + lVarS)
+          pVariance(i) = lVarLog '10 ^ (lVarLog)
+          pStandardError(i) = 100 * Sqr(10 ^ (2.30256 * lVarLog) - 1)
         Else 'no variance equation, just use entered value
           WeightedEstimate = pGagedValue(i)
         End If
@@ -211,6 +222,26 @@ Public Function GetGagedVariance(ByVal Interval As String) As Double
   For i = 1 To pIntervalsSet
     If pIntervals(i) = Interval Then
       GetGagedVariance = pGagedVariance(i)
+      Exit Function
+    End If
+  Next
+End Function
+
+Public Function Variance(ByVal Interval As String) As Double
+  Dim i&
+  For i = 1 To pIntervalsSet
+    If pIntervals(i) = Interval Then
+      Variance = pVariance(i)
+      Exit Function
+    End If
+  Next
+End Function
+
+Public Function StandardError(ByVal Interval As String) As Double
+  Dim i&
+  For i = 1 To pIntervalsSet
+    If pIntervals(i) = Interval Then
+      StandardError = pStandardError(i)
       Exit Function
     End If
   Next

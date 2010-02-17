@@ -5,12 +5,12 @@ Begin VB.Form frmEditWeight
    ClientHeight    =   4740
    ClientLeft      =   45
    ClientTop       =   270
-   ClientWidth     =   6180
+   ClientWidth     =   8355
    HelpContextID   =   27
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    ScaleHeight     =   4740
-   ScaleWidth      =   6180
+   ScaleWidth      =   8355
    StartUpPosition =   3  'Windows Default
    Begin VB.OptionButton optWeight 
       Caption         =   "Weight for gaged site using observed data and variance"
@@ -25,18 +25,18 @@ Begin VB.Form frmEditWeight
       EndProperty
       Height          =   735
       Index           =   1
-      Left            =   2280
+      Left            =   3120
       TabIndex        =   38
       Top             =   120
-      Width           =   1935
+      Width           =   2295
    End
    Begin ATCoCtl.ATCoGrid grdWgt 
       Height          =   2175
       Left            =   120
       TabIndex        =   4
       Top             =   1680
-      Width           =   5895
-      _ExtentX        =   10398
+      Width           =   8175
+      _ExtentX        =   14420
       _ExtentY        =   3836
       SelectionToggle =   0   'False
       AllowBigSelection=   0   'False
@@ -83,10 +83,10 @@ Begin VB.Form frmEditWeight
       EndProperty
       Height          =   735
       Index           =   2
-      Left            =   4440
+      Left            =   6120
       TabIndex        =   1
       Top             =   120
-      Width           =   1695
+      Width           =   2055
    End
    Begin VB.OptionButton optWeight 
       Caption         =   "Weight for gaged site using observed data and equivalent years"
@@ -104,7 +104,7 @@ Begin VB.Form frmEditWeight
       Left            =   120
       TabIndex        =   0
       Top             =   120
-      Width           =   1935
+      Width           =   2295
    End
    Begin VB.CommandButton cmdApply 
       Caption         =   "&Apply"
@@ -119,9 +119,9 @@ Begin VB.Form frmEditWeight
       EndProperty
       Height          =   372
       Index           =   1
-      Left            =   1680
+      Left            =   3480
       TabIndex        =   6
-      Top             =   4440
+      Top             =   4320
       Width           =   972
    End
    Begin VB.CommandButton cmdCancel 
@@ -137,9 +137,9 @@ Begin VB.Form frmEditWeight
          Strikethrough   =   0   'False
       EndProperty
       Height          =   372
-      Left            =   3000
+      Left            =   4800
       TabIndex        =   7
-      Top             =   4440
+      Top             =   4320
       Width           =   972
    End
    Begin VB.TextBox txtYears 
@@ -772,6 +772,9 @@ Private Sub PopulateIntervals()
   Dim ReturnIndex As Long
   Dim Interval As String
   Dim d() As Double
+  Dim v() As Double
+  Dim lCol As Integer
+
   If pScenario.Weight.WeightType > 0 Then
     optWeight(pScenario.Weight.WeightType - 1).Value = True
   Else
@@ -782,25 +785,35 @@ Private Sub PopulateIntervals()
   Else
     Set pFirstReturns = pScenario.UserRegions(1).Region.DepVars
     d = pScenario.Discharges
-    grdWgt.ColEditable(2) = True
+    v = pScenario.Variances
     For ReturnIndex = 1 To pFirstReturns.Count
       Interval = pFirstReturns(ReturnIndex).Name
       grdWgt.TextMatrix(ReturnIndex, 0) = Interval
+      'quirky feature of grid requires setting back color after setting text
       grdWgt.col = 0
       grdWgt.row = ReturnIndex
       grdWgt.CellBackColor = &HE0E0E0
       grdWgt.TextMatrix(ReturnIndex, 1) = StrPad(SignificantDigits(d(ReturnIndex), 3), 9)
-      grdWgt.col = 1
+      lCol = 1
+      grdWgt.col = lCol
       grdWgt.CellBackColor = &HE0E0E0
-      grdWgt.TextMatrix(ReturnIndex, 2) = pScenario.Weight.GetGagedValue(Interval)
-      grdWgt.col = 3
+      If pScenario.Weight.WeightType = 2 Then
+        grdWgt.TextMatrix(ReturnIndex, 2) = StrPad(SignificantDigits(v(ReturnIndex), 3), 9)
+        lCol = 2
+        grdWgt.col = lCol
+        grdWgt.CellBackColor = &HE0E0E0
+      End If
+      grdWgt.TextMatrix(ReturnIndex, lCol + 1) = pScenario.Weight.GetGagedValue(Interval)
+      grdWgt.col = lCol + 1
+      grdWgt.CellBackColor = grdWgt.BackColor
       If pScenario.Weight.WeightType = 1 Then 'populate equiv years text box
         txtYears.Text = pScenario.Weight.GetGagedYears(Interval)
+        grdWgt.col = 3
+        grdWgt.CellBackColor = &HE0E0E0
       ElseIf pScenario.Weight.WeightType = 2 Then 'populate variance values
-        grdWgt.TextMatrix(ReturnIndex, 3) = pScenario.Weight.GetGagedVariance(Interval)
-        grdWgt.col = 4
+        grdWgt.TextMatrix(ReturnIndex, 4) = pScenario.Weight.GetGagedVariance(Interval)
+        grdWgt.col = 5
       End If
-      grdWgt.CellBackColor = &HE0E0E0
     Next
     grdWgt.Height = 242 * (pFirstReturns.Count + 2)
     cmdApply(1).Top = grdWgt.Top + grdWgt.Height + 120
@@ -891,17 +904,13 @@ Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
 End Sub
 
 Private Sub Form_Load()
+  Dim i As Integer
 
   grdWgt.TextMatrix(-1, 0) = "Recurrence"
-  grdWgt.TextMatrix(0, 0) = "Interval (years)"
-  grdWgt.ColType(0) = ATCoSng
+  grdWgt.TextMatrix(0, 0) = "Interval (yrs)"
+  grdWgt.ColType(0) = ATCoTxt
   grdWgt.TextMatrix(-1, 1) = "Estimated"
   grdWgt.TextMatrix(0, 1) = "Flow"
-  grdWgt.ColType(1) = ATCoSng
-  grdWgt.ColType(2) = ATCoSng
-  grdWgt.ColAlignment(3) = 7
-  grdWgt.TextMatrix(-1, 3) = "Weighted"
-  grdWgt.TextMatrix(0, 3) = "Flow"
 
 End Sub
 
@@ -916,12 +925,19 @@ End Sub
 
 Private Sub grdWgt_TextChange(ChangeFromRow As Long, ChangeToRow As Long, ChangeFromCol As Long, ChangeToCol As Long)
   Dim ReturnIndex As Long
+  Dim lCol As Long
+
   If pFinishedInit Then
+    If pScenario.Weight.WeightType = 1 Then
+      lCol = 2
+    ElseIf pScenario.Weight.WeightType = 2 Then
+      lCol = 3
+    End If
     For ReturnIndex = 1 To pFirstReturns.Count
-      If IsNumeric(grdWgt.TextMatrix(ReturnIndex, 2)) Then
-        pScenario.Weight.SetGagedValue pFirstReturns(ReturnIndex).Name, grdWgt.TextMatrix(ReturnIndex, 2)
-        If pScenario.Weight.WeightType = 2 And IsNumeric(grdWgt.TextMatrix(ReturnIndex, 3)) Then
-          pScenario.Weight.SetGagedVariance pFirstReturns(ReturnIndex).Name, grdWgt.TextMatrix(ReturnIndex, 3)
+      If IsNumeric(grdWgt.TextMatrix(ReturnIndex, lCol)) Then
+        pScenario.Weight.SetGagedValue pFirstReturns(ReturnIndex).Name, grdWgt.TextMatrix(ReturnIndex, lCol)
+        If pScenario.Weight.WeightType = 2 And IsNumeric(grdWgt.TextMatrix(ReturnIndex, lCol + 1)) Then
+          pScenario.Weight.SetGagedVariance pFirstReturns(ReturnIndex).Name, grdWgt.TextMatrix(ReturnIndex, lCol + 1)
         End If
       End If
     Next
@@ -931,12 +947,12 @@ Private Sub grdWgt_TextChange(ChangeFromRow As Long, ChangeToRow As Long, Change
 End Sub
 
 Private Sub optWeight_Click(Index As Integer)
-  Dim i%, j%
+  Dim i As Long, j As Long
   Dim lLastCol As Long
   Dim lWid As Long
 
   If Index = 1 Then 'need extra field for Variance weighting
-    lLastCol = 4
+    lLastCol = 5
   Else
     lLastCol = 3
   End If
@@ -958,12 +974,24 @@ Private Sub optWeight_Click(Index As Integer)
     lblYears.Visible = False
     txtYears.Visible = False
     Label1.Visible = True
-    grdWgt.TextMatrix(-1, 2) = "Observed"
-    grdWgt.TextMatrix(0, 2) = "Flow"
-    grdWgt.ColEditable(2) = True
+    grdWgt.TextMatrix(-1, 2) = "Estimated"
+    grdWgt.TextMatrix(0, 2) = "Variance"
+    grdWgt.ColEditable(2) = False
     grdWgt.TextMatrix(-1, 3) = "Observed"
-    grdWgt.TextMatrix(0, 3) = "Variance"
+    grdWgt.TextMatrix(0, 3) = "Flow"
     grdWgt.ColEditable(3) = True
+    grdWgt.TextMatrix(-1, 4) = "Observed"
+    grdWgt.TextMatrix(0, 4) = "Variance"
+    grdWgt.ColEditable(4) = True
+    grdWgt.ColAlignment(4) = 7
+    grdWgt.TextMatrix(-1, lLastCol + 1) = "Weighted"
+    grdWgt.TextMatrix(0, lLastCol + 1) = "Variance"
+    grdWgt.ColEditable(lLastCol + 1) = False
+    grdWgt.ColAlignment(lLastCol + 1) = 7
+    grdWgt.TextMatrix(-1, lLastCol + 2) = "Weighted"
+    grdWgt.TextMatrix(0, lLastCol + 2) = "Std Error, %"
+    grdWgt.ColEditable(lLastCol + 2) = False
+    grdWgt.ColAlignment(lLastCol + 2) = 7
     pScenario.Weight.WeightType = 2
   Else 'weight from previously weighted estimate
     lblWgtSelect.Visible = True
@@ -995,29 +1023,38 @@ Private Sub optWeight_Click(Index As Integer)
       cboWgtSelect.ListIndex = 0
     End If
   End If
-  grdWgt.ColAlignment(lLastCol) = 7
+  For i = 1 To lLastCol
+    grdWgt.ColAlignment(i) = 7
+  Next i
   grdWgt.ColEditable(lLastCol) = False
   grdWgt.TextMatrix(-1, lLastCol) = "Weighted"
   grdWgt.TextMatrix(0, lLastCol) = "Flow"
   
   If pScenario.Weight.WeightType = 2 Then
-    lWid = 1150
+    lWid = 980
   Else
-    lWid = 1450
+    lWid = 2000
   End If
-  grdWgt.colWidth(0) = lWid
-  grdWgt.colWidth(1) = lWid
-  For j = 2 To lLastCol
+'  grdWgt.colWidth(0) = lWid
+'  grdWgt.colWidth(1) = lWid
+  For j = 0 To lLastCol
     grdWgt.colWidth(j) = lWid
     grdWgt.col = j
     For i = 1 To grdWgt.rows
       grdWgt.row = i
-      If Index < 2 And j = 2 Then 'set observed flow column to white background for editing
+      If (Index = 0 And j = 2) Or (Index = 1 And j = 3) Then 'set observed flow column to white background for editing
         grdWgt.CellBackColor = grdWgt.BackColor
-      ElseIf Index = 1 And j = 3 Then 'set observed variance column to white background for editing
+      ElseIf Index = 1 And j = 4 Then 'set observed variance column to white background for editing
         grdWgt.CellBackColor = grdWgt.BackColor
-      Else 'column not editable for weighting using weighted estimate
+      Else 'column not editable
         grdWgt.CellBackColor = &HE0E0E0
+        If Index = 1 And j = lLastCol Then 'grey out two add'l fields for variance and SE
+          grdWgt.col = j + 1
+          grdWgt.CellBackColor = &HE0E0E0
+          grdWgt.col = j + 2
+          grdWgt.CellBackColor = &HE0E0E0
+          grdWgt.col = j
+        End If
       End If
     Next i
   Next j
@@ -1046,7 +1083,7 @@ Private Sub PopulateResults(Optional WhichResult As Long = -1)
   Dim lLastCol As Long
 
   If pScenario.Weight.WeightType = 2 Then 'weighting by variance, fill 4th column
-    lLastCol = 4
+    lLastCol = 5
   Else 'fill 3rd column
     lLastCol = 3
   End If
@@ -1056,6 +1093,10 @@ Private Sub PopulateResults(Optional WhichResult As Long = -1)
     d = pScenario.WeightedDischarges
     For ReturnIndex = 1 To pFirstReturns.Count
       grdWgt.TextMatrix(ReturnIndex, lLastCol) = StrPad(SignificantDigits(d(ReturnIndex), 3), 9)
+      If pScenario.Weight.WeightType = 2 Then
+        grdWgt.TextMatrix(ReturnIndex, lLastCol + 1) = StrPad(SignificantDigits(pScenario.Weight.Variance(grdWgt.TextMatrix(ReturnIndex, 0)), 4), 9)
+        grdWgt.TextMatrix(ReturnIndex, lLastCol + 2) = StrPad(SignificantDigits(pScenario.Weight.StandardError(grdWgt.TextMatrix(ReturnIndex, 0)), 4), 9)
+      End If
     Next
   End If
   
