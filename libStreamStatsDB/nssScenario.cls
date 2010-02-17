@@ -915,17 +915,20 @@ End Function
 Public Function WeightedDischarges() As Double()
   Dim ReturnIndex As Long
   Dim IntervalDischarges() As Double
+  Dim IntervalVariances() As Double
   Dim ThisDischarge As Double
   Dim ThisVariance As Double
   Dim Years() As Double
   Dim ThisInterval As nssDepVar
   IntervalDischarges = Me.Discharges
+  IntervalVariances = Me.Variances
   Years = Me.EquivalentYears
   If Not Me.ROI Then
     For ReturnIndex = 1 To UBound(IntervalDischarges)
     
 '      If Me.Project.State.Metric = Me.Project.Metric Then
-        ThisDischarge = IntervalDischarges(ReturnIndex)
+      ThisDischarge = IntervalDischarges(ReturnIndex)
+      ThisVariance = IntervalVariances(ReturnIndex)
 '      Else 'Convert back to state units from project units before weighting
 '        If Me.Project.Metric Then
 '          ThisDischarge = IntervalDischarges(ReturnIndex) / 0.028317
@@ -934,16 +937,6 @@ Public Function WeightedDischarges() As Double()
 '        End If
 '      End If
       Set ThisInterval = pUserRegions(1).Region.DepVars(ReturnIndex)
-      If pWeight.WeightType = 2 Then 'set variance of estimated flow
-        ThisVariance = ThisInterval.PreErr
-        If ThisVariance <= 0 Then 'no prediction error, look for alternative
-          If ThisInterval.EstErr > 0 Then 'estimate error exists
-            ThisVariance = ThisInterval.EstErr
-          Else 'just use standard error
-            ThisVariance = ThisInterval.StdErr
-          End If
-        End If
-      End If
       IntervalDischarges(ReturnIndex) = _
         pWeight.WeightedEstimate(ThisInterval.Name, _
                                  ThisDischarge, _
@@ -1757,4 +1750,39 @@ LastLine:
   Discharges = IntervalDischarge 'Return empty array if there is a problem
 End Function
 
+Public Function Variances() As Double()
+  
+  Dim RegionIndex As Long
+  Dim ReturnIndex As Long
+  Dim FirstReturns As FastCollection
+  Dim IntervalVariance() As Double
+  Dim CurRegion As userRegion
+  Dim CurReturn As nssDepVar
+  Dim lVariance As Double
+    
+  Set FirstReturns = pUserRegions(1).Region.DepVars
+  ReDim IntervalVariance(1 To FirstReturns.Count)
+  'make sure we're not weighted or having mismatched regions
+  If Len(MismatchedRegions) = 0 Then
+    For ReturnIndex = 1 To FirstReturns.Count
+      IntervalVariance(ReturnIndex) = 0
+      For RegionIndex = 1 To pUserRegions.Count
+        Set CurRegion = pUserRegions(RegionIndex)
+        Set CurReturn = CurRegion.Region.DepVars(ReturnIndex)
+        lVariance = CurReturn.PreErr
+        If lVariance <= 0 Then 'no prediction error, look for alternative
+          If CurReturn.EstErr > 0 Then 'estimate error exists
+            lVariance = CurReturn.EstErr
+          Else 'just use standard error
+            lVariance = CurReturn.StdErr
+          End If
+        End If
+        lVariance = 0.4343 * Log10((lVariance / 100) ^ 2 + 1) 'convert to log space
+        IntervalVariance(ReturnIndex) = IntervalVariance(ReturnIndex) + lVariance * CurRegion.UserParms(1).GetValue(Me.Project.Metric)
+      Next
+      IntervalVariance(ReturnIndex) = IntervalVariance(ReturnIndex) / Me.GetArea(Me.Project.Metric)
+    Next
+  End If
+  Variances = IntervalVariance
 
+End Function
