@@ -22,7 +22,7 @@ FindDB:
   On Error GoTo NoDB
   'Open Stream Stats Database
   'dbPath = GetSetting("StreamStatsDB", "Defaults", "nssDatabase", App.path & "\StreamStatsDB.mdb")
-  ff.SetDialogProperties "Please locate NSS or StreamStats database version 4" ', "NSSv4.mdb"
+  ff.SetDialogProperties "Please locate NSS or StreamStats database version 5" ', "NSSv4.mdb"
   ff.SetRegistryInfo "StreamStatsDB", "Defaults", "nssDatabaseV4"
   dbPath = ff.GetName
   
