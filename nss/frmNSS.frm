@@ -1071,8 +1071,9 @@ AddRegionScenario:
     If region.UrbanNeedsRural Then
       If lastRural Is Nothing Then
         StateErrors = StateErrors & vbCrLf _
-                    & "Error: Found urban needing rural before finding a rural region " _
+                    & "Error: No Rural scenario found for urban needing rural region " _
                     & newScenario.Name
+        Return
       Else
         Set newScenario.RuralScenario = lastRural
         'Don't want area that was automatically set from rural scenario
