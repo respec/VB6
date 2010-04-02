@@ -3,15 +3,23 @@ Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "Comdlg32.ocx"
 Object = "*\A..\..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmLowFlow 
    Caption         =   "Streamflow Equation Editor"
-   ClientHeight    =   9075
+   ClientHeight    =   10140
    ClientLeft      =   45
    ClientTop       =   270
    ClientWidth     =   10725
    Icon            =   "frmLowFlow.frx":0000
    LinkTopic       =   "Form1"
-   ScaleHeight     =   9075
+   ScaleHeight     =   10140
    ScaleWidth      =   10725
    StartUpPosition =   3  'Windows Default
+   Begin VB.CommandButton cmdComponentConvert 
+      Caption         =   "Convert Comps"
+      Height          =   495
+      Left            =   9840
+      TabIndex        =   48
+      Top             =   6120
+      Width           =   855
+   End
    Begin VB.OptionButton rdoMainOpt 
       Caption         =   "Probability"
       BeginProperty Font 
@@ -26,7 +34,7 @@ Begin VB.Form frmLowFlow
       Height          =   252
       Index           =   2
       Left            =   2880
-      TabIndex        =   37
+      TabIndex        =   36
       Top             =   600
       Width           =   1335
    End
@@ -43,7 +51,7 @@ Begin VB.Form frmLowFlow
       EndProperty
       Height          =   615
       Left            =   6720
-      TabIndex        =   34
+      TabIndex        =   33
       Top             =   480
       Width           =   2175
       Begin VB.OptionButton rdoUnits 
@@ -60,7 +68,7 @@ Begin VB.Form frmLowFlow
          Height          =   255
          Index           =   0
          Left            =   105
-         TabIndex        =   36
+         TabIndex        =   35
          Top             =   240
          Width           =   975
       End
@@ -78,7 +86,7 @@ Begin VB.Form frmLowFlow
          Height          =   255
          Index           =   1
          Left            =   1170
-         TabIndex        =   35
+         TabIndex        =   34
          Top             =   240
          Width           =   975
       End
@@ -96,7 +104,7 @@ Begin VB.Form frmLowFlow
       EndProperty
       Height          =   255
       Left            =   120
-      TabIndex        =   32
+      TabIndex        =   31
       Top             =   120
       Width           =   735
    End
@@ -113,7 +121,7 @@ Begin VB.Form frmLowFlow
       EndProperty
       Height          =   492
       Left            =   9840
-      TabIndex        =   31
+      TabIndex        =   30
       Top             =   7440
       Width           =   732
    End
@@ -285,13 +293,104 @@ Begin VB.Form frmLowFlow
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   5655
+      Height          =   6735
       Index           =   2
       Left            =   120
       TabIndex        =   11
       Top             =   3360
       Visible         =   0   'False
       Width           =   9615
+      Begin VB.Frame fraPIs 
+         Caption         =   "Prediction Interval Details"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   3015
+         Left            =   120
+         TabIndex        =   44
+         Top             =   3600
+         Width           =   9375
+         Begin VB.TextBox txtVector 
+            BeginProperty Font 
+               Name            =   "MS Sans Serif"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   700
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   285
+            Left            =   120
+            TabIndex        =   47
+            Top             =   480
+            Width           =   9135
+         End
+         Begin ATCoCtl.ATCoGrid grdMatrix 
+            CausesValidation=   0   'False
+            Height          =   1995
+            Left            =   120
+            TabIndex        =   45
+            Top             =   960
+            Width           =   9135
+            _ExtentX        =   16113
+            _ExtentY        =   3519
+            SelectionToggle =   0   'False
+            AllowBigSelection=   -1  'True
+            AllowEditHeader =   0   'False
+            AllowLoad       =   0   'False
+            AllowSorting    =   0   'False
+            Rows            =   514
+            Cols            =   2
+            ColWidthMinimum =   300
+            gridFontBold    =   0   'False
+            gridFontItalic  =   0   'False
+            gridFontName    =   "MS Sans Serif"
+            gridFontSize    =   8
+            gridFontUnderline=   0   'False
+            gridFontWeight  =   400
+            gridFontWidth   =   0
+            Header          =   "Covariance Matrix"
+            FixedRows       =   0
+            FixedCols       =   0
+            ScrollBars      =   3
+            SelectionMode   =   0
+            BackColor       =   -2147483643
+            ForeColor       =   -2147483640
+            BackColorBkg    =   -2147483632
+            BackColorSel    =   -2147483635
+            ForeColorSel    =   -2147483634
+            BackColorFixed  =   -2147483633
+            ForeColorFixed  =   -2147483630
+            InsideLimitsBackground=   -2147483643
+            OutsideHardLimitBackground=   8421631
+            OutsideSoftLimitBackground=   8454143
+            ComboCheckValidValues=   0   'False
+         End
+         Begin VB.Label lblVector 
+            Caption         =   "Enter Xi Vector Elements (separated by "":"")"
+            BeginProperty Font 
+               Name            =   "MS Sans Serif"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   700
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   255
+            Left            =   120
+            TabIndex        =   46
+            Top             =   240
+            Width           =   3855
+         End
+      End
       Begin VB.Frame fraEquation 
          Caption         =   "Equation Definition"
          BeginProperty Font 
@@ -305,7 +404,7 @@ Begin VB.Form frmLowFlow
          EndProperty
          Height          =   2175
          Left            =   120
-         TabIndex        =   38
+         TabIndex        =   37
          Top             =   1680
          Width           =   9375
          Begin VB.CommandButton cmdTest 
@@ -321,7 +420,7 @@ Begin VB.Form frmLowFlow
             EndProperty
             Height          =   255
             Left            =   6960
-            TabIndex        =   44
+            TabIndex        =   43
             Top             =   240
             Width           =   735
          End
@@ -335,11 +434,11 @@ Begin VB.Form frmLowFlow
                Italic          =   0   'False
                Strikethrough   =   0   'False
             EndProperty
-            Height          =   1455
+            Height          =   1215
             Left            =   2160
             MaxLength       =   255
             MultiLine       =   -1  'True
-            TabIndex        =   41
+            TabIndex        =   40
             Top             =   600
             Width           =   7095
          End
@@ -353,9 +452,9 @@ Begin VB.Form frmLowFlow
                Italic          =   0   'False
                Strikethrough   =   0   'False
             EndProperty
-            Height          =   1425
+            Height          =   1230
             Left            =   120
-            TabIndex        =   39
+            TabIndex        =   38
             Top             =   600
             Width           =   1815
          End
@@ -372,7 +471,7 @@ Begin VB.Form frmLowFlow
             EndProperty
             Height          =   495
             Left            =   7800
-            TabIndex        =   43
+            TabIndex        =   42
             Top             =   120
             Width           =   1455
          End
@@ -389,7 +488,7 @@ Begin VB.Form frmLowFlow
             EndProperty
             Height          =   255
             Left            =   2160
-            TabIndex        =   42
+            TabIndex        =   41
             Top             =   360
             Width           =   2295
          End
@@ -406,51 +505,10 @@ Begin VB.Form frmLowFlow
             EndProperty
             Height          =   255
             Left            =   120
-            TabIndex        =   40
+            TabIndex        =   39
             Top             =   360
             Width           =   1695
          End
-      End
-      Begin ATCoCtl.ATCoGrid grdMatrix 
-         CausesValidation=   0   'False
-         Height          =   1635
-         Left            =   120
-         TabIndex        =   30
-         Top             =   3960
-         Width           =   9375
-         _ExtentX        =   16536
-         _ExtentY        =   2884
-         SelectionToggle =   0   'False
-         AllowBigSelection=   -1  'True
-         AllowEditHeader =   0   'False
-         AllowLoad       =   0   'False
-         AllowSorting    =   0   'False
-         Rows            =   506
-         Cols            =   2
-         ColWidthMinimum =   300
-         gridFontBold    =   0   'False
-         gridFontItalic  =   0   'False
-         gridFontName    =   "MS Sans Serif"
-         gridFontSize    =   8
-         gridFontUnderline=   0   'False
-         gridFontWeight  =   400
-         gridFontWidth   =   0
-         Header          =   "Covariance Matrix"
-         FixedRows       =   0
-         FixedCols       =   0
-         ScrollBars      =   3
-         SelectionMode   =   0
-         BackColor       =   -2147483643
-         ForeColor       =   -2147483640
-         BackColorBkg    =   -2147483632
-         BackColorSel    =   -2147483635
-         ForeColorSel    =   -2147483634
-         BackColorFixed  =   -2147483633
-         ForeColorFixed  =   -2147483630
-         InsideLimitsBackground=   -2147483643
-         OutsideHardLimitBackground=   8421631
-         OutsideSoftLimitBackground=   8454143
-         ComboCheckValidValues=   0   'False
       End
       Begin ATCoCtl.ATCoGrid grdInterval 
          CausesValidation=   0   'False
@@ -466,7 +524,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -525,7 +583,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   6
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -752,7 +810,7 @@ Begin VB.Form frmLowFlow
       EndProperty
       Height          =   255
       Left            =   960
-      TabIndex        =   33
+      TabIndex        =   32
       Top             =   120
       Width           =   9735
    End
@@ -928,6 +986,49 @@ Private Sub cmdConvert_Click()
     Next
   Next
   Me.MousePointer = vbDefault
+End Sub
+
+Private Sub cmdComponentConvert_Click()
+  Dim vState As nssState
+  Dim vRegion As nssRegion
+  Dim vDepVar As nssDepVar
+  Dim vComp As nssComponent
+  Dim lEqtnStr As String
+  Dim myRec As Recordset
+  Dim sql As String
+
+  Me.MousePointer = vbHourglass
+  For Each vState In DB.States
+    For Each MyRegion In vState.Regions
+      If MyRegion.PredInt Then
+        For Each vDepVar In MyRegion.DepVars
+          lEqtnStr = ""
+          If vDepVar.Components.Count > 0 Then
+            For Each vComp In vDepVar.Components
+              lEqtnStr = lEqtnStr & BldPredIntComponent(vComp) & " : "
+            Next
+            lEqtnStr = Left(lEqtnStr, Len(lEqtnStr) - 2)
+            sql = "SELECT * FROM DepVars WHERE DepVarID=" & vDepVar.id
+            Set myRec = DB.DB.OpenRecordset(sql, dbOpenDynaset)
+            With myRec
+              If Not .NoMatch Then
+                .Edit
+                If Len(lEqtnStr) > 255 Then
+                  StrTrim lEqtnStr
+                End If
+                !XiVector = lEqtnStr
+                .Update
+              Else
+                MsgBox "There is no dependent variable with the ID= " & vDepVar.id & "."
+              End If
+            End With
+          End If
+        Next
+      End If
+    Next
+  Next
+  Me.MousePointer = vbDefault
+
 End Sub
 
 Private Sub cmdDatabase_Click()
@@ -1363,6 +1464,33 @@ Private Function BldComponentEqtn(MyComp As nssComponent) As String
       str = str & "^" & .ExpExp
     End If
     BldComponentEqtn = str
+  End With
+End Function
+
+Private Function BldPredIntComponent(MyComp As nssComponent) As String
+  Dim str
+
+  With MyComp
+    'Set base portion of equation
+    If .BaseCoeff = 0 Or .BaseCoeff = 1 Then 'ignore base coeff
+      str = ""
+    Else
+      str = .BaseCoeff & "*"
+    End If
+    If .expID = 0 Then 'variable not in exponent, take log
+      If .BaseMod <> 0 Then
+        str = "logN(" & str & .BaseMod & "+" & GetAbbrev(.ParmID) & ",10)"
+      Else
+        str = "logN(" & str & GetAbbrev(.ParmID) & ",10)"
+      End If
+    Else ' variable in exponent, no log
+      If .ExpMod <> 0 Then
+        str = str & "(" & .BaseMod & "+" & GetAbbrev(.ParmID) & ")"
+      Else
+        str = str & GetAbbrev(.ParmID)
+      End If
+    End If
+    BldPredIntComponent = str
   End With
 End Function
 
@@ -2504,7 +2632,7 @@ Private Sub cmdSave_Click()
         Next k
       Next i
       Set MyParm = SelParms(CStr(SelParms(UBound(parmNames)).id))
-    ElseIf fraEdit(2).Visible Then 'editing return period/statistic, components, and matrix
+    ElseIf fraEdit(2).Visible Then 'editing return period/statistic, equation, and matrix
       If MyRegion.PredInt Then
         BCF = grdInterval.TextMatrix(1, 5)
         tdist = grdInterval.TextMatrix(1, 6)
@@ -2841,9 +2969,11 @@ Private Sub FocusOnReturns()
   fraEdit(1).Visible = False
   fraEdit(2).Visible = True
   If MyRegion.PredInt Then
-    grdMatrix.Visible = True
+    'grdMatrix.Visible = True
+    fraPIs.Visible = True
   Else
-    grdMatrix.Visible = False
+    'grdMatrix.Visible = False
+    fraPIs.Visible = False
   End If
   For i = 0 To lstParms.ListCount - 1
     lstParms.Selected(i) = True
