@@ -24,6 +24,9 @@ Private pFileName As String
 Private pName As String
 Private pUserName As String
 Private pMetric As Boolean
+Private pAlias As Boolean 'True - use new Alias field for stat label; False use original label
+'Private pPeaks As Boolean 'True - only perform Peak flow analysis; False - other (low/duration/prob)
+Private PVarLog As Boolean 'True - display Variance in Log10; False - display as percent
 Private pChanged As Boolean
 Private pNationalState As nssState
 Private pNationalUrban As nssRegion
@@ -63,6 +66,36 @@ End Property
 Public Property Let Metric(newValue As Boolean)
   If newValue <> pMetric Then
     pMetric = newValue
+    pChanged = True
+  End If
+End Property
+
+Public Property Get Alias() As Boolean
+  Alias = pAlias
+End Property
+Public Property Let Alias(newValue As Boolean)
+  If newValue <> pAlias Then
+    pAlias = newValue
+    pChanged = True
+  End If
+End Property
+
+'Public Property Get Peaks() As Boolean
+'  Peaks = pPeaks
+'End Property
+'Public Property Let Peaks(newValue As Boolean)
+'  If newValue <> pPeaks Then
+'    pPeaks = newValue
+'    pChanged = True
+'  End If
+'End Property
+'
+Public Property Get VarLog() As Boolean
+  VarLog = PVarLog
+End Property
+Public Property Let VarLog(newValue As Boolean)
+  If newValue <> PVarLog Then
+    PVarLog = newValue
     pChanged = True
   End If
 End Property
@@ -125,6 +158,9 @@ Public Property Get XML() As String
   retval = retval & " username=""" & Me.UserName & """"
   retval = retval & " state=""" & Me.State.code & """"
   retval = retval & " metric=""" & Me.Metric & """"
+  retval = retval & " alias=""" & Me.Alias & """"
+'  retval = retval & " peaks=""" & Me.Peaks & """"
+  retval = retval & " varlog=""" & Me.VarLog & """"
   retval = retval & " currentrural=""" & Me.CurrentRuralScenario & """"
   retval = retval & " currenturban=""" & Me.CurrentUrbanScenario & """"
   retval = retval & ">" & vbCrLf
@@ -192,6 +228,9 @@ Public Property Let XML(newValue As String)
     pName = projectXML.AttributeValue("name")
     pUserName = projectXML.AttributeValue("username")
     If LCase(projectXML.AttributeValue("metric")) = "true" Then pMetric = True Else pMetric = False
+    If LCase(projectXML.AttributeValue("alias")) = "true" Then pAlias = True Else pAlias = False
+'    If LCase(projectXML.AttributeValue("peaks")) = "true" Then pPeaks = True Else pPeaks = False
+    If LCase(projectXML.AttributeValue("varlog")) = "true" Then PVarLog = True Else PVarLog = False
     Set Me.State = pDB.States(projectXML.AttributeValue("state"))
     pCurrentRuralScenario = projectXML.AttributeValue("currentrural", 0)
     pCurrentUrbanScenario = projectXML.AttributeValue("currenturban", 0)
@@ -339,7 +378,7 @@ Public Function Report() As String
   retval = retval & vbCrLf
   retval = retval & "Site: " & Me.Name & ", " & Me.State.Name & vbCrLf
   retval = retval & "User: " & Me.UserName & vbCrLf
-  'retval = retval & "Date: " & Format(Date, "Long Date") & " " & Format(Time, "hh:mm ampm") & vbCrLf
+  retval = retval & "Date: " & Format(Date, "Long Date") & " " & Format(Time, "hh:mm ampm") & vbCrLf
   retval = retval & vbCrLf
   
 '  For Each vScenario In Me.RuralScenarios
@@ -486,7 +525,11 @@ On Error GoTo BEErrHandler
   EqtnStr = "Equations used:" & vbCrLf
   Set lRegion = aScenario.UserRegions(1).Region
   For Each vDepVar In lRegion.DepVars
-    EqtnStr = EqtnStr & vDepVar.Name & " = "
+    If Me.Alias Then
+      EqtnStr = EqtnStr & vDepVar.Alias & " = "
+    Else
+      EqtnStr = EqtnStr & vDepVar.Name & " = "
+    End If
     If Len(vDepVar.Equation) > 0 Then
       EqtnStr = EqtnStr & vDepVar.Equation & vbCrLf
     ElseIf vDepVar.Name = "PK500" Then 'extrapolated 500-year value

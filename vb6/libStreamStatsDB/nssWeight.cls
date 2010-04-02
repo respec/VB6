@@ -36,6 +36,7 @@ Public Function Copy() As nssWeight
     For i = 1 To pIntervalsSet
       .SetGagedYears pIntervals(i), pGagedYears(i)
       .SetGagedValue pIntervals(i), pGagedValue(i)
+      .SetGagedVariance pIntervals(i), pGagedVariance(i)
     Next
   End With
   Set Copy = retval

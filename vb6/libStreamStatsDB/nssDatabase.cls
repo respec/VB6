@@ -274,7 +274,7 @@ Private Sub PopulateParameters()
   Set pParameters = New FastCollection
 
   'builds collection of Parameters
-  sql = "SELECT [STATLABEL].[StatLabel], [STATLABEL].[StatisticLabel], [UNITS].[UnitID]" & _
+  sql = "SELECT [STATLABEL].[StatLabel], [STATLABEL].[StatisticLabel], [STATLABEL].[Alias], [UNITS].[UnitID]" & _
         "FROM STATLABEL INNER JOIN UNITS ON [STATLABEL].[UnitID]=[UNITS].[UnitID] " & _
         "ORDER BY [STATLABEL].[StatisticTypeCode], [STATLABEL].[StatisticLabelID];"
   Set myRec = pnssDB.OpenRecordset(sql, dbOpenForwardOnly)
@@ -283,6 +283,7 @@ Private Sub PopulateParameters()
     With newParm
       .Name = myRec("StatisticLabel")
       .Abbrev = myRec("StatLabel")
+      .Alias = myRec("Alias")
       .ConvFlag = myRec("UnitID")
     End With
     pParameters.Add newParm, newParm.Abbrev
