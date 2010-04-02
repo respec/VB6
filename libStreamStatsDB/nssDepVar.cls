@@ -14,7 +14,8 @@ Attribute VB_Exposed = True
 Option Explicit
 'Copyright 2001 by AQUA TERRA Consultants
 
-Private pName As String
+Private pName As String 'traditional statistic label
+Private pAlias As String 'revised statistic label
 Private pID As Long
 Private pDB As nssDatabase
 Private pRegion As nssRegion
@@ -43,6 +44,13 @@ Public Property Get Name() As String
 End Property
 Public Property Let Name(ByVal newValue As String)
   pName = newValue
+End Property
+
+Public Property Get Alias() As String
+  Alias = pAlias
+End Property
+Public Property Let Alias(ByVal newValue As String)
+  pAlias = newValue
 End Property
 
 Public Property Get Id() As Long

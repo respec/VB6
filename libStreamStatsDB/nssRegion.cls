@@ -127,7 +127,7 @@ Public Sub PopulateParameters()
     ssMessageBox "Cannot read parameters" & vbCr & "DB not set."
   Else
     sql = "SELECT Parameters.ParmID, Parameters.Min, Parameters.Max, Parameters.UnitID, " & _
-             "Parameters.Parameter, STATLABEL.StatLabel, STATLABEL.StatisticLabel, " & _
+             "Parameters.Parameter, STATLABEL.StatLabel, STATLABEL.StatisticLabel, STATLABEL.Alias, " & _
              "STATLABEL.StatisticLabelID, STATTYPE.StatisticTypeCode, STATTYPE.StatisticType " & _
           "FROM STATTYPE INNER JOIN (STATLABEL INNER JOIN [Parameters] " & _
           "ON STATLABEL.StatisticLabelID = Parameters.StatisticLabelID) " & _
@@ -143,6 +143,7 @@ Public Sub PopulateParameters()
         If Not IsNull(parmRec.Fields("StatisticLabelID")) Then .LabelCode = parmRec.Fields("StatisticLabelID")
         If Not IsNull(parmRec.Fields("StatisticLabel")) Then .Name = parmRec.Fields("StatisticLabel")
         If Not IsNull(parmRec.Fields("StatLabel")) Then .Abbrev = parmRec.Fields("StatLabel")
+        If Not IsNull(parmRec.Fields("Alias")) Then .Alias = parmRec.Fields("Alias")
         If Not IsNull(parmRec.Fields("Parameter")) Then .NSSName = parmRec.Fields("Parameter")
         If Not IsNull(parmRec.Fields("UnitID")) Then Set .Units = pDB.Units(CStr(parmRec.Fields("UnitID")))
         If Not IsNull(parmRec.Fields("Min")) Then .SetMin parmRec.Fields("Min"), pState.Metric
@@ -294,7 +295,7 @@ Public Sub PopulateDepVars()
 '          "DepVars.RegionID=" & pID & _
 '          " ORDER BY Len(StatLabelCode), StatLabelCode;"
     'below will be the new query to pull Units from StatLabel table (8/2008, prh)
-    sql = "SELECT DepVars.*, StatLabel.StatLabel, StatLabel.UnitID " & _
+    sql = "SELECT DepVars.*, StatLabel.StatLabel, StatLabel.Alias, StatLabel.UnitID " & _
           "FROM StatLabel INNER JOIN DepVars ON StatLabel.StatisticLabelID = DepVars.StatisticLabelID " & _
           "WHERE DepVars.RegionID=" & pID & _
           " ORDER BY Len(StatLabel.StatLabel), StatLabel.StatLabel;"
@@ -308,6 +309,7 @@ Public Sub PopulateDepVars()
         .Id = DepVarID
         'If Not IsNull(depVarRec.Fields("StatLabelCode")) Then .Name = depVarRec.Fields("StatLabelCode")
         If Not IsNull(depVarRec.Fields("StatLabel")) Then .Name = depVarRec.Fields("StatLabel")
+        If Not IsNull(depVarRec.Fields("Alias")) Then .Alias = depVarRec.Fields("Alias")
         If Not IsNull(depVarRec.Fields("StdErr")) Then .StdErr = depVarRec.Fields("StdErr")
         If Not IsNull(depVarRec.Fields("EstErr")) Then .EstErr = depVarRec.Fields("EstErr")
         If Not IsNull(depVarRec.Fields("PreErr")) Then .PreErr = depVarRec.Fields("PreErr")

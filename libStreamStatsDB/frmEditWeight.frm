@@ -7,6 +7,7 @@ Begin VB.Form frmEditWeight
    ClientTop       =   270
    ClientWidth     =   8355
    HelpContextID   =   27
+   Icon            =   "frmEditWeight.frx":0000
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    ScaleHeight     =   4740
@@ -43,7 +44,7 @@ Begin VB.Form frmEditWeight
       AllowEditHeader =   0   'False
       AllowLoad       =   0   'False
       AllowSorting    =   0   'False
-      Rows            =   2
+      Rows            =   1
       Cols            =   4
       ColWidthMinimum =   1000
       gridFontBold    =   0   'False
@@ -758,11 +759,13 @@ Public Property Set Scenario(newValue As nssScenario)
     If IsNumeric(txtYears.Text) Then
       pScenario.Weight.SetGagedYears pFirstReturns(ReturnIndex).Name, txtYears.Text
     End If
-    If IsNumeric(grdWgt.TextMatrix(ReturnIndex, 2)) Then
+    If pScenario.Weight.WeightType = 1 And IsNumeric(grdWgt.TextMatrix(ReturnIndex, 2)) Then
       pScenario.Weight.SetGagedValue pFirstReturns(ReturnIndex).Name, grdWgt.TextMatrix(ReturnIndex, 2)
+    ElseIf pScenario.Weight.WeightType = 2 And IsNumeric(grdWgt.TextMatrix(ReturnIndex, 3)) Then
+      pScenario.Weight.SetGagedValue pFirstReturns(ReturnIndex).Name, grdWgt.TextMatrix(ReturnIndex, 3)
     End If
-    If pScenario.Weight.WeightType = 2 And IsNumeric(grdWgt.TextMatrix(ReturnIndex, 3)) Then 'include variance
-      pScenario.Weight.SetGagedVariance pFirstReturns(ReturnIndex).Name, grdWgt.TextMatrix(ReturnIndex, 3)
+    If pScenario.Weight.WeightType = 2 And IsNumeric(grdWgt.TextMatrix(ReturnIndex, 4)) Then 'include variance
+      pScenario.Weight.SetGagedVariance pFirstReturns(ReturnIndex).Name, grdWgt.TextMatrix(ReturnIndex, 4)
     End If
   Next
   PopulateResults
@@ -1081,6 +1084,7 @@ Private Sub PopulateResults(Optional WhichResult As Long = -1)
   Dim ReturnIndex As Long
   Dim d() As Double
   Dim lLastCol As Long
+  Dim lCol As Long
 
   If pScenario.Weight.WeightType = 2 Then 'weighting by variance, fill 4th column
     lLastCol = 5
@@ -1092,10 +1096,22 @@ Private Sub PopulateResults(Optional WhichResult As Long = -1)
   ElseIf pFinishedInit Then 'And txtYears.Value > 0.001 Then
     d = pScenario.WeightedDischarges
     For ReturnIndex = 1 To pFirstReturns.Count
+      lCol = lLastCol
+'      grdWgt.col = lCol
+'      grdWgt.row = ReturnIndex
+'      grdWgt.CellBackColor = &HE0E0E0
       grdWgt.TextMatrix(ReturnIndex, lLastCol) = StrPad(SignificantDigits(d(ReturnIndex), 3), 9)
       If pScenario.Weight.WeightType = 2 Then
-        grdWgt.TextMatrix(ReturnIndex, lLastCol + 1) = StrPad(SignificantDigits(pScenario.Weight.Variance(grdWgt.TextMatrix(ReturnIndex, 0)), 4), 9)
-        grdWgt.TextMatrix(ReturnIndex, lLastCol + 2) = StrPad(SignificantDigits(pScenario.Weight.StandardError(grdWgt.TextMatrix(ReturnIndex, 0)), 4), 9)
+        lCol = lLastCol + 1
+'        grdWgt.col = lCol
+'        grdWgt.row = ReturnIndex
+'        grdWgt.CellBackColor = &HE0E0E0
+        grdWgt.TextMatrix(ReturnIndex, lCol) = StrPad(SignificantDigits(pScenario.Weight.Variance(grdWgt.TextMatrix(ReturnIndex, 0)), 4), 9)
+        lCol = lLastCol + 2
+'        grdWgt.col = lCol
+'        grdWgt.row = ReturnIndex
+'        grdWgt.CellBackColor = &HE0E0E0
+        grdWgt.TextMatrix(ReturnIndex, lCol) = StrPad(SignificantDigits(pScenario.Weight.StandardError(grdWgt.TextMatrix(ReturnIndex, 0)), 4), 9)
       End If
     Next
   End If

@@ -37,6 +37,7 @@ Private pParmOutOfRange As Boolean
 Private pErrorDescription As String
 Private pExtrapolated As Boolean
 Private pZeroAdjusted() As Boolean
+Private pSiteVariance() As Double
 
 Public Function ErrorDescription() As String
   ErrorDescription = pErrorDescription
@@ -385,6 +386,10 @@ Public Function StdErrorPlus() As Double()
   StdErrorPlus = pSaveStdErrorPlus
 End Function
 
+Public Function SiteVariance() As Double()
+  SiteVariance = pSiteVariance
+End Function
+
 Public Function PredictionError(ValidValues As Boolean) As Double()
   Dim RegionIndex As Long
   Dim ReturnIndex As Long
@@ -472,6 +477,9 @@ Public Function PredInts() As Double()
   Dim MSG As String
   Dim StateMetric As Boolean
   Dim lCompName As String
+  Dim lMath As clsMathParser
+  Dim lVarInExp() As Boolean
+  Dim vParm As nssParameter
 
   If pUserRegions.Count = 0 Then
     ReDim retval(0)
@@ -493,6 +501,7 @@ Public Function PredInts() As Double()
       End If
       Set FirstReturns = pUserRegions(1).Region.DepVars
       ReDim retval(2, 1 To FirstReturns.Count)
+      ReDim pSiteVariance(FirstReturns.Count)
       For ReturnIndex = 1 To FirstReturns.Count
         Set CurReturn = FirstReturns(ReturnIndex)
         retval(1, ReturnIndex) = 0
@@ -500,68 +509,84 @@ Public Function PredInts() As Double()
         For RegionIndex = 1 To pUserRegions.Count
           Set CurRegion = pUserRegions(RegionIndex)
           Set CurStat = CurRegion.Region.DepVars(ReturnIndex)
-          MDim = CurStat.Components.Count + 1
+          'MDim = CurStat.Components.Count + 1
+          MDim = CurStat.VarCount + 1
           ReDim x(MDim, 1)
           ReDim Xt(1, MDim)
           x(1, 1) = 1
           Xt(1, 1) = x(1, 1)
-          For i = 2 To CurStat.Components.Count + 1
-            Set CurComponent = CurStat.Components(i - 1)
-            If i = 2 Then 'use area from whole scenario, not just the part in this region
-              lParm = Me.GetArea(StateMetric)
-            Else
-              If Not CurComponent.Parameter Is Nothing Then
-                lCompName = CurComponent.Parameter.Name
-              ElseIf Not CurComponent.ExponentParameter Is Nothing Then
-                lCompName = CurComponent.ExponentParameter.Name
-              Else
-                MsgBox "PROBLEM:  Can't find component name for computing PIs"
-              End If
-'              If lCompName = "Drainage_Area" Or lCompName = "Contributing Drainage Area" Then
-'                lParm = Me.GetArea(StateMetric)
-'              Else
-                j = i - 1
-                While j <= CurRegion.UserParms.Count
-                  If lCompName = CurRegion.UserParms(j).Parameter.Name Then
-                    lParm = CurRegion.UserParms(j).GetValue(Me.Project.Metric)
-                    j = CurRegion.UserParms.Count
+          Set lMath = New clsMathParser
+          If lMath.StoreExpression(CurReturn.Equation) Then
+            ParseEquation lMath, lVarInExp
+            'For i = 2 To CurStat.Components.Count + 1
+            For i = 1 To CurStat.VarCount
+              'Set CurComponent = CurStat.Components(i - 1)
+              'If i = 2 Then 'use area from whole scenario, not just the part in this region
+              If lMath.VarName(i) = "CONTDA" Or lMath.VarName(i) = "DRNAREA" Then 'use whole scenario area
+                lParm = Me.GetArea(StateMetric)
+              Else 'match variable name with UserParm name
+'                If Not CurComponent.Parameter Is Nothing Then
+'                  lCompName = CurComponent.Parameter.Name
+'                ElseIf Not CurComponent.ExponentParameter Is Nothing Then
+'                  lCompName = CurComponent.ExponentParameter.Name
+'                Else
+'                  MsgBox "PROBLEM:  Can't find component name for computing PIs"
+'                End If
+  '              If lCompName = "Drainage_Area" Or lCompName = "Contributing Drainage Area" Then
+  '                lParm = Me.GetArea(StateMetric)
+  '              Else
+                For Each vParm In CurRegion.Region.Parameters
+                  If vParm.Abbrev = lMath.VarName(i) Then 'get the input value
+                    lParm = CurRegion.UserParms(vParm.NSSName).GetValue(Me.Project.Metric)
+                    Exit For
                   End If
-                  j = j + 1
-                Wend
-'              End If
-            End If
-            If CurComponent.ExpID = 0 Then 'base term, take log if possible
-              lv = CurComponent.BaseCoeff * (CurComponent.BaseMod + lParm)
-              If lv > 0 Then
-                lv = Log10(lv)
-              Else
-                lv = 0
+                Next
+'                  j = i
+'                  While j <= CurRegion.UserParms.Count
+'                    If lCompName = CurRegion.UserParms(j).Parameter.Name Then
+'                      lParm = CurRegion.UserParms(j).GetValue(Me.Project.Metric)
+'                      j = CurRegion.UserParms.Count
+'                    End If
+'                    j = j + 1
+'                  Wend
+  '              End If
               End If
-            Else 'exponent term, don't take log
-              lv = CurComponent.ExpMod + lParm
-            End If
-            x(i, 1) = lv
-'            If lv > 0 Then
-'              X(i, 1) = Log10(lv)
-'            Else
-'              X(i, 1) = 0
-'            End If
-            Xt(1, i) = x(i, 1)
-          Next i
-          Uv = CurStat.PopulateMatrix
-          ReDim U(MDim, MDim)
-          For i = 1 To MDim
-            For j = 1 To MDim
-              U(i, j) = Uv(i, j)
-            Next j
-          Next i
-          ReDim Prod(MDim, 1)
-          Call mltply(Prod, U, x, MDim, MDim, 1, 1, 1, 1)
-          Call mltply(Prod2, Xt, Prod, 1, MDim, 1, 1, 1, 1)
-          s = Sqr(CurStat.Variance + Prod2(1, 1))
-          t = 10 ^ (CurStat.tDist * s)
-          retval(1, ReturnIndex) = retval(1, ReturnIndex) + ((1 / t) * (CurRegion.Discharges(ReturnIndex) / CurReturn.BCF)) * CurRegion.UserParms(1).GetValue(Me.Project.Metric)
-          retval(2, ReturnIndex) = retval(2, ReturnIndex) + (t * (CurRegion.Discharges(ReturnIndex) / CurReturn.BCF)) * CurRegion.UserParms(1).GetValue(Me.Project.Metric)
+              'If CurComponent.ExpID = 0 Then 'base term, take log if possible
+              If Not lVarInExp(i) Then 'base term, take log if possible
+                lv = CurComponent.BaseCoeff * (CurComponent.BaseMod + lParm)
+                If lv > 0 Then
+                  lv = Log10(lv)
+                Else
+                  lv = 0
+                End If
+              Else 'exponent term, don't take log
+                lv = CurComponent.ExpMod + lParm
+              End If
+              x(i + 1, 1) = lv
+  '            If lv > 0 Then
+  '              X(i, 1) = Log10(lv)
+  '            Else
+  '              X(i, 1) = 0
+  '            End If
+              Xt(1, i + 1) = x(i + 1, 1)
+            Next i
+            Uv = CurStat.PopulateMatrix
+            ReDim U(MDim, MDim)
+            For i = 1 To MDim
+              For j = 1 To MDim
+                U(i, j) = Uv(i, j)
+              Next j
+            Next i
+            ReDim Prod(MDim, 1)
+            Call mltply(Prod, U, x, MDim, MDim, 1, 1, 1, 1)
+            Call mltply(Prod2, Xt, Prod, 1, MDim, 1, 1, 1, 1)
+            s = Sqr(CurStat.Variance + Prod2(1, 1))
+            'save at-site variance for use in weighting
+            pSiteVariance(ReturnIndex) = s
+            t = 10 ^ (CurStat.tDist * s)
+            retval(1, ReturnIndex) = retval(1, ReturnIndex) + ((1 / t) * (CurRegion.Discharges(ReturnIndex) / CurReturn.BCF)) * CurRegion.UserParms(1).GetValue(Me.Project.Metric)
+            retval(2, ReturnIndex) = retval(2, ReturnIndex) + (t * (CurRegion.Discharges(ReturnIndex) / CurReturn.BCF)) * CurRegion.UserParms(1).GetValue(Me.Project.Metric)
+          End If
         Next
         retval(1, ReturnIndex) = retval(1, ReturnIndex) / Me.GetArea(Me.Project.Metric) 'pUserRegions.Count
         retval(2, ReturnIndex) = retval(2, ReturnIndex) / Me.GetArea(Me.Project.Metric) 'pUserRegions.Count
@@ -570,6 +595,43 @@ Public Function PredInts() As Double()
     PredInts = retval
   End If
 End Function
+
+Private Sub ParseEquation(ByVal aMath As clsMathParser, ByRef aVarInExp() As Boolean, _
+                          ByRef aVarMod() As Double, aVarCoef() As Double)
+  Dim lEqStr As String
+  Dim lExpStr() As Integer
+  Dim lExpCnt As Integer
+  Dim lVarPos() As Integer
+  Dim i As Integer
+  Dim lPos As Integer
+  
+  lEqStr = aMath.Expression
+  ReDim lVarPos(aMath.VarTop)
+  For i = 1 To aMath.VarTop
+    lVarPos(i) = InStr(lEqStr, aMath.VarName(i))
+    
+  Next i
+  
+  lExpCnt = 0
+  While Len(leqtnstr) > 0
+    lExpCnt = lExpCnt + 1
+    ReDim Preserve lExpStr(lExpCnt)
+    lExpStr(lExpCnt) = StrSplit(leqtnstr, "^", "")
+  Wend
+  
+  ReDim aVarInExp(aMath.VarTop)
+  If lExpCnt = aMath.VarTop Then 'just use positions of Varname and ^ to determine exponent or not
+    For i = 1 To lExpCnt
+      If Len(lExpStr(i)) < lVarPos(i) Then 'variable is in the exponent (follows "^")
+        aVarInExp(i) = True
+      Else
+        aVarInExp(i) = False
+      End If
+    Next i
+  Else 'much messier to figure out
+  End If
+  
+End Sub
 
 'Returns an error message if any region does not match the first one
 'Returns empty string if all match
@@ -1082,6 +1144,7 @@ Private Sub Class_Initialize()
   ReDim pSaveStdError(0)
   ReDim pZeroAdjusted(0)
   pExtrapolated = False
+  ReDim pSiteVariance(0)
 End Sub
 
 Public Function EstimateString() As String
@@ -1286,17 +1349,24 @@ Public Function EstimateString() As String
     ReDim YearsText(nIntervals)
     YearsOn = False 'assume no equivalent years to display
     For Index = 1 To nIntervals
-      If Me.ROI Then
-        If Me.LowFlow Then
-          IntervalText(Index) = Me.UserRegions(1).Region.State.ROILowData.FlowStats(Index).code
-        Else
-          IntervalText(Index) = Me.UserRegions(1).Region.State.ROIPeakData.FlowStats(Index).code
-        End If
-      Else 'get name from DepVars collection populated from database query
+    '*** NOTE: this conditional should be removed as Me.ROI conditional above makes it unnecessary
+'      If Me.ROI Then
+'        If Me.LowFlow Then
+'          IntervalText(Index) = Me.UserRegions(1).Region.State.ROILowData.FlowStats(Index).code
+'        Else
+'          IntervalText(Index) = Me.UserRegions(1).Region.State.ROIPeakData.FlowStats(Index).code
+'        End If
+'      Else 'get name from DepVars collection populated from database query
+'        IntervalText(Index) = Me.UserRegions(1).Region.DepVars(Index).Name
+'      End If
+      If Me.Project.Alias Then
+        IntervalText(Index) = Me.UserRegions(1).Region.DepVars(Index).Alias
+      Else
         IntervalText(Index) = Me.UserRegions(1).Region.DepVars(Index).Name
       End If
       If IsNumeric(IntervalText(Index)) Then
-        IntervalText(Index) = SignificantDigits(Me.UserRegions(1).Region.DepVars(Index).Name, 3)
+'        IntervalText(Index) = SignificantDigits(Me.UserRegions(1).Region.DepVars(Index).Name, 3)
+        IntervalText(Index) = SignificantDigits(IntervalText(Index), 3)
       ElseIf Len(IntervalText(Index)) < 7 Then
         IntervalText(Index) = IntervalText(Index) & Space(7 - Len(IntervalText(Index)))
       End If
@@ -1305,41 +1375,42 @@ Public Function EstimateString() As String
       FlowText(Index) = SignificantDigits(Flows(Index), 3)
       
       If Not Me.ParmOutOfRange Then 'no Errors or PIs reported if parms out of range
-      If Me.UsePredInts And Me.Weight.WeightType = 0 Then
-        If PredInts(1, Index) > 0 Then
-          PredIntsText(Index) = SignificantDigits(PredInts(1, Index), 3)
+        If Me.UsePredInts And Me.Weight.WeightType = 0 Then
+          If PredInts(1, Index) > 0 Then
+            PredIntsText(Index) = SignificantDigits(PredInts(1, Index), 3)
+          End If
+          If PredInts(2, Index) > 0 Then
+            PredIntsText2(Index) = SignificantDigits(PredInts(2, Index), 3)
+          End If
         End If
-        If PredInts(2, Index) > 0 Then
-          PredIntsText2(Index) = SignificantDigits(PredInts(2, Index), 3)
-        End If
-      End If
-      If StdError(Index) <= 0 And Not Me.ROI Then
-        StdErrText(Index) = ""
-        'If Me.Weight.WeightType = 0 Then StdErrText = Space(8) Else StdErrText = ""
-      Else
-        If StdError(Index) < 5 And Not (Me.ROI Or Me.ProbEqtn) Then
-          StdErrText(Index) = SignificantDigits(StdError(Index), 3) 'Log units to 3 sig digits
-          txt = ReplaceString(txt, "Error, %", "Err, log")
+        If StdError(Index) <= 0 And Not Me.ROI Then
+          StdErrText(Index) = ""
+          'If Me.Weight.WeightType = 0 Then StdErrText = Space(8) Else StdErrText = ""
         Else
-          StdErrText(Index) = SignificantDigits(StdError(Index), 2) 'Percent to two sig digits
+          If StdError(Index) < 5 And Not (Me.ROI Or Me.ProbEqtn) Then
+            StdErrText(Index) = SignificantDigits(StdError(Index), 3) 'Log units to 3 sig digits
+            txt = ReplaceString(txt, "Error, %", "Err, log")
+          Else
+            StdErrText(Index) = SignificantDigits(StdError(Index), 2) 'Percent to two sig digits
+          End If
+          'StdErrText = StrPad(StdErrText, 8)
         End If
-        'StdErrText = StrPad(StdErrText, 8)
-      End If
-      
-      If Me.ROI Then
-        If StdErrorPlus(Index) = 0 Then
-          'StdErrText = StdErrText & Space(8)
+        
+    '*** NOTE: this conditional should be removed as Me.ROI conditional above makes it unnecessary
+'        If Me.ROI Then
+'          If StdErrorPlus(Index) = 0 Then
+'            'StdErrText = StdErrText & Space(8)
+'          Else
+'            StdErrText(Index) = StrPad(StdErrText(Index), 6) & StrPad(SignificantDigits(StdErrorPlus(Index), 2), 8)
+'          End If
+'        End If
+        
+        If Years(Index) = 0 Then ' Or Me.Weight.WeightType > 1 Then
+          YearsText(Index) = "" 'Space(10)
         Else
-          StdErrText(Index) = StrPad(StdErrText(Index), 6) & StrPad(SignificantDigits(StdErrorPlus(Index), 2), 8)
+          YearsText(Index) = SignificantDigits(Years(Index), 2)
+          YearsOn = True
         End If
-      End If
-      
-      If Years(Index) = 0 Then ' Or Me.Weight.WeightType > 1 Then
-        YearsText(Index) = "" 'Space(10)
-      Else
-        YearsText(Index) = SignificantDigits(Years(Index), 2)
-        YearsOn = True
-      End If
       End If
     Next
     If Not YearsOn Then
@@ -1555,6 +1626,7 @@ Public Function Discharges() As Double()
               For Each vParm In CurRegion.Region.Parameters
                 If vParm.Abbrev = lMath.VarName(i) Then 'get the input value
                   lMath.Variable(vParm.Abbrev) = CurRegion.UserParms(vParm.NSSName).GetValue(StateMetric)
+                  Exit For
                 End If
               Next
             End If
@@ -1762,26 +1834,31 @@ Public Function Variances() As Double()
     
   Set FirstReturns = pUserRegions(1).Region.DepVars
   ReDim IntervalVariance(1 To FirstReturns.Count)
-  'make sure we're not weighted or having mismatched regions
-  If Len(MismatchedRegions) = 0 Then
-    For ReturnIndex = 1 To FirstReturns.Count
-      IntervalVariance(ReturnIndex) = 0
-      For RegionIndex = 1 To pUserRegions.Count
-        Set CurRegion = pUserRegions(RegionIndex)
-        Set CurReturn = CurRegion.Region.DepVars(ReturnIndex)
-        lVariance = CurReturn.PreErr
-        If lVariance <= 0 Then 'no prediction error, look for alternative
-          If CurReturn.EstErr > 0 Then 'estimate error exists
-            lVariance = CurReturn.EstErr
-          Else 'just use standard error
-            lVariance = CurReturn.StdErr
+  If UBound(pSiteVariance) = FirstReturns.Count Then
+    'use at-site variance computed in Pred Intervals computation
+    IntervalVariance = pSiteVariance
+  Else
+    'make sure not having mismatched regions
+    If Len(MismatchedRegions) = 0 Then
+      For ReturnIndex = 1 To FirstReturns.Count
+        IntervalVariance(ReturnIndex) = 0
+        For RegionIndex = 1 To pUserRegions.Count
+          Set CurRegion = pUserRegions(RegionIndex)
+          Set CurReturn = CurRegion.Region.DepVars(ReturnIndex)
+          lVariance = CurReturn.PreErr
+          If lVariance <= 0 Then 'no prediction error, look for alternative
+            If CurReturn.EstErr > 0 Then 'estimate error exists
+              lVariance = CurReturn.EstErr
+            Else 'just use standard error
+              lVariance = CurReturn.StdErr
+            End If
           End If
-        End If
-        lVariance = 0.4343 * Log10((lVariance / 100) ^ 2 + 1) 'convert to log space
-        IntervalVariance(ReturnIndex) = IntervalVariance(ReturnIndex) + lVariance * CurRegion.UserParms(1).GetValue(Me.Project.Metric)
+          lVariance = 0.4343 * Log10((lVariance / 100) ^ 2 + 1) 'convert to log space
+          IntervalVariance(ReturnIndex) = IntervalVariance(ReturnIndex) + lVariance * CurRegion.UserParms(1).GetValue(Me.Project.Metric)
+        Next
+        IntervalVariance(ReturnIndex) = IntervalVariance(ReturnIndex) / Me.GetArea(Me.Project.Metric)
       Next
-      IntervalVariance(ReturnIndex) = IntervalVariance(ReturnIndex) / Me.GetArea(Me.Project.Metric)
-    Next
+    End If
   End If
   Variances = IntervalVariance
 

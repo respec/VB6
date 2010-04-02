@@ -17,7 +17,8 @@ Option Explicit
 Private pDB As nssDatabase
 Private pID As Long
 Private pLabelCode As Long
-Private pAbbrev As String
+Private pAbbrev As String 'traditional statistic label
+Private pAlias As String 'revised statistic label
 Private pName As String
 Private pNSSName As String
 Private pRegion As nssRegion
@@ -72,6 +73,13 @@ Public Property Get Abbrev() As String
 End Property
 Public Property Let Abbrev(ByVal newValue As String)
   pAbbrev = newValue
+End Property
+
+Public Property Get Alias() As String
+  Alias = pAlias
+End Property
+Public Property Let Alias(ByVal newValue As String)
+  pAlias = newValue
 End Property
 
 Public Function GetMin(WantMetric As Boolean) As Double
