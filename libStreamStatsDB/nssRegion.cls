@@ -283,6 +283,9 @@ Public Sub PopulateDepVars()
   Dim lName As String
   Dim lCurName As String
   Dim lMath As New clsMathParser
+  Dim lstr As String
+  Dim lEqtn As String
+  Dim lXiVector As FastCollection
   
   AllNumeric = True 'assume all depvars for region are numbers and may be sorted
   Set pDepVars = Nothing
@@ -321,13 +324,23 @@ Public Sub PopulateDepVars()
         If Not IsNull(depVarRec.Fields("ExpDA")) Then .ExpDA = depVarRec.Fields("ExpDA")
         'add the following line when database updated to link DepVars and StatLabel tables
         If Not IsNull(depVarRec.Fields("UnitID")) Then Set .Units = pDB.Units(CStr(depVarRec.Fields("UnitID")))
-        If Not IsNull(depVarRec.Fields("Equation")) Then
-          .Equation = depVarRec.Fields("Equation")
-          If lMath.StoreExpression(.Equation) Then 'set number of variables
-            .VarCount = lMath.VarTop
-          Else
-            .VarCount = 0
-          End If
+        If Not IsNull(depVarRec.Fields("Equation")) Then .Equation = depVarRec.Fields("Equation")
+        If Not IsNull(depVarRec.Fields("XiVector")) Then
+          .XiVectorText = depVarRec.Fields("XiVector")
+          Set lXiVector = New FastCollection
+          lXiVector.Add "1"
+          lstr = .XiVectorText
+          lEqtn = StrSplit(lstr, ":", "")
+          While Len(lEqtn) > 0
+            lXiVector.Add lEqtn
+'            If lMath.StoreExpression(lEqtn) Then 'set number of variables
+'              .VarCount = lMath.VarTop
+'            Else
+'              .VarCount = 0
+'            End If
+            lEqtn = StrSplit(lstr, ":", "")
+          Wend
+          Set .XiVector = lXiVector
         End If
       End With
 '      newDepVar.Components.Clear

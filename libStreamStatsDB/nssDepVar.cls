@@ -36,7 +36,9 @@ Private pExpDA As Double
 Private pIsNew As Boolean
 Private pUnits As nssUnits
 Private pEquation As String
-Private pVarCount As Integer
+Private pXiVector As FastCollection  'of strings
+Private pXiVectorText As String
+'Private pVarCount As Integer
 Private pComponents As FastCollection
 
 Public Property Get Name() As String
@@ -203,12 +205,26 @@ Public Property Let Equation(ByVal newValue As String)
   pEquation = newValue
 End Property
 
-Public Property Get VarCount() As Integer
-  VarCount = pVarCount
+Public Property Get XiVector() As FastCollection
+  Set XiVector = pXiVector
 End Property
-Public Property Let VarCount(ByVal newValue As Integer)
-  pVarCount = newValue
+Public Property Set XiVector(ByRef newValue As FastCollection)
+  Set pXiVector = newValue
 End Property
+
+Public Property Get XiVectorText() As String
+  XiVectorText = pXiVectorText
+End Property
+Public Property Let XiVectorText(ByVal newValue As String)
+  pXiVectorText = newValue
+End Property
+
+'Public Property Get VarCount() As Integer
+'  VarCount = pVarCount
+'End Property
+'Public Property Let VarCount(ByVal newValue As Integer)
+'  pVarCount = newValue
+'End Property
 
 Private Sub PopulateComponents()
   Dim newComp As nssComponent
@@ -250,7 +266,8 @@ Public Function Add(IsReturn As Boolean, ByVal Region As nssRegion, _
     Optional ByVal EstErr As String, Optional ByVal PreErr As String, _
     Optional ByVal eqyrs As String, Optional ByVal BCF As String, _
     Optional ByVal tDist As String, Optional ByVal Variance As String, _
-    Optional ByVal ExpDA As String, Optional ByVal Equation As String) As Long
+    Optional ByVal ExpDA As String, Optional ByVal Equation As String, _
+    Optional ByVal XiVectorText As String) As Long
     'OPTIONAL ByVal Stations As String, OPTIONAL ByVal CoeffDet As String, OPTIONAL ByVal MAD As String) As Boolean
   Dim myRec As Recordset
   Dim Id&
@@ -299,6 +316,7 @@ Public Function Add(IsReturn As Boolean, ByVal Region As nssRegion, _
         If IsNumeric(Variance) Then !Variance = Variance
         If IsNumeric(ExpDA) Then !ExpDA = ExpDA
         !Equation = Equation
+        !XiVector = XiVectorText
   '      if isnumeric(Stations) then !Stas = Stations
   '      if isnumeric(CoeffDet) then !CoeffDet = CoeffDet
   '      if isnumeric(MAD) then !MAD = MAD
@@ -336,7 +354,7 @@ Public Sub Edit(ByVal Name As String, _
     Optional ByVal Constant As String, Optional ByVal BCF As String, _
     Optional ByVal tDist As String, Optional ByVal Variance As String, _
     Optional ByVal ExpDA As String, _
-    Optional ByVal Equation As String)
+    Optional ByVal Equation As String, Optional ByVal XiVectorText As String)
     'ByVal Stations As String, ByVal CoeffDet As String, ByVal MAD As String) As Boolean
   Dim myRec As Recordset
   
@@ -360,6 +378,7 @@ Public Sub Edit(ByVal Name As String, _
       If IsNumeric(Variance) Then !Variance = Variance
       If IsNumeric(ExpDA) Then !ExpDA = ExpDA
       !Equation = Equation
+      !XiVector = XiVectorText
 '      if isnumeric(Stations) then !Stas = Stations
 '      if isnumeric(CoeffDet) then !CoeffDet = CoeffDet
 '      if isnumeric(MAD) then !MAD = MAD
@@ -380,7 +399,7 @@ Public Function PopulateMatrix() As Variant
     ssMessageBox "Cannot read covariance matrix" & vbCr & "DB not set."
   Else
 '    myDim = Me.Components.Count + 1
-    myDim = Me.VarCount + 1
+    myDim = Me.XiVector.Count 'Me.VarCount + 1
     If myDim > 0 Then
       ReDim covArray(1 To myDim, 1 To myDim)
       sql = "SELECT * FROM [Covariance] " & _
@@ -442,30 +461,32 @@ Public Sub AddMatrix(ByVal Region As nssRegion, _
   End If
 End Sub
 
-Public Function ClearOldComponents() As Boolean
+'Public Function ClearOldComponents() As Boolean
+Public Function ClearOldMatrix() As Boolean
   Dim myRec As Recordset
   
-  Set myRec = pDB.DB.OpenRecordset("Components", dbOpenDynaset)
-  With myRec
-    While Not .EOF
-      .FindFirst "DepVarID=" & Me.Id
-      If Not .NoMatch Then
-        .Delete
-        ClearOldComponents = True
-      Else
-        GoTo x
-      End If
-    Wend
-  End With
-x:
-  myRec.Close
+'  Set myRec = pDB.DB.OpenRecordset("Components", dbOpenDynaset)
+'  With myRec
+'    While Not .EOF
+'      .FindFirst "DepVarID=" & Me.Id
+'      If Not .NoMatch Then
+'        .Delete
+'        ClearOldComponents = True
+'      Else
+'        GoTo x
+'      End If
+'    Wend
+'  End With
+'x:
+'  myRec.Close
+
   Set myRec = pDB.DB.OpenRecordset("Covariance", dbOpenDynaset)
   With myRec
     While Not .EOF
       .FindFirst "DepVarID=" & Me.Id
       If Not .NoMatch Then
         .Delete
-        ClearOldComponents = True
+        ClearOldMatrix = True
       Else
         Exit Function
       End If

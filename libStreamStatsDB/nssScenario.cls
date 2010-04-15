@@ -510,83 +510,65 @@ Public Function PredInts() As Double()
           Set CurRegion = pUserRegions(RegionIndex)
           Set CurStat = CurRegion.Region.DepVars(ReturnIndex)
           'MDim = CurStat.Components.Count + 1
-          MDim = CurStat.VarCount + 1
+          MDim = CurStat.XiVector.Count ' CurStat.VarCount + 1
           ReDim x(MDim, 1)
           ReDim Xt(1, MDim)
           x(1, 1) = 1
           Xt(1, 1) = x(1, 1)
-          Set lMath = New clsMathParser
-          If lMath.StoreExpression(CurReturn.Equation) Then
-            ParseEquation lMath, lVarInExp
-            'For i = 2 To CurStat.Components.Count + 1
-            For i = 1 To CurStat.VarCount
+'            ParseEquation lMath, lVarInExp
+          For i = 2 To CurStat.XiVector.Count ' CurStat.Components.Count + 1
+            Set lMath = New clsMathParser
+            If lMath.StoreExpression(CurStat.XiVector.ItemByIndex(i)) Then
               'Set CurComponent = CurStat.Components(i - 1)
               'If i = 2 Then 'use area from whole scenario, not just the part in this region
-              If lMath.VarName(i) = "CONTDA" Or lMath.VarName(i) = "DRNAREA" Then 'use whole scenario area
-                lParm = Me.GetArea(StateMetric)
-              Else 'match variable name with UserParm name
-'                If Not CurComponent.Parameter Is Nothing Then
-'                  lCompName = CurComponent.Parameter.Name
-'                ElseIf Not CurComponent.ExponentParameter Is Nothing Then
-'                  lCompName = CurComponent.ExponentParameter.Name
-'                Else
-'                  MsgBox "PROBLEM:  Can't find component name for computing PIs"
-'                End If
-  '              If lCompName = "Drainage_Area" Or lCompName = "Contributing Drainage Area" Then
-  '                lParm = Me.GetArea(StateMetric)
-  '              Else
-                For Each vParm In CurRegion.Region.Parameters
-                  If vParm.Abbrev = lMath.VarName(i) Then 'get the input value
-                    lParm = CurRegion.UserParms(vParm.NSSName).GetValue(Me.Project.Metric)
-                    Exit For
-                  End If
-                Next
-'                  j = i
-'                  While j <= CurRegion.UserParms.Count
-'                    If lCompName = CurRegion.UserParms(j).Parameter.Name Then
-'                      lParm = CurRegion.UserParms(j).GetValue(Me.Project.Metric)
-'                      j = CurRegion.UserParms.Count
-'                    End If
-'                    j = j + 1
-'                  Wend
-  '              End If
-              End If
-              'If CurComponent.ExpID = 0 Then 'base term, take log if possible
-              If Not lVarInExp(i) Then 'base term, take log if possible
-                lv = CurComponent.BaseCoeff * (CurComponent.BaseMod + lParm)
-                If lv > 0 Then
-                  lv = Log10(lv)
-                Else
-                  lv = 0
+              For j = 1 To lMath.VarTop
+                If lMath.VarName(j) = "CONTDA" Or lMath.VarName(j) = "DRNAREA" Then 'use whole scenario area
+                  lMath.Variable(lMath.VarName(j)) = Me.GetArea(StateMetric)
+                Else 'match variable name with UserParm name
+                  For Each vParm In CurRegion.Region.Parameters
+                    If vParm.Abbrev = lMath.VarName(j) Then 'get the input value
+                      lMath.Variable(vParm.Abbrev) = CurRegion.UserParms(vParm.NSSName).GetValue(Me.Project.Metric)
+                      Exit For
+                    End If
+                  Next
                 End If
-              Else 'exponent term, don't take log
-                lv = CurComponent.ExpMod + lParm
-              End If
-              x(i + 1, 1) = lv
+              Next j
+              'If CurComponent.ExpID = 0 Then 'base term, take log if possible
+'              If Not lVarInExp(i) Then 'base term, take log if possible
+'                lv = CurComponent.BaseCoeff * (CurComponent.BaseMod + lParm)
+'                If lv > 0 Then
+'                  lv = Log10(lv)
+'                Else
+'                  lv = 0
+'                End If
+'              Else 'exponent term, don't take log
+'                lv = CurComponent.ExpMod + lParm
+'              End If
+              x(i, 1) = lMath.Eval 'lv
   '            If lv > 0 Then
   '              X(i, 1) = Log10(lv)
   '            Else
   '              X(i, 1) = 0
   '            End If
-              Xt(1, i + 1) = x(i + 1, 1)
-            Next i
-            Uv = CurStat.PopulateMatrix
-            ReDim U(MDim, MDim)
-            For i = 1 To MDim
-              For j = 1 To MDim
-                U(i, j) = Uv(i, j)
-              Next j
-            Next i
-            ReDim Prod(MDim, 1)
-            Call mltply(Prod, U, x, MDim, MDim, 1, 1, 1, 1)
-            Call mltply(Prod2, Xt, Prod, 1, MDim, 1, 1, 1, 1)
-            s = Sqr(CurStat.Variance + Prod2(1, 1))
-            'save at-site variance for use in weighting
-            pSiteVariance(ReturnIndex) = s
-            t = 10 ^ (CurStat.tDist * s)
-            retval(1, ReturnIndex) = retval(1, ReturnIndex) + ((1 / t) * (CurRegion.Discharges(ReturnIndex) / CurReturn.BCF)) * CurRegion.UserParms(1).GetValue(Me.Project.Metric)
-            retval(2, ReturnIndex) = retval(2, ReturnIndex) + (t * (CurRegion.Discharges(ReturnIndex) / CurReturn.BCF)) * CurRegion.UserParms(1).GetValue(Me.Project.Metric)
-          End If
+              Xt(1, i) = x(i, 1)
+            End If
+          Next i
+          Uv = CurStat.PopulateMatrix
+          ReDim U(MDim, MDim)
+          For i = 1 To MDim
+            For j = 1 To MDim
+              U(i, j) = Uv(i, j)
+            Next j
+          Next i
+          ReDim Prod(MDim, 1)
+          Call mltply(Prod, U, x, MDim, MDim, 1, 1, 1, 1)
+          Call mltply(Prod2, Xt, Prod, 1, MDim, 1, 1, 1, 1)
+          s = Sqr(CurStat.Variance + Prod2(1, 1))
+          'save at-site variance for use in weighting
+          pSiteVariance(ReturnIndex) = s
+          t = 10 ^ (CurStat.tDist * s)
+          retval(1, ReturnIndex) = retval(1, ReturnIndex) + ((1 / t) * (CurRegion.Discharges(ReturnIndex) / CurReturn.BCF)) * CurRegion.UserParms(1).GetValue(Me.Project.Metric)
+          retval(2, ReturnIndex) = retval(2, ReturnIndex) + (t * (CurRegion.Discharges(ReturnIndex) / CurReturn.BCF)) * CurRegion.UserParms(1).GetValue(Me.Project.Metric)
         Next
         retval(1, ReturnIndex) = retval(1, ReturnIndex) / Me.GetArea(Me.Project.Metric) 'pUserRegions.Count
         retval(2, ReturnIndex) = retval(2, ReturnIndex) / Me.GetArea(Me.Project.Metric) 'pUserRegions.Count
@@ -595,43 +577,6 @@ Public Function PredInts() As Double()
     PredInts = retval
   End If
 End Function
-
-Private Sub ParseEquation(ByVal aMath As clsMathParser, ByRef aVarInExp() As Boolean, _
-                          ByRef aVarMod() As Double, aVarCoef() As Double)
-  Dim lEqStr As String
-  Dim lExpStr() As Integer
-  Dim lExpCnt As Integer
-  Dim lVarPos() As Integer
-  Dim i As Integer
-  Dim lPos As Integer
-  
-  lEqStr = aMath.Expression
-  ReDim lVarPos(aMath.VarTop)
-  For i = 1 To aMath.VarTop
-    lVarPos(i) = InStr(lEqStr, aMath.VarName(i))
-    
-  Next i
-  
-  lExpCnt = 0
-  While Len(leqtnstr) > 0
-    lExpCnt = lExpCnt + 1
-    ReDim Preserve lExpStr(lExpCnt)
-    lExpStr(lExpCnt) = StrSplit(leqtnstr, "^", "")
-  Wend
-  
-  ReDim aVarInExp(aMath.VarTop)
-  If lExpCnt = aMath.VarTop Then 'just use positions of Varname and ^ to determine exponent or not
-    For i = 1 To lExpCnt
-      If Len(lExpStr(i)) < lVarPos(i) Then 'variable is in the exponent (follows "^")
-        aVarInExp(i) = True
-      Else
-        aVarInExp(i) = False
-      End If
-    Next i
-  Else 'much messier to figure out
-  End If
-  
-End Sub
 
 'Returns an error message if any region does not match the first one
 'Returns empty string if all match
