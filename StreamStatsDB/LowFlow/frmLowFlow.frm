@@ -316,6 +316,23 @@ Begin VB.Form frmLowFlow
          TabIndex        =   44
          Top             =   3600
          Width           =   9375
+         Begin VB.CommandButton cmdTestXi 
+            Caption         =   "Test"
+            BeginProperty Font 
+               Name            =   "MS Sans Serif"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   700
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   255
+            Left            =   5280
+            TabIndex        =   49
+            Top             =   240
+            Width           =   735
+         End
          Begin VB.TextBox txtVector 
             BeginProperty Font 
                Name            =   "MS Sans Serif"
@@ -329,7 +346,7 @@ Begin VB.Form frmLowFlow
             Height          =   285
             Left            =   120
             TabIndex        =   47
-            Top             =   480
+            Top             =   600
             Width           =   9135
          End
          Begin ATCoCtl.ATCoGrid grdMatrix 
@@ -346,7 +363,7 @@ Begin VB.Form frmLowFlow
             AllowEditHeader =   0   'False
             AllowLoad       =   0   'False
             AllowSorting    =   0   'False
-            Rows            =   514
+            Rows            =   544
             Cols            =   2
             ColWidthMinimum =   300
             gridFontBold    =   0   'False
@@ -373,6 +390,23 @@ Begin VB.Form frmLowFlow
             OutsideSoftLimitBackground=   8454143
             ComboCheckValidValues=   0   'False
          End
+         Begin VB.Label lblStatusXi 
+            Caption         =   "Status"
+            BeginProperty Font 
+               Name            =   "MS Sans Serif"
+               Size            =   8.25
+               Charset         =   0
+               Weight          =   700
+               Underline       =   0   'False
+               Italic          =   0   'False
+               Strikethrough   =   0   'False
+            EndProperty
+            Height          =   495
+            Left            =   6120
+            TabIndex        =   50
+            Top             =   120
+            Width           =   3135
+         End
          Begin VB.Label lblVector 
             Caption         =   "Enter Xi Vector Elements (separated by "":"")"
             BeginProperty Font 
@@ -387,7 +421,7 @@ Begin VB.Form frmLowFlow
             Height          =   255
             Left            =   120
             TabIndex        =   46
-            Top             =   240
+            Top             =   360
             Width           =   3855
          End
       End
@@ -419,7 +453,7 @@ Begin VB.Form frmLowFlow
                Strikethrough   =   0   'False
             EndProperty
             Height          =   255
-            Left            =   6960
+            Left            =   5280
             TabIndex        =   43
             Top             =   240
             Width           =   735
@@ -470,10 +504,10 @@ Begin VB.Form frmLowFlow
                Strikethrough   =   0   'False
             EndProperty
             Height          =   495
-            Left            =   7800
+            Left            =   6120
             TabIndex        =   42
             Top             =   120
-            Width           =   1455
+            Width           =   3135
          End
          Begin VB.Label lblEquation 
             Caption         =   "Label1"
@@ -848,6 +882,7 @@ Dim RDO As Long
 Dim MyParm As nssParameter
 Dim MyDepVar As nssDepVar
 Dim MyComp As nssComponent
+Dim lXiVector As FastCollection
 Dim NotNew As Boolean, Skip As Boolean, _
     ChoseParms As Boolean, ChoseReturns As Boolean
 Dim Changes() As String, CompChanges() As String, _
@@ -1159,7 +1194,7 @@ TryAgain:
     isReturn = False
   End If
 
-  DepVarFlds = 9 'always set to import all possible DepVar fields
+  DepVarFlds = 10 'always set to import all possible DepVar fields
   
   'read in number of regions and metric flag
   regnCnt = CLng(StrRetRem(str))
@@ -1228,7 +1263,18 @@ TryAgain:
       Wend
       For k = 1 To DepVarFlds
         If Len(str) > 0 Then
-          depVarVals(j, k) = StrSplit(str, ",", "")
+          If k >= 9 Then 'strip quotes from Equation and XiVector fields
+            depVarVals(j, k) = StrSplit(str, """", "") 'finds first quote
+            depVarVals(j, k) = StrSplit(str, """", "") 'finds equations up to 2nd quote
+'            If Left(depVarVals(j, k), 1) = """" Then
+'              depVarVals(j, k) = Mid(depVarVals(j, k), 2)
+'              If Right(depVarVals(j, k), 1) = """" Then
+'                depVarVals(j, k) = Left(depVarVals(j, k), Len(depVarVals(j, k)) - 1)
+'              End If
+'            End If
+          Else 'just use next comma as field separator
+            depVarVals(j, k) = StrSplit(str, ",", "")
+          End If
         Else
           Exit For
         End If
@@ -1237,7 +1283,7 @@ TryAgain:
       Set MyDepVar = New nssDepVar
       DepVarID = MyDepVar.Add(isReturn, MyRegion, depVarVals(j, 0), depVarVals(j, 1), _
           depVarVals(j, 2), depVarVals(j, 3), depVarVals(j, 4), depVarVals(j, 5), _
-          depVarVals(j, 6), depVarVals(j, 7), depVarVals(j, 8), depVarVals(j, 9))
+          depVarVals(j, 6), depVarVals(j, 7), depVarVals(j, 8), depVarVals(j, 9), depVarVals(j, 10))
       MyRegion.PopulateDepVars
       'check equation being imported
       If lMath.StoreExpression(depVarVals(j, 9)) Then
@@ -1410,7 +1456,8 @@ Private Sub cmdExport_Click()
             Round(MyDepVar.EstErr, 1) & "," & Round(MyDepVar.PreErr, 1) & "," & _
             Round(MyDepVar.EquivYears, 1) & "," & MyDepVar.BCF & "," & _
             Round(MyDepVar.tdist, 4) & "," & Round(MyDepVar.Variance, 4) & "," & _
-            Round(MyDepVar.ExpDA, 4) & "," & MyDepVar.Equation
+            Round(MyDepVar.ExpDA, 4) & ",""" & MyDepVar.Equation & """" & ",""" & _
+            MyDepVar.XiVectorText & """"
       If MyRegion.PredInt Then str = str & lBlankPredsStr
       Print #OutFile, str
       If MyRegion.PredInt Then  'using prediction intervals
@@ -1422,7 +1469,7 @@ Private Sub cmdExport_Click()
             For col = 1 To UBound(covArray, 2)
               str = str & covArray(row, col) & ","
             Next col
-            Print #OutFile, ",,,,,,,,,,,,,,,,,,,,,,,,,," & Left(str, Len(str) - 2)
+            Print #OutFile, ",,,,,,,,,,,,,,,,,,,,,,,,,,," & Left(str, Len(str) - 1)
           Next row
         End If
       End If
@@ -1479,15 +1526,15 @@ Private Function BldPredIntComponent(MyComp As nssComponent) As String
     End If
     If .expID = 0 Then 'variable not in exponent, take log
       If .BaseMod <> 0 Then
-        str = "logN(" & str & .BaseMod & "+" & GetAbbrev(.ParmID) & ",10)"
+        str = "logN(" & str & "(" & .BaseMod & "+" & GetAbbrev(.ParmID) & ")" & ",10)"
       Else
         str = "logN(" & str & GetAbbrev(.ParmID) & ",10)"
       End If
     Else ' variable in exponent, no log
       If .ExpMod <> 0 Then
-        str = str & "(" & .BaseMod & "+" & GetAbbrev(.ParmID) & ")"
+        str = str & "(" & .BaseMod & "+" & GetAbbrev(.expID) & ")"
       Else
-        str = str & GetAbbrev(.ParmID)
+        str = str & GetAbbrev(.expID)
       End If
     End If
     BldPredIntComponent = str
@@ -1595,7 +1642,7 @@ Private Sub cmdTest_Click()
   Dim i As Integer
   Dim j As Integer
   Dim lVarNotFound As Integer
-  Dim lVarCount As Integer
+'  Dim lVarCount As Integer
   
   'check equation status
   If lMath.StoreExpression(txtEquation.Text) Then
@@ -1603,18 +1650,18 @@ Private Sub cmdTest_Click()
     lblStatus.BackColor = vbGreen
   Else 'problem with equation
     lPos = lMath.ErrorPos
-    lblStatus.Caption = "Problem at " & lPos
+    lblStatus.Caption = "Problem with equation" & vbCrLf & "at position " & lPos
     lblStatus.BackColor = vbRed
   End If
   If lMath.VarTop > 0 Then
     lVarNotFound = 0
-    lVarCount = 0
+'    lVarCount = 0
     For i = 1 To lMath.VarTop
       j = 0
       While j < lstEqtnVars.ListCount
         If UCase(lMath.VarName(i)) = UCase(lstEqtnVars.List(j)) Then
           j = lstEqtnVars.ListCount
-          lVarCount = lVarCount + 1
+'          lVarCount = lVarCount + 1
         End If
         j = j + 1
       Wend
@@ -1626,18 +1673,83 @@ Private Sub cmdTest_Click()
     If lVarNotFound > 0 Then
       lblStatus.Caption = "Var not found:" & vbCrLf & lMath.VarName(lVarNotFound)
       lblStatus.BackColor = vbRed
-    ElseIf MyRegion.PredInt Then 'set covariance matrix grid size
-      grdMatrix.Rows = lVarCount + 1
-      grdMatrix.cols = lVarCount + 1
-      For i = 0 To grdMatrix.cols - 1
-        grdMatrix.ColEditable(i) = True
-      Next i
+'    ElseIf MyRegion.PredInt Then 'set covariance matrix grid size
+'      grdMatrix.Rows = lVarCount + 1
+'      grdMatrix.cols = lVarCount + 1
+'      For i = 0 To grdMatrix.cols - 1
+'        grdMatrix.ColEditable(i) = True
+'      Next i
     End If
   Else
     lblStatus.Caption = "No Variables"
     lblStatus.BackColor = vbRed
   End If
   
+End Sub
+
+Private Sub cmdTestXi_Click()
+  Dim lPos As Integer
+  Dim i As Integer
+  Dim j As Integer
+  Dim lVarNotFound As Integer
+  Dim lstr As String
+  Dim lEqtn As String
+  
+  Set lXiVector = New FastCollection
+  lXiVector.Add "1"
+  lstr = txtVector.Text
+  lEqtn = StrSplit(lstr, ":", "")
+  While Len(lEqtn) > 0
+    'check equation status
+    lXiVector.Add lEqtn
+    Set lMath = New clsMathParser
+    If lMath.StoreExpression(lEqtn) Then
+      lblStatusXi.Caption = "Good!"
+      lblStatusXi.BackColor = vbGreen
+    Else 'problem with equation
+      lPos = lMath.ErrorPos
+      lblStatusXi.Caption = "Problem with Element " & lXiVector.Count - 1 & vbCrLf & "at position " & lPos
+      lblStatusXi.BackColor = vbRed
+      lstr = ""
+    End If
+    If Len(lstr) > 0 Then
+      If lMath.VarTop > 0 Then
+        lVarNotFound = 0
+        For i = 1 To lMath.VarTop
+          j = 0
+          While j < lstEqtnVars.ListCount
+            If UCase(lMath.VarName(i)) = UCase(lstEqtnVars.List(j)) Then
+              j = lstEqtnVars.ListCount
+            End If
+            j = j + 1
+          Wend
+          If j = lstEqtnVars.ListCount Then 'didn't find variable in parameter list
+            lVarNotFound = i
+            lstr = ""
+            Exit For
+          End If
+        Next i
+      Else
+        lblStatusXi.Caption = "No Variables"
+        lblStatusXi.BackColor = vbRed
+        lstr = ""
+      End If
+    End If
+    lEqtn = StrSplit(lstr, ":", "")
+  Wend
+
+  If lVarNotFound > 0 Then
+    lblStatusXi.Caption = "Variable not found:" & vbCrLf & lMath.VarName(lVarNotFound)
+    lblStatusXi.BackColor = vbRed
+    lstr = ""
+  ElseIf MyRegion.PredInt Then 'set covariance matrix grid size
+    grdMatrix.Rows = lXiVector.Count
+    grdMatrix.cols = lXiVector.Count
+    For i = 0 To grdMatrix.cols - 1
+      grdMatrix.ColEditable(i) = True
+    Next i
+  End If
+
 End Sub
 
 Private Sub Form_Load()
@@ -2450,10 +2562,10 @@ Private Sub cmdDelete_Click()
       If response = 1 Then
         j = lstRetPds.ItemData(lstRetPds.ListIndex)
         Set MyDepVar = MyRegion.DepVars(CStr(j))
-        For i = 1 To MyDepVar.Components.Count
-          Set MyComp = MyDepVar.Components(i)
-          MyComp.Delete
-        Next i
+'        For i = 1 To MyDepVar.Components.Count
+'          Set MyComp = MyDepVar.Components(i)
+'          MyComp.Delete
+'        Next i
         MyDepVar.Delete
         lstRetPds.RemoveItem lstRetPds.ListIndex
         ResetDB
@@ -2523,6 +2635,13 @@ Private Sub cmdSave_Click()
     If lblStatus.BackColor = vbRed Then
       MsgBox "You must enter a valid equation." & vbCrLf & _
              "See the Status field for more detail.", , "Equation Problem"
+    End If
+    If fraPIs.Visible Then
+      cmdTestXi_Click
+      If lblStatusXi.BackColor = vbRed Then
+        MsgBox "You must enter valid Xi Vector elements." & vbCrLf & _
+               "See the Status field for more detail.", , "Prediction Intervals Problem"
+      End If
     End If
   End If
   
@@ -2655,7 +2774,7 @@ Private Sub cmdSave_Click()
         tmpID = MyDepVar.Add(isReturn, MyRegion, grdInterval.TextMatrix(1, 0), _
             grdInterval.TextMatrix(1, 1), grdInterval.TextMatrix(1, 2), _
             grdInterval.TextMatrix(1, 3), grdInterval.TextMatrix(1, 4), _
-             BCF, tdist, Variance, ExpDA, txtEquation.Text)
+             BCF, tdist, Variance, ExpDA, txtEquation.Text, txtVector.Text)
             'grdInterval.TextMatrix(1, 5), BCF, tdist, Variance, ExpDA)
         If tmpID = -1 Then GoTo x
         ResetDB
@@ -2666,9 +2785,10 @@ Private Sub cmdSave_Click()
         'Edit existing Return or Statistic
         MyDepVar.Edit grdInterval.TextMatrix(1, 0), grdInterval.TextMatrix(1, 1), _
                       grdInterval.TextMatrix(1, 2), grdInterval.TextMatrix(1, 3), _
-                      grdInterval.TextMatrix(1, 4), 1, BCF, tdist, Variance, ExpDA, txtEquation.Text
+                      grdInterval.TextMatrix(1, 4), 1, BCF, tdist, Variance, ExpDA, _
+                      txtEquation.Text, txtVector.Text
                       'grdInterval.TextMatrix(1, 5), BCF, tdist, Variance, ExpDA
-        MyDepVar.ClearOldComponents
+        MyDepVar.ClearOldMatrix 'ClearOldComponents
         ResetDB
         tmpID = MyDepVar.id
       End If
@@ -2685,8 +2805,9 @@ Private Sub cmdSave_Click()
             End If
           Next k
         Next i
+        'MyDepVar.ClearOldMatrix
+        MyDepVar.AddMatrix MyRegion, tmpID, covArray()
       End If
-      If MyRegion.PredInt Then MyDepVar.AddMatrix MyRegion, tmpID, covArray()
       ResetDB
       i = 0
       'always reselect the return period to update the depvars/components
@@ -2888,17 +3009,16 @@ Private Sub SetGrid(Table As String)
       Next j
       lblEquation.Caption = MyDepVar.Name & " ="
       txtEquation.Text = MyDepVar.Equation
-      If lMath.StoreExpression(MyDepVar.Equation) Then
-        compCnt = lMath.VarTop
-      End If
       If MyRegion.PredInt Then
+        txtVector.Text = MyDepVar.XiVectorText
+        compCnt = MyDepVar.XiVector.Count
         With grdMatrix
           If i < 0 Or compCnt = 0 Then
             .Rows = 0
             .cols = 0
           Else
-            .Rows = compCnt + 1
-            .cols = compCnt + 1
+            .Rows = compCnt '+ 1
+            .cols = compCnt '+ 1
             For col = 1 To .cols
               .ColType(col - 1) = ATCoTxt
               .colWidth(col - 1) = 800
@@ -3260,7 +3380,7 @@ Private Function ChangesMade() As Boolean
     Next row
   ElseIf fraEdit(2).Visible And Not MyDepVar Is Nothing Then
     'First record changes to Return Period or Statistic
-    ReDim Changes(1, DepVarFlds + 1)
+    ReDim Changes(1, DepVarFlds + 2)
     ReDim oldVals(DepVarFlds)
     If MyDepVar.IsNew Then
       For i = 0 To DepVarFlds
@@ -3268,7 +3388,7 @@ Private Function ChangesMade() As Boolean
       Next i
       ChangesMade = True
     Else
-      compCnt = MyDepVar.VarCount ' MyDepVar.Components.Count
+      compCnt = MyDepVar.XiVector.Count '.VarCount ' MyDepVar.Components.Count
       oldVals(0) = MyDepVar.Name
       oldVals(1) = MyDepVar.StdErr
       oldVals(2) = MyDepVar.EstErr
@@ -3284,7 +3404,7 @@ Private Function ChangesMade() As Boolean
       Set MyDepVar.DB = DB
       If compCnt > 0 And MyRegion.PredInt Then
         OldMatrix = MyDepVar.PopulateMatrix()
-        grdMatrix.Rows = MyDepVar.VarCount + 1 ' MyDepVar.Components.Count + 1
+        grdMatrix.Rows = MyDepVar.XiVector.Count 'VarCount + 1 ' MyDepVar.Components.Count + 1
         grdMatrix.cols = grdMatrix.Rows
       End If
       For i = 0 To DepVarFlds
@@ -3302,6 +3422,11 @@ Private Function ChangesMade() As Boolean
       If txtEquation.Text <> MyDepVar.Equation Then
         Changes(0, DepVarFlds + 1) = MyDepVar.Equation
         Changes(1, DepVarFlds + 1) = txtEquation.Text
+        ChangesMade = True
+      End If
+      If MyRegion.PredInt And txtVector.Text <> MyDepVar.XiVectorText Then
+        Changes(0, DepVarFlds + 2) = MyDepVar.XiVectorText
+        Changes(1, DepVarFlds + 2) = txtVector.Text
         ChangesMade = True
       End If
     End If
@@ -3351,6 +3476,8 @@ End Sub
 Private Sub txtEquation_Change()
   lblStatus.Caption = ""
   lblStatus.BackColor = vbButtonFace
+  lblStatusXi.Caption = ""
+  lblStatusXi.BackColor = vbButtonFace
 End Sub
 
 Private Sub txtRegName_Change()
