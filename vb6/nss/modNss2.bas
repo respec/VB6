@@ -51,7 +51,8 @@ FindDB:
   
   progress = progress & vbCr & "Showing frmStart"
   On Error GoTo ShowProgress
-  frmStart.Show
+  'frmStart.Show
+  frmNSS.Show
   
   Exit Sub
 

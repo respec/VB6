@@ -5,13 +5,12 @@ Begin VB.Form frmNSS
    ClientHeight    =   7440
    ClientLeft      =   165
    ClientTop       =   735
-   ClientWidth     =   11175
+   ClientWidth     =   11190
    HelpContextID   =   12
    Icon            =   "frmNSS.frx":0000
    LinkTopic       =   "Form1"
-   LockControls    =   -1  'True
    ScaleHeight     =   7440
-   ScaleWidth      =   11175
+   ScaleWidth      =   11190
    StartUpPosition =   3  'Windows Default
    Begin MSComDlg.CommonDialog cdlg 
       Left            =   7920
@@ -399,7 +398,9 @@ Begin VB.Form frmNSS
       Begin VB.Menu mnuRecent 
          Caption         =   "-"
          Index           =   0
-         Visible         =   0   'False
+      End
+      Begin VB.Menu mnuOptions 
+         Caption         =   "O&ptions"
       End
       Begin VB.Menu mnuFileSep1 
          Caption         =   "-"
@@ -936,6 +937,10 @@ ErrExit:
     MsgBox "Error opening NSS Status File '" & cdlg.FileName & "'" & vbCr _
           & Err.Description, vbCritical, appName
   End If
+End Sub
+
+Private Sub mnuOptions_Click()
+  frmStart.Show
 End Sub
 
 Private Sub mnuRecent_Click(Index As Integer)
