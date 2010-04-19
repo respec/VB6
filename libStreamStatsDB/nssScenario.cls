@@ -1234,7 +1234,11 @@ Public Function EstimateString() As String
       End If
       
       Years = Me.EquivalentYears
-      StdError = Me.StdError
+      If Me.Weight.WeightType = 2 Then 'use weighted standard error values from variance weighting
+        StdError = Me.Weight.StandardError
+      Else
+        StdError = Me.StdError
+      End If
       PredError = Me.PredictionError(UsePredErr)
       EstError = Me.EstimateError(UseEstErr)
       If UsePredErr Then 'fill Standard Error values with more desirable Prediction Errors
@@ -1269,11 +1273,11 @@ Public Function EstimateString() As String
     'next line goes away when DepVars Units in place
     'If useMetric Then txt = ReplaceString(txt, " cfs", "m3/s")
     
-    If Me.Weight.WeightType > 0 Then 'Don't show std err for weighted estimates
+    If Me.Weight.WeightType > 0 And pWeight.WeightType <> 2 Then 'Don't show std err for weighted estimates
       txt = ReplaceString(txt, "Standard  ", "")
       txt = ReplaceString(txt, "Error, %  ", "")
     End If
-    If Me.Weight.WeightType = 2 Then 'Don't show equiv years for weighted estimates for ungaged sites
+    If Me.Weight.WeightType > 1 Then 'Don't show equiv years for weighted estimates for ungaged sites (or weight by variance)
       txt = ReplaceString(txt, "Equivalent", "")
       txt = ReplaceString(txt, "Years", "")
     End If
@@ -1350,7 +1354,7 @@ Public Function EstimateString() As String
 '          End If
 '        End If
         
-        If Years(Index) = 0 Then ' Or Me.Weight.WeightType > 1 Then
+        If Years(Index) = 0 Or Me.Weight.WeightType = 2 Then 'no Eq Years for weight by variance
           YearsText(Index) = "" 'Space(10)
         Else
           YearsText(Index) = SignificantDigits(Years(Index), 2)
@@ -1379,7 +1383,7 @@ Public Function EstimateString() As String
       DecimalAlign PredIntsText, True, True, 9
       DecimalAlign PredIntsText2, True, True, 9
     End If
-    If Me.Weight.WeightType = 0 Then
+    If Me.Weight.WeightType = 0 Or Me.Weight.WeightType = 2 Then
       DecimalAlign StdErrText, True, True, 8
     End If
     For Index = 1 To nIntervals
