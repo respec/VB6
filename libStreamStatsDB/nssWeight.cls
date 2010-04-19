@@ -228,24 +228,38 @@ Public Function GetGagedVariance(ByVal Interval As String) As Double
   Next
 End Function
 
-Public Function Variance(ByVal Interval As String) As Double
+'Public Function Variance(ByVal Interval As String) As Double
+Public Function Variance() As Double()
   Dim i&
+  Dim retval() As Double
+  
+  ReDim retval(pIntervalsSet)
+
   For i = 1 To pIntervalsSet
-    If pIntervals(i) = Interval Then
-      Variance = pVariance(i)
-      Exit Function
-    End If
+    retval(i) = pVariance(i)
+'    If pIntervals(i) = Interval Then
+'      Variance = pVariance(i)
+'      Exit Function
+'    End If
   Next
+  Variance = retval
 End Function
 
-Public Function StandardError(ByVal Interval As String) As Double
+'Public Function StandardError(ByVal Interval As String) As Double
+Public Function StandardError() As Double()
   Dim i&
+  Dim retval() As Double
+  
+  ReDim retval(pIntervalsSet)
+  
   For i = 1 To pIntervalsSet
-    If pIntervals(i) = Interval Then
-      StandardError = pStandardError(i)
-      Exit Function
-    End If
+    retval(i) = pStandardError(i)
+'    If pIntervals(i) = Interval Then
+'      StandardError = pStandardError(i)
+'      Exit Function
+'    End If
   Next
+  StandardError = retval
 End Function
 
 Public Property Get XML() As String
