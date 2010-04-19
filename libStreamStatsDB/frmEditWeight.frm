@@ -44,7 +44,7 @@ Begin VB.Form frmEditWeight
       AllowEditHeader =   0   'False
       AllowLoad       =   0   'False
       AllowSorting    =   0   'False
-      Rows            =   1
+      Rows            =   2
       Cols            =   4
       ColWidthMinimum =   1000
       gridFontBold    =   0   'False
@@ -1085,6 +1085,8 @@ Private Sub PopulateResults(Optional WhichResult As Long = -1)
   Dim d() As Double
   Dim lLastCol As Long
   Dim lCol As Long
+  Dim lVariance() As Double
+  Dim lStdError() As Double
 
   If pScenario.Weight.WeightType = 2 Then 'weighting by variance, fill 4th column
     lLastCol = 5
@@ -1095,6 +1097,10 @@ Private Sub PopulateResults(Optional WhichResult As Long = -1)
     'Can't compute weighted extimate of this type with zero area gaged
   ElseIf pFinishedInit Then 'And txtYears.Value > 0.001 Then
     d = pScenario.WeightedDischarges
+    ReDim lVariance(pFirstReturns.Count)
+    ReDim lStdError(pFirstReturns.Count)
+    lVariance = pScenario.Weight.Variance
+    lStdError = pScenario.Weight.StandardError
     For ReturnIndex = 1 To pFirstReturns.Count
       lCol = lLastCol
 '      grdWgt.col = lCol
@@ -1106,12 +1112,14 @@ Private Sub PopulateResults(Optional WhichResult As Long = -1)
 '        grdWgt.col = lCol
 '        grdWgt.row = ReturnIndex
 '        grdWgt.CellBackColor = &HE0E0E0
-        grdWgt.TextMatrix(ReturnIndex, lCol) = StrPad(SignificantDigits(pScenario.Weight.Variance(grdWgt.TextMatrix(ReturnIndex, 0)), 4), 9)
+        'grdWgt.TextMatrix(ReturnIndex, lCol) = StrPad(SignificantDigits(pScenario.Weight.Variance(grdWgt.TextMatrix(ReturnIndex, 0)), 4), 9)
+        grdWgt.TextMatrix(ReturnIndex, lCol) = StrPad(SignificantDigits(lVariance(ReturnIndex), 4), 9)
         lCol = lLastCol + 2
 '        grdWgt.col = lCol
 '        grdWgt.row = ReturnIndex
 '        grdWgt.CellBackColor = &HE0E0E0
-        grdWgt.TextMatrix(ReturnIndex, lCol) = StrPad(SignificantDigits(pScenario.Weight.StandardError(grdWgt.TextMatrix(ReturnIndex, 0)), 4), 9)
+        'grdWgt.TextMatrix(ReturnIndex, lCol) = StrPad(SignificantDigits(pScenario.Weight.StandardError(grdWgt.TextMatrix(ReturnIndex, 0)), 4), 9)
+        grdWgt.TextMatrix(ReturnIndex, lCol) = StrPad(SignificantDigits(lStdError(ReturnIndex), 4), 9)
       End If
     Next
   End If
