@@ -180,6 +180,7 @@ End Property
 
 Private Sub Class_Initialize()
   pName = "Not Assigned"
+  Set pXiVector = New FastCollection
 End Sub
 
 Public Property Set Components(ByRef newValue As FastCollection)
