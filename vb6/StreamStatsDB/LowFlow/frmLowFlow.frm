@@ -18,6 +18,7 @@ Begin VB.Form frmLowFlow
       Left            =   9840
       TabIndex        =   48
       Top             =   6120
+      Visible         =   0   'False
       Width           =   855
    End
    Begin VB.OptionButton rdoMainOpt 
@@ -363,7 +364,7 @@ Begin VB.Form frmLowFlow
             AllowEditHeader =   0   'False
             AllowLoad       =   0   'False
             AllowSorting    =   0   'False
-            Rows            =   544
+            Rows            =   552
             Cols            =   2
             ColWidthMinimum =   300
             gridFontBold    =   0   'False
@@ -1150,8 +1151,10 @@ TryAgain:
     .DialogTitle = "Select import file"
     If RDO = 0 Then
       FileName = GetSetting("SEE", "Defaults", "NSSExportFile", FileName)
-    ElseIf RDO >= 1 Then
+    ElseIf RDO = 1 Then
       FileName = GetSetting("SEE", "Defaults", "LowFlowExportFile", FileName)
+    ElseIf RDO = 2 Then
+      FileName = GetSetting("SEE", "Defaults", "ProbabilityExportFile", FileName)
     End If
     If Len(Dir(FileName, vbDirectory)) = 0 Then
       FileName = CurDir & "\Import.csv"
@@ -1263,9 +1266,12 @@ TryAgain:
       Wend
       For k = 1 To DepVarFlds
         If Len(str) > 0 Then
-          If k >= 9 Then 'strip quotes from Equation and XiVector fields
+          If k >= 9 And Left(str, 1) = """" Then 'strip quotes from Equation and XiVector fields
             depVarVals(j, k) = StrSplit(str, """", "") 'finds first quote
             depVarVals(j, k) = StrSplit(str, """", "") 'finds equations up to 2nd quote
+            If k = 9 And Len(str) > 0 Then 'another field, find comma
+              depVarVals(j, k + 1) = StrSplit(str, ",", "")
+            End If
 '            If Left(depVarVals(j, k), 1) = """" Then
 '              depVarVals(j, k) = Mid(depVarVals(j, k), 2)
 '              If Right(depVarVals(j, k), 1) = """" Then
@@ -1287,7 +1293,8 @@ TryAgain:
       MyRegion.PopulateDepVars
       'check equation being imported
       If lMath.StoreExpression(depVarVals(j, 9)) Then
-        compCnt = lMath.VarTop
+        'compCnt = lMath.VarTop
+        compCnt = MyDepVar.XiVector.Count
         lVarNotFound = 0
         For m = 1 To lMath.VarTop
           k = 0
@@ -1317,8 +1324,9 @@ TryAgain:
         Err.Raise 32755
       End If
       If MyRegion.PredInt Then
-        ReDim covArray(1 To compCnt + 1, 1 To compCnt + 1)
-        For k = 1 To compCnt + 1
+        'ReDim covArray(1 To compCnt + 1, 1 To compCnt + 1)
+        ReDim covArray(1 To compCnt, 1 To compCnt)
+        For k = 1 To compCnt '+ 1
           Line Input #inFile, str
           While Left(str, 1) = "," Or Left(str, 1) = " "
             str = Mid(str, 2)  'gets rid of initial separators
@@ -1346,7 +1354,7 @@ x:
 End Sub
 
 Private Sub cmdExport_Click()
-  Dim i&, j&, k&, OutFile&, tmpCnt&, compCnt&, row&, col&
+  Dim i&, j&, k&, OutFile&, tmpCnt&, row&, col&
   Dim FileName$, str$
   Dim lBlankPredsStr As String
   Dim covArray() As String
@@ -1451,14 +1459,23 @@ Private Sub cmdExport_Click()
     'Loop thru Return Periods/Statistics
     For j = 1 To MyRegion.DepVars.Count
       Set MyDepVar = MyRegion.DepVars(j)
-      compCnt = MyDepVar.Components.Count
       str = ",,,,,,,,,,,,,,,," & MyDepVar.Name & "," & Round(MyDepVar.StdErr, 1) & "," & _
             Round(MyDepVar.EstErr, 1) & "," & Round(MyDepVar.PreErr, 1) & "," & _
             Round(MyDepVar.EquivYears, 1) & "," & MyDepVar.BCF & "," & _
             Round(MyDepVar.tdist, 4) & "," & Round(MyDepVar.Variance, 4) & "," & _
-            Round(MyDepVar.ExpDA, 4) & ",""" & MyDepVar.Equation & """" & ",""" & _
-            MyDepVar.XiVectorText & """"
-      If MyRegion.PredInt Then str = str & lBlankPredsStr
+            Round(MyDepVar.ExpDA, 4)
+      If InStr(MyDepVar.Equation, ",") > 0 Then 'commas in equation, surround w/quotes
+        str = str & ",""" & MyDepVar.Equation & """"
+      Else 'no quotes needed
+        str = str & "," & MyDepVar.Equation
+      End If
+      If MyRegion.PredInt Then
+        If InStr(MyDepVar.XiVectorText, ",") > 0 Then 'commas in XiVector, surround w/quotes
+          str = str & ",""" & MyDepVar.XiVectorText & """" & lBlankPredsStr
+        Else 'no quoates needed
+          str = str & "," & MyDepVar.XiVectorText & lBlankPredsStr
+        End If
+      End If
       Print #OutFile, str
       If MyRegion.PredInt Then  'using prediction intervals
         covArray = MyDepVar.PopulateMatrix
@@ -1479,6 +1496,7 @@ nextRegion:
   Close OutFile
   
   MsgBox "Completed Export to file " & FileName, vbOKOnly, "SEE Export"
+  cboState_Click
   If lstRegions.SelCount > 0 Then
     Set MyRegion = DB.State.Regions(lstRegions.List(lstRegions.ListIndex))
   Else
@@ -3435,7 +3453,8 @@ Private Function ChangesMade() As Boolean
       ReDim MatrixChanges(1, 1 To grdMatrix.Rows, 1 To grdMatrix.cols)
       For row = 1 To grdMatrix.Rows
         For col = 1 To grdMatrix.cols
-          If Not (compCnt > 0 And (row <= compCnt + 1 Or col <= compCnt + 1)) Then
+          'If Not (compCnt > 0 And (row <= compCnt + 1 Or col <= compCnt + 1)) Then
+          If Not (compCnt > 0 And (row <= compCnt Or col <= compCnt)) Then
             'new matrix
             MatrixChanges(1, row, col) = grdMatrix.TextMatrix(row, col - 1)
             ChangesMade = True
@@ -3598,8 +3617,8 @@ Private Sub SetDB(Optional lVerify As Boolean = False)
   
 FindDB:
   On Error GoTo NoDB
-  ff.SetDialogProperties "Please locate NSS or StreamStats database version 4", "NSSv4.mdb"
-  ff.SetRegistryInfo "StreamStatsDB", "Defaults", "NSSDatabaseV4"
+  ff.SetDialogProperties "Please locate NSS or StreamStats database version 5", "NSSv5.mdb"
+  ff.SetRegistryInfo "StreamStatsDB", "Defaults", "NSSDatabaseV5"
   DBPath = ff.GetName(lVerify)
   
   If Len(DBPath) > 0 Then
