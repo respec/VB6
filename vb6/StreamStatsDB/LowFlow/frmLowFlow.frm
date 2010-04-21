@@ -364,7 +364,7 @@ Begin VB.Form frmLowFlow
             AllowEditHeader =   0   'False
             AllowLoad       =   0   'False
             AllowSorting    =   0   'False
-            Rows            =   556
+            Rows            =   557
             Cols            =   2
             ColWidthMinimum =   300
             gridFontBold    =   0   'False
@@ -559,7 +559,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   2
+         Rows            =   1
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -618,7 +618,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   2
+         Rows            =   1
          Cols            =   6
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -1297,8 +1297,8 @@ TryAgain:
         'compCnt = lMath.VarTop
         If MyRegion.PredInt And Len(depVarVals(j, 10)) > 0 Then
           Set lXiVector = ParseXiVector(depVarVals(j, 10))
+          compCnt = lXiVector.Count
         End If
-        compCnt = lXiVector.Count
         lVarNotFound = 0
         For m = 1 To lMath.VarTop
           k = 0
