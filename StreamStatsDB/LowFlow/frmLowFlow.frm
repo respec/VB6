@@ -364,7 +364,7 @@ Begin VB.Form frmLowFlow
             AllowEditHeader =   0   'False
             AllowLoad       =   0   'False
             AllowSorting    =   0   'False
-            Rows            =   552
+            Rows            =   556
             Cols            =   2
             ColWidthMinimum =   300
             gridFontBold    =   0   'False
@@ -1136,6 +1136,7 @@ Private Sub cmdImport_Click()
   Dim regnVals() As Integer
   Dim parmVals() As String, depVarVals() As String, compVals() As String
   Dim covArray() As String
+  Dim lXiVector As FastCollection
   Dim lVarNotFound As Integer
 
   On Error GoTo x
@@ -1294,7 +1295,10 @@ TryAgain:
       'check equation being imported
       If lMath.StoreExpression(depVarVals(j, 9)) Then
         'compCnt = lMath.VarTop
-        compCnt = MyDepVar.XiVector.Count
+        If MyRegion.PredInt And Len(depVarVals(j, 10)) > 0 Then
+          Set lXiVector = ParseXiVector(depVarVals(j, 10))
+        End If
+        compCnt = lXiVector.Count
         lVarNotFound = 0
         For m = 1 To lMath.VarTop
           k = 0
@@ -1331,7 +1335,7 @@ TryAgain:
           While Left(str, 1) = "," Or Left(str, 1) = " "
             str = Mid(str, 2)  'gets rid of initial separators
           Wend
-          For m = 1 To compCnt + 1
+          For m = 1 To compCnt '+ 1
             covArray(k, m) = StrRetRem(str)
           Next m
         Next k
@@ -3655,3 +3659,18 @@ NoDB:
   End If
 
 End Sub
+
+Private Function ParseXiVector(ByVal aXiVectorText As String) As FastCollection
+  Dim lEqtn As String
+  Dim lXiVector As FastCollection
+  Set lXiVector = New FastCollection
+
+  lXiVector.Add "1"
+  lEqtn = StrSplit(aXiVectorText, ":", "")
+  While Len(lEqtn) > 0
+    lXiVector.Add lEqtn
+    lEqtn = StrSplit(aXiVectorText, ":", "")
+  Wend
+
+  Set ParseXiVector = lXiVector
+End Function
