@@ -265,7 +265,7 @@ Public Function EquivalentYears() As Double()
   Dim FirstReturns As FastCollection
   Dim CurRegion As userRegion
   Dim CurReturn As nssDepVar
-  Dim CurComponent As nssComponent
+'  Dim CurComponent As nssComponent
   Dim retval() As Double
   Dim curval As Double
   Dim ExpVal As Double
@@ -335,7 +335,7 @@ Public Function StdError() As Double()
   Dim FirstReturns As FastCollection
   Dim CurRegion As userRegion
   Dim CurReturn As nssDepVar
-  Dim CurComponent As nssComponent
+'  Dim CurComponent As nssComponent
   Dim retval() As Double
   Dim curval As Double
   Dim ExpVal As Double
@@ -464,7 +464,7 @@ Public Function PredInts() As Double()
   Dim CurRegion As userRegion
   Dim CurStat As nssDepVar
   Dim CurReturn As nssDepVar
-  Dim CurComponent As nssComponent
+'  Dim CurComponent As nssComponent
   Dim i&, j&, MDim&, s!, t!
   Dim Prod() As Single, Prod2(1, 1) As Single
   Dim lv As Double
@@ -1488,7 +1488,7 @@ Public Function Discharges() As Double()
   Dim FirstReturns As FastCollection
   Dim CurRegion As userRegion
   Dim CurReturn As nssDepVar
-  Dim CurComponent As nssComponent
+'  Dim CurComponent As nssComponent
   Dim IntervalDischarge() As Double
   Dim RegionVal As Double
   Dim curval As Double
@@ -1614,7 +1614,7 @@ Public Function Discharges() As Double()
 '          ssMessageBox StepName, vbOKOnly, "NSS Discharges"
 '          WarnedAboutMissingComponents = True
 '        End If
-        ReDim lVals(CurReturn.Components.Count)
+'        ReDim lVals(CurReturn.Components.Count)
 '        MultParmExpVal = 0 '1
 '        For ComponentIndex = 1 To CurReturn.Components.Count
 '          StepName = "Set CurComponent = CurReturn.Components(ComponentIndex)"
@@ -1746,21 +1746,21 @@ ErrHand:
     MSG = "Error: " & Err.Description & vbCrLf & vbCrLf _
            & StepName & vbCrLf _
            & "ReturnIndex = " & ReturnIndex & vbCrLf _
-           & "RegionIndex = " & RegionIndex & vbCrLf _
-           & "ComponentIndex = " & ComponentIndex
-    If Not CurComponent Is Nothing Then
-      With CurComponent
-        MSG = MSG & vbCrLf _
-            & " Parameter Name = " & .Parameter.NSSName & vbCrLf _
-            & " BaseMod = " & .BaseMod & vbCrLf _
-            & " BaseCoeff = " & .BaseCoeff & vbCrLf _
-            & " BaseExp = " & .BaseExp & vbCrLf _
-            & " ExpMod = " & .ExpMod & vbCrLf _
-            & " ExpID = " & .ExpID & vbCrLf _
-            & " ExpExp = " & .ExpExp & vbCrLf _
-            & "Equation: " & Equation
-      End With
-    End If
+           & "RegionIndex = " & RegionIndex '& vbCrLf _
+'           & "ComponentIndex = " & ComponentIndex
+'    If Not CurComponent Is Nothing Then
+'      With CurComponent
+'        MSG = MSG & vbCrLf _
+'            & " Parameter Name = " & .Parameter.NSSName & vbCrLf _
+'            & " BaseMod = " & .BaseMod & vbCrLf _
+'            & " BaseCoeff = " & .BaseCoeff & vbCrLf _
+'            & " BaseExp = " & .BaseExp & vbCrLf _
+'            & " ExpMod = " & .ExpMod & vbCrLf _
+'            & " ExpID = " & .ExpID & vbCrLf _
+'            & " ExpExp = " & .ExpExp & vbCrLf _
+'            & "Equation: " & Equation
+'      End With
+'    End If
     pErrorDescription = pErrorDescription & MSG
   'If Timer - lasterr > 1 Then
     ssMessageBox MSG, vbExclamation, "Error computing discharges"
