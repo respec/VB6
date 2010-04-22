@@ -163,7 +163,7 @@ Begin VB.Form frmLowFlow
       Width           =   732
    End
    Begin VB.OptionButton rdoMainOpt 
-      Caption         =   "Low Flow"
+      Caption         =   "Other Flow"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
          Size            =   8.25
@@ -364,7 +364,7 @@ Begin VB.Form frmLowFlow
             AllowEditHeader =   0   'False
             AllowLoad       =   0   'False
             AllowSorting    =   0   'False
-            Rows            =   557
+            Rows            =   559
             Cols            =   2
             ColWidthMinimum =   300
             gridFontBold    =   0   'False
