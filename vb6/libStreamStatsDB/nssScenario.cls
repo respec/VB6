@@ -1298,23 +1298,20 @@ Public Function EstimateString() As String
     ReDim YearsText(nIntervals)
     YearsOn = False 'assume no equivalent years to display
     For Index = 1 To nIntervals
-    '*** NOTE: this conditional should be removed as Me.ROI conditional above makes it unnecessary
-'      If Me.ROI Then
-'        If Me.LowFlow Then
-'          IntervalText(Index) = Me.UserRegions(1).Region.State.ROILowData.FlowStats(Index).code
-'        Else
-'          IntervalText(Index) = Me.UserRegions(1).Region.State.ROIPeakData.FlowStats(Index).code
-'        End If
-'      Else 'get name from DepVars collection populated from database query
-'        IntervalText(Index) = Me.UserRegions(1).Region.DepVars(Index).Name
-'      End If
-      If Me.Project.Alias Then
-        IntervalText(Index) = Me.UserRegions(1).Region.DepVars(Index).Alias
-      Else
-        IntervalText(Index) = Me.UserRegions(1).Region.DepVars(Index).Name
+      If Me.ROI Then
+        If Me.LowFlow Then
+          IntervalText(Index) = Me.UserRegions(1).Region.State.ROILowData.FlowStats(Index).code
+        Else
+          IntervalText(Index) = Me.UserRegions(1).Region.State.ROIPeakData.FlowStats(Index).code
+        End If
+      Else 'get name from DepVars collection populated from database query
+        If Me.Project.Alias Then
+          IntervalText(Index) = Me.UserRegions(1).Region.DepVars(Index).Alias
+        Else
+          IntervalText(Index) = Me.UserRegions(1).Region.DepVars(Index).Name
+        End If
       End If
       If IsNumeric(IntervalText(Index)) Then
-'        IntervalText(Index) = SignificantDigits(Me.UserRegions(1).Region.DepVars(Index).Name, 3)
         IntervalText(Index) = SignificantDigits(IntervalText(Index), 3)
       ElseIf Len(IntervalText(Index)) < 7 Then
         IntervalText(Index) = IntervalText(Index) & Space(7 - Len(IntervalText(Index)))
