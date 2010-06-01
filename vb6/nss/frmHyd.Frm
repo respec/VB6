@@ -239,6 +239,7 @@ Private Sub CalcHyd(useGraph As Boolean)
   Dim StepName As String
   Dim ScenarioIndex As Long
   Dim IntervalName As String
+  Dim lStr As String
 
   On Error GoTo ErrHand
   
@@ -296,7 +297,11 @@ Private Sub CalcHyd(useGraph As Boolean)
           IntervalName = Scenario.UserRegions(1).region.DepVars(IntervalIndex).Name
         End If
         StepName = "CSng(" & IntervalName & ")"
-        If CSng(IntervalName) = lint Then
+        lStr = StrSplit(IntervalName, "_", "")
+        If Len(IntervalName) > 0 Then 'must have found "_", decimal and remaining string
+          lStr = lStr & "." & IntervalName
+        End If
+        If CSng(lStr) = lint Then
           'interval available for this Estimate
           peak = curDischarges(IntervalIndex)
           Exit For
