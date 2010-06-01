@@ -782,6 +782,7 @@ End Sub
 Private Sub cmdDelete_Click()
   Dim i&, j&, row&, col&, response&
   Dim staID As String
+  Dim where As String
   
   If grdGenInfo.Rows = 0 Then Exit Sub
   
@@ -817,9 +818,14 @@ Private Sub cmdDelete_Click()
     If SSDB.SelStats(grdGenInfo.row).IsNew Then
       response = 2
     Else
+      If SSDB.state Is Nothing Then
+        where = "<none>" 'catch problem of no state selected
+      Else
+        where = SSDB.state.Name
+      End If
       response = myMsgBox.Show("Are you certain you want to delete the statistic " & _
           SSDB.SelStats(grdGenInfo.row).Name & vbCrLf & "from the database for " & _
-          SSDB.state.Name & "?", "User Action Verification", "+&Cancel", "-&Yes")
+          where & "?", "User Action Verification", "+&Cancel", "-&Yes")
     End If
     If response = 2 Then
       With grdGenInfo
@@ -2320,7 +2326,7 @@ Private Sub InitializeFromDatabase(aState$)
 
   'Populate state listbox on tab 1
   cboState.Clear
-  For tmpIndex = 1 To SSDB.States.Count
+  For tmpIndex = 1 To SSDB.States.Count - 1 'the "-1" eliminates "Dummy" from the state list
     cboState.List(tmpIndex - 1) = SSDB.States(tmpIndex).Name
     cboState.ItemData(tmpIndex - 1) = SSDB.States(tmpIndex).code
     If SSDB.States(tmpIndex).Name = aState Then selState = tmpIndex
