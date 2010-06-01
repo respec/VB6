@@ -364,7 +364,7 @@ Begin VB.Form frmLowFlow
             AllowEditHeader =   0   'False
             AllowLoad       =   0   'False
             AllowSorting    =   0   'False
-            Rows            =   559
+            Rows            =   561
             Cols            =   2
             ColWidthMinimum =   300
             gridFontBold    =   0   'False
@@ -882,7 +882,7 @@ Dim DBPath As String
 Dim RDO As Long
 Dim MyParm As nssParameter
 Dim MyDepVar As nssDepVar
-Dim MyComp As nssComponent
+'Dim MyComp As nssComponent
 Dim lXiVector As FastCollection
 Dim NotNew As Boolean, Skip As Boolean, _
     ChoseParms As Boolean, ChoseReturns As Boolean
@@ -952,7 +952,7 @@ Private Sub cmdCancel_Click()
   End If
 End Sub
 
-Private Sub cmdComponent_Click(Index As Integer)
+'Private Sub cmdComponent_Click(Index As Integer)
 '  Dim Resp As Integer, i As Integer
 '
 '  Resp = vbYes
@@ -989,83 +989,83 @@ Private Sub cmdComponent_Click(Index As Integer)
 '      .colWidth(i) = 1000
 '    Next i
 '  End With
-End Sub
+'End Sub
 
-Private Sub cmdConvert_Click()
-  Dim vState As nssState
-  Dim vRegion As nssRegion
-  Dim vDepVar As nssDepVar
-  Dim lEqtnStr As String
-  Dim myRec As Recordset
-  Dim sql As String
-
-  Me.MousePointer = vbHourglass
-  For Each vState In DB.States
-    For Each MyRegion In vState.Regions
-      For Each vDepVar In MyRegion.DepVars
-        lEqtnStr = BuildEquation(vDepVar)
-        sql = "SELECT * FROM DepVars WHERE DepVarID=" & vDepVar.id
-        Set myRec = DB.DB.OpenRecordset(sql, dbOpenDynaset)
-        With myRec
-          If Not .NoMatch Then
-            .Edit
-            If Len(lEqtnStr) > 255 Then
-              StrTrim lEqtnStr
-            End If
-            !Equation = lEqtnStr
-            .Update
-          Else
-            MsgBox "There is no dependent variable with the ID= " & vDepVar.id & "."
-          End If
-        End With
-      Next
-    Next
-  Next
-  Me.MousePointer = vbDefault
-End Sub
-
-Private Sub cmdComponentConvert_Click()
-  Dim vState As nssState
-  Dim vRegion As nssRegion
-  Dim vDepVar As nssDepVar
-  Dim vComp As nssComponent
-  Dim lEqtnStr As String
-  Dim myRec As Recordset
-  Dim sql As String
-
-  Me.MousePointer = vbHourglass
-  For Each vState In DB.States
-    For Each MyRegion In vState.Regions
-      If MyRegion.PredInt Then
-        For Each vDepVar In MyRegion.DepVars
-          lEqtnStr = ""
-          If vDepVar.Components.Count > 0 Then
-            For Each vComp In vDepVar.Components
-              lEqtnStr = lEqtnStr & BldPredIntComponent(vComp) & " : "
-            Next
-            lEqtnStr = Left(lEqtnStr, Len(lEqtnStr) - 2)
-            sql = "SELECT * FROM DepVars WHERE DepVarID=" & vDepVar.id
-            Set myRec = DB.DB.OpenRecordset(sql, dbOpenDynaset)
-            With myRec
-              If Not .NoMatch Then
-                .Edit
-                If Len(lEqtnStr) > 255 Then
-                  StrTrim lEqtnStr
-                End If
-                !XiVector = lEqtnStr
-                .Update
-              Else
-                MsgBox "There is no dependent variable with the ID= " & vDepVar.id & "."
-              End If
-            End With
-          End If
-        Next
-      End If
-    Next
-  Next
-  Me.MousePointer = vbDefault
-
-End Sub
+'Private Sub cmdConvert_Click()
+'  Dim vState As nssState
+'  Dim vRegion As nssRegion
+'  Dim vDepVar As nssDepVar
+'  Dim lEqtnStr As String
+'  Dim myRec As Recordset
+'  Dim sql As String
+'
+'  Me.MousePointer = vbHourglass
+'  For Each vState In DB.States
+'    For Each MyRegion In vState.Regions
+'      For Each vDepVar In MyRegion.DepVars
+'        lEqtnStr = BuildEquation(vDepVar)
+'        sql = "SELECT * FROM DepVars WHERE DepVarID=" & vDepVar.id
+'        Set myRec = DB.DB.OpenRecordset(sql, dbOpenDynaset)
+'        With myRec
+'          If Not .NoMatch Then
+'            .Edit
+'            If Len(lEqtnStr) > 255 Then
+'              StrTrim lEqtnStr
+'            End If
+'            !Equation = lEqtnStr
+'            .Update
+'          Else
+'            MsgBox "There is no dependent variable with the ID= " & vDepVar.id & "."
+'          End If
+'        End With
+'      Next
+'    Next
+'  Next
+'  Me.MousePointer = vbDefault
+'End Sub
+'
+'Private Sub cmdComponentConvert_Click()
+'  Dim vState As nssState
+'  Dim vRegion As nssRegion
+'  Dim vDepVar As nssDepVar
+'  Dim vComp As nssComponent
+'  Dim lEqtnStr As String
+'  Dim myRec As Recordset
+'  Dim sql As String
+'
+'  Me.MousePointer = vbHourglass
+'  For Each vState In DB.States
+'    For Each MyRegion In vState.Regions
+'      If MyRegion.PredInt Then
+'        For Each vDepVar In MyRegion.DepVars
+'          lEqtnStr = ""
+'          If vDepVar.Components.Count > 0 Then
+'            For Each vComp In vDepVar.Components
+'              lEqtnStr = lEqtnStr & BldPredIntComponent(vComp) & " : "
+'            Next
+'            lEqtnStr = Left(lEqtnStr, Len(lEqtnStr) - 2)
+'            sql = "SELECT * FROM DepVars WHERE DepVarID=" & vDepVar.id
+'            Set myRec = DB.DB.OpenRecordset(sql, dbOpenDynaset)
+'            With myRec
+'              If Not .NoMatch Then
+'                .Edit
+'                If Len(lEqtnStr) > 255 Then
+'                  StrTrim lEqtnStr
+'                End If
+'                !XiVector = lEqtnStr
+'                .Update
+'              Else
+'                MsgBox "There is no dependent variable with the ID= " & vDepVar.id & "."
+'              End If
+'            End With
+'          End If
+'        Next
+'      End If
+'    Next
+'  Next
+'  Me.MousePointer = vbDefault
+'
+'End Sub
 
 Private Sub cmdDatabase_Click()
   Dim lDBFName As String
@@ -1131,7 +1131,7 @@ End Sub
 Private Sub cmdImport_Click()
   Dim i&, j&, k&, m&, inFile&, regnCnt&, parmCnt&, depVarCnt&, _
       compCnt&, flds&, DepVarID&, response&
-  Dim FileName$, str$, regnName$, flowFlag$
+  Dim FileName$, str$, regnName$, flowFlag$, lstr$
   Dim urban As Boolean, isReturn As Boolean
   Dim regnVals() As Integer
   Dim parmVals() As String, depVarVals() As String, compVals() As String
@@ -1180,7 +1180,9 @@ TryAgain:
   Open FileName For Input As inFile
   'read in state info
   Line Input #inFile, str
-  Set DB.State = DB.States(StrRetRem(str))
+  lstr = StrRetRem(str)
+  If Len(lstr) < 2 Then lstr = "0" & lstr
+  Set DB.State = DB.States(lstr)
   While cboState.ItemData(i) <> CLng(DB.State.code)
     i = i + 1
   Wend
@@ -1512,152 +1514,152 @@ x:
 
 End Sub
 
-Private Function BldComponentEqtn(MyComp As nssComponent) As String
-  Dim str
-  
-
-  With MyComp
-    'Set base portion of equation
-    str = vbTab & "#" & vbTab & .BaseCoeff
-    If .expID = -999 Then
-      str = str & "ln(" & .BaseMod & "+" & GetAbbrev(.ParmID) & ")^" & .BaseExp
-    Else
-      str = str & "(" & .BaseMod & "+" & GetAbbrev(.ParmID) & ")^" & .BaseExp
-    End If
-    'Set exponent portion of equation, if applicable
-    If GetAbbrev(.expID) <> "none" Then
-      str = str & "(" & .ExpMod & "+" & GetAbbrev(.expID) & ")"
-    End If
-    'Set exponent of exponent, if applicable
-    If .ExpExp <> 0 Then
-      str = str & "^" & .ExpExp
-    End If
-    BldComponentEqtn = str
-  End With
-End Function
-
-Private Function BldPredIntComponent(MyComp As nssComponent) As String
-  Dim str
-
-  With MyComp
-    'Set base portion of equation
-    If .BaseCoeff = 0 Or .BaseCoeff = 1 Then 'ignore base coeff
-      str = ""
-    Else
-      str = .BaseCoeff & "*"
-    End If
-    If .expID = 0 Then 'variable not in exponent, take log
-      If .BaseMod <> 0 Then
-        str = "logN(" & str & "(" & .BaseMod & "+" & GetAbbrev(.ParmID) & ")" & ",10)"
-      Else
-        str = "logN(" & str & GetAbbrev(.ParmID) & ",10)"
-      End If
-    Else ' variable in exponent, no log
-      If .ExpMod <> 0 Then
-        str = str & "(" & .BaseMod & "+" & GetAbbrev(.expID) & ")"
-      Else
-        str = str & GetAbbrev(.expID)
-      End If
-    End If
-    BldPredIntComponent = str
-  End With
-End Function
-
-Private Function BuildEquation(aDepVar As nssDepVar) As String
-  Dim InMultExp As Boolean
-  Dim i As Integer
-  Dim lComp As nssComponent
-  Dim lstr As String
-  Dim lEqtnStr As String
-  Dim lBaseVar As String
-  Dim lBaseStr As String
-  Dim lExpStr As String
-  Dim lExpInUse As Boolean
-
-  On Error GoTo ErrHandler
-
-  If aDepVar.Constant <> 1 Then
-    lEqtnStr = aDepVar.Constant
-  Else
-    lEqtnStr = ""
-  End If
-  InMultExp = False
-  For Each lComp In aDepVar.Components
-    lExpInUse = False
-    If Not InMultExp Then
-      lstr = GetAbbrev(lComp.ParmID)
-      If lstr = "none" Then
-        lBaseVar = ""
-      Else
-        If lComp.expID = -999 Then lstr = "ln(" & lstr & ")" 'indicates use natural log
-        lBaseVar = lstr
-      End If
-      Select Case lComp.BaseMod
-        Case Is > 0: lBaseStr = "(" & lBaseVar & "+" & lComp.BaseMod & ")"
-        Case Is < 0: lBaseStr = "(" & lBaseVar & lComp.BaseMod & ")"
-        Case Else: lBaseStr = "(" & lBaseVar & ")"
-      End Select
-      If lComp.BaseCoeff <> 1 Then lBaseStr = "(" & lComp.BaseCoeff & "*" & lBaseStr & ")"
-      If lEqtnStr <> "" Then
-        If aDepVar.Region.LowFlowRegnID < 0 Then 'probability equation, add components
-          lEqtnStr = lEqtnStr & "+ " & lBaseStr
-        Else 'multiply components
-          lEqtnStr = lEqtnStr & "* " & lBaseStr
-        End If
-      Else 'nothing in equation yet, don't include + or *
-        lEqtnStr = lBaseStr
-      End If
-    Else
-      lExpInUse = True
-    End If
-    'try processing BaseExp's of "0" to handle MT equations that raise DA to 0 so it's ignored
-    If lComp.BaseExp <> 1 Then
-      If InMultExp Then
-        lEqtnStr = lEqtnStr & lComp.BaseExp
-      Else
-        lEqtnStr = lEqtnStr & "^(" & lComp.BaseExp
-        lExpInUse = True
-      End If
-    End If
-    lstr = GetAbbrev(lComp.expID)
-    If lstr = "none" Then
-      lExpStr = ""
-    Else
-      lExpStr = lstr
-      Select Case lComp.ExpMod
-        Case Is > 0: lExpStr = "(" & lExpStr & "+" & lComp.ExpMod & ")" '"^" & "(" & ExpStr & "+" & ExpMod & ")"
-        Case Is < 0: lExpStr = "(" & lExpStr & lComp.ExpMod & ")" '"^" & "(" & ExpStr & "-" & ExpMod & ")"
-        Case Else: lExpStr = "(" & lExpStr & ")" '"^" & "(" & ExpStr & ")"
-      End Select
-      If lComp.ExpExp <> 0 And lComp.ExpExp <> 1 Then
-        lExpStr = lExpStr & "^(" & lComp.ExpExp & ")"
-      End If
-      If Not InMultExp And Not lExpInUse Then 'not in mult exponent and base exp=1
-        lEqtnStr = lEqtnStr & "^" & lExpStr
-      Else
-        lEqtnStr = lEqtnStr & "*" & lExpStr
-      End If
-    End If
-'    If lComp.ParmID < -2 Then 'indicates multiple parms in exponent
-    If lExpInUse Then
-      If lComp.ParmID = -3 Then 'not last parm in exponent
-        InMultExp = True
-      Else 'last exponent
-        InMultExp = False
-        lEqtnStr = lEqtnStr & ")"
-      End If
-    End If
-  Next
-  If aDepVar.Region.LowFlowRegnID < 0 Then 'probability, put equation in numerator and denominator
-    lEqtnStr = "e#^(" & lEqtnStr & ")/(1+e#^(" & lEqtnStr & "))"
-  End If
-  BuildEquation = lEqtnStr
-  Exit Function
-  
-ErrHandler:
-    BuildEquation = "Problem building equation - so far we've got:" & vbCrLf & lEqtnStr
-
-End Function
+'Private Function BldComponentEqtn(MyComp As nssComponent) As String
+'  Dim str
+'
+'
+'  With MyComp
+'    'Set base portion of equation
+'    str = vbTab & "#" & vbTab & .BaseCoeff
+'    If .expID = -999 Then
+'      str = str & "ln(" & .BaseMod & "+" & GetAbbrev(.ParmID) & ")^" & .BaseExp
+'    Else
+'      str = str & "(" & .BaseMod & "+" & GetAbbrev(.ParmID) & ")^" & .BaseExp
+'    End If
+'    'Set exponent portion of equation, if applicable
+'    If GetAbbrev(.expID) <> "none" Then
+'      str = str & "(" & .ExpMod & "+" & GetAbbrev(.expID) & ")"
+'    End If
+'    'Set exponent of exponent, if applicable
+'    If .ExpExp <> 0 Then
+'      str = str & "^" & .ExpExp
+'    End If
+'    BldComponentEqtn = str
+'  End With
+'End Function
+'
+'Private Function BldPredIntComponent(MyComp As nssComponent) As String
+'  Dim str
+'
+'  With MyComp
+'    'Set base portion of equation
+'    If .BaseCoeff = 0 Or .BaseCoeff = 1 Then 'ignore base coeff
+'      str = ""
+'    Else
+'      str = .BaseCoeff & "*"
+'    End If
+'    If .expID = 0 Then 'variable not in exponent, take log
+'      If .BaseMod <> 0 Then
+'        str = "logN(" & str & "(" & .BaseMod & "+" & GetAbbrev(.ParmID) & ")" & ",10)"
+'      Else
+'        str = "logN(" & str & GetAbbrev(.ParmID) & ",10)"
+'      End If
+'    Else ' variable in exponent, no log
+'      If .ExpMod <> 0 Then
+'        str = str & "(" & .BaseMod & "+" & GetAbbrev(.expID) & ")"
+'      Else
+'        str = str & GetAbbrev(.expID)
+'      End If
+'    End If
+'    BldPredIntComponent = str
+'  End With
+'End Function
+'
+'Private Function BuildEquation(aDepVar As nssDepVar) As String
+'  Dim InMultExp As Boolean
+'  Dim i As Integer
+'  Dim lComp As nssComponent
+'  Dim lstr As String
+'  Dim lEqtnStr As String
+'  Dim lBaseVar As String
+'  Dim lBaseStr As String
+'  Dim lExpStr As String
+'  Dim lExpInUse As Boolean
+'
+'  On Error GoTo ErrHandler
+'
+'  If aDepVar.Constant <> 1 Then
+'    lEqtnStr = aDepVar.Constant
+'  Else
+'    lEqtnStr = ""
+'  End If
+'  InMultExp = False
+'  For Each lComp In aDepVar.Components
+'    lExpInUse = False
+'    If Not InMultExp Then
+'      lstr = GetAbbrev(lComp.ParmID)
+'      If lstr = "none" Then
+'        lBaseVar = ""
+'      Else
+'        If lComp.expID = -999 Then lstr = "ln(" & lstr & ")" 'indicates use natural log
+'        lBaseVar = lstr
+'      End If
+'      Select Case lComp.BaseMod
+'        Case Is > 0: lBaseStr = "(" & lBaseVar & "+" & lComp.BaseMod & ")"
+'        Case Is < 0: lBaseStr = "(" & lBaseVar & lComp.BaseMod & ")"
+'        Case Else: lBaseStr = "(" & lBaseVar & ")"
+'      End Select
+'      If lComp.BaseCoeff <> 1 Then lBaseStr = "(" & lComp.BaseCoeff & "*" & lBaseStr & ")"
+'      If lEqtnStr <> "" Then
+'        If aDepVar.Region.LowFlowRegnID < 0 Then 'probability equation, add components
+'          lEqtnStr = lEqtnStr & "+ " & lBaseStr
+'        Else 'multiply components
+'          lEqtnStr = lEqtnStr & "* " & lBaseStr
+'        End If
+'      Else 'nothing in equation yet, don't include + or *
+'        lEqtnStr = lBaseStr
+'      End If
+'    Else
+'      lExpInUse = True
+'    End If
+'    'try processing BaseExp's of "0" to handle MT equations that raise DA to 0 so it's ignored
+'    If lComp.BaseExp <> 1 Then
+'      If InMultExp Then
+'        lEqtnStr = lEqtnStr & lComp.BaseExp
+'      Else
+'        lEqtnStr = lEqtnStr & "^(" & lComp.BaseExp
+'        lExpInUse = True
+'      End If
+'    End If
+'    lstr = GetAbbrev(lComp.expID)
+'    If lstr = "none" Then
+'      lExpStr = ""
+'    Else
+'      lExpStr = lstr
+'      Select Case lComp.ExpMod
+'        Case Is > 0: lExpStr = "(" & lExpStr & "+" & lComp.ExpMod & ")" '"^" & "(" & ExpStr & "+" & ExpMod & ")"
+'        Case Is < 0: lExpStr = "(" & lExpStr & lComp.ExpMod & ")" '"^" & "(" & ExpStr & "-" & ExpMod & ")"
+'        Case Else: lExpStr = "(" & lExpStr & ")" '"^" & "(" & ExpStr & ")"
+'      End Select
+'      If lComp.ExpExp <> 0 And lComp.ExpExp <> 1 Then
+'        lExpStr = lExpStr & "^(" & lComp.ExpExp & ")"
+'      End If
+'      If Not InMultExp And Not lExpInUse Then 'not in mult exponent and base exp=1
+'        lEqtnStr = lEqtnStr & "^" & lExpStr
+'      Else
+'        lEqtnStr = lEqtnStr & "*" & lExpStr
+'      End If
+'    End If
+''    If lComp.ParmID < -2 Then 'indicates multiple parms in exponent
+'    If lExpInUse Then
+'      If lComp.ParmID = -3 Then 'not last parm in exponent
+'        InMultExp = True
+'      Else 'last exponent
+'        InMultExp = False
+'        lEqtnStr = lEqtnStr & ")"
+'      End If
+'    End If
+'  Next
+'  If aDepVar.Region.LowFlowRegnID < 0 Then 'probability, put equation in numerator and denominator
+'    lEqtnStr = "e#^(" & lEqtnStr & ")/(1+e#^(" & lEqtnStr & "))"
+'  End If
+'  BuildEquation = lEqtnStr
+'  Exit Function
+'
+'ErrHandler:
+'    BuildEquation = "Problem building equation - so far we've got:" & vbCrLf & lEqtnStr
+'
+'End Function
 
 Private Sub cmdTest_Click()
   Dim lPos As Integer
@@ -2509,8 +2511,8 @@ End Sub
 
 Private Sub cmdDelete_Click()
   Dim i&, j&, response&
-  Dim tmpDepVar As nssDepVar
-  Dim tmpComp As nssComponent
+'  Dim tmpDepVar As nssDepVar
+'  Dim tmpComp As nssComponent
   
   If MyRegion Is Nothing Then Exit Sub
   
@@ -2531,10 +2533,10 @@ Private Sub cmdDelete_Click()
         Next i
         For i = 1 To MyRegion.DepVars.Count
           Set MyDepVar = MyRegion.DepVars(i)
-          For j = 1 To MyDepVar.Components.Count
-            Set MyComp = MyDepVar.Components(j)
-            MyComp.Delete
-          Next j
+'          For j = 1 To MyDepVar.Components.Count
+'            Set MyComp = MyDepVar.Components(j)
+'            MyComp.Delete
+'          Next j
           MyDepVar.Delete
         Next i
         MyRegion.Delete
@@ -2553,11 +2555,11 @@ Private Sub cmdDelete_Click()
     If response = 1 Then
       CheckRuralInput  'to make sure we don't delete RURAL_DA or RURAL_DIS
       For i = 1 To SelParms.Count
-        For Each tmpDepVar In MyRegion.DepVars
-          For Each tmpComp In tmpDepVar.Components
-            If tmpComp.ParmID = SelParms(i).id Or Abs(tmpComp.expID) = SelParms(i).id Then tmpComp.Delete
-          Next tmpComp
-        Next tmpDepVar
+'        For Each tmpDepVar In MyRegion.DepVars
+'          For Each tmpComp In tmpDepVar.Components
+'            If tmpComp.ParmID = SelParms(i).id Or Abs(tmpComp.expID) = SelParms(i).id Then tmpComp.Delete
+'          Next tmpComp
+'        Next tmpDepVar
         Set SelParms(i).Region.DB = DB
         SelParms(i).Delete
         lstParms.RemoveItem (j)
@@ -3289,7 +3291,7 @@ End Function
 Private Function ChangesMade() As Boolean
   Dim row&, col&, i&, j&, k&, baseID&, expID&, compCnt&
   Dim tmpParm As nssParameter, baseParm As nssParameter, expParm As nssParameter
-  Dim tmpComp As nssComponent
+'  Dim tmpComp As nssComponent
   Dim oldVals() As String
   Dim newval As String
   Dim oldStatType As String
