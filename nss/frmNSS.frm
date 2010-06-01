@@ -855,8 +855,8 @@ Private Sub mnuDatabase_Click()
 
 FindDB:
   'Open NSS/StreamStats Database
-  ff.SetDialogProperties "Please locate NSS or StreamStats database version 4", "NSSv4.mdb"
-  ff.SetRegistryInfo "StreamStatsDB", "Defaults", "nssDatabaseV4"
+  ff.SetDialogProperties "Please locate NSS or StreamStats database version 5", "NSSv5.mdb"
+  ff.SetRegistryInfo "StreamStatsDB", "Defaults", "nssDatabaseV5"
   dbPath = ff.GetName(True)
   
   If Len(dbPath) > 0 Then
@@ -864,7 +864,7 @@ FindDB:
       If MsgBox("Could not open database or project" & vbCr & vbCr _
             & Err.Description & vbCr & vbCr _
             & "Search for current database?", vbOKCancel, "NSS Database Problem") = vbOK Then
-        SaveSetting "StreamStatsDB", "Defaults", "nssDatabaseV4", "NSSv4.mdb"
+        SaveSetting "StreamStatsDB", "Defaults", "nssDatabaseV5", "NSSv5.mdb"
         GoTo FindDB
       Else
         End
@@ -880,6 +880,7 @@ FindDB:
         Project.Clear
         Clear
         Project.LoadNSSdatabase dbPath
+        SaveSetting "StreamStatsDB", "Defaults", "nssDatabaseV5", dbPath ' "NSSv5.mdb"
       End If
     End If
   End If

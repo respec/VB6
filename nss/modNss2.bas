@@ -23,7 +23,7 @@ FindDB:
   'Open Stream Stats Database
   'dbPath = GetSetting("StreamStatsDB", "Defaults", "nssDatabase", App.path & "\StreamStatsDB.mdb")
   ff.SetDialogProperties "Please locate NSS or StreamStats database version 5" ', "NSSv4.mdb"
-  ff.SetRegistryInfo "StreamStatsDB", "Defaults", "nssDatabaseV4"
+  ff.SetRegistryInfo "StreamStatsDB", "Defaults", "nssDatabaseV5"
   dbPath = ff.GetName
   
   If Not FileExists(dbPath) Then GoTo NoDB
@@ -61,7 +61,7 @@ NoDB:
         & progress & vbCr & vbCr _
         & Err.Description & vbCr & vbCr _
         & "Search for current database?", vbOKCancel, "NSS Database Problem") = vbOK Then
-    SaveSetting "StreamStatsDB", "Defaults", "nssDatabaseV4", "NSSv4.mdb"
+    SaveSetting "StreamStatsDB", "Defaults", "nssDatabaseV5", "NSSv5.mdb"
     GoTo FindDB
   Else
     End
@@ -123,6 +123,8 @@ End Sub
 Public Sub AllIntervals(nAllInt As Long, allint() As Single)
   Dim IntervalIndex As Long
   Dim IntervalShiftIndex As Long
+  Dim IntervalString As String
+  Dim lStr As String
   Dim IntervalValue As Single
   Dim Scenario As Variant 'nssScenario
   Dim vReturn As Variant
@@ -149,16 +151,21 @@ Public Sub AllIntervals(nAllInt As Long, allint() As Single)
 InsertSort:
   For Each vReturn In Scenario.UserRegions(1).region.DepVars
     If Left(vReturn.Name, 2) = "PK" Then
-      IntervalValue = CSng(Mid(vReturn.Name, 3))
+      IntervalString = Mid(vReturn.Name, 3)
     Else
-      IntervalValue = CSng(vReturn.Name)
+      IntervalString = vReturn.Name
     End If
+    lStr = StrSplit(IntervalString, "_", "")
+    If Len(IntervalString) > 0 Then 'must have found "_", decimal and remaining string
+      lStr = lStr & "." & IntervalString
+    End If
+    IntervalValue = CSng(lStr)
     IntervalIndex = 0
     While IntervalIndex < nAllInt And allint(IntervalIndex) <= IntervalValue
       If allint(IntervalIndex) = IntervalValue Then Return 'Already have this interval
       IntervalIndex = IntervalIndex + 1
     Wend
-    For IntervalShiftIndex = IntervalIndex To nAllInt - 1
+    For IntervalShiftIndex = nAllInt - 1 To IntervalIndex Step -1
       allint(IntervalShiftIndex + 1) = allint(IntervalShiftIndex)
     Next
     allint(IntervalIndex) = IntervalValue
