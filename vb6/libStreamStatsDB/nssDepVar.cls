@@ -38,6 +38,7 @@ Private pUnits As nssUnits
 Private pEquation As String
 Private pXiVector As FastCollection  'of strings
 Private pXiVectorText As String
+Private pOrderIndex As Integer
 'Private pVarCount As Integer
 Private pComponents As FastCollection
 
@@ -183,14 +184,14 @@ Private Sub Class_Initialize()
   Set pXiVector = New FastCollection
 End Sub
 
-Public Property Set Components(ByRef newValue As FastCollection)
-  Set pComponents = newValue
-End Property
-Public Property Get Components() As FastCollection
-  'ID must be set for this return period before this will work
-  If pComponents Is Nothing Then PopulateComponents
-  Set Components = pComponents
-End Property
+'Public Property Set Components(ByRef newValue As FastCollection)
+'  Set pComponents = newValue
+'End Property
+'Public Property Get Components() As FastCollection
+'  'ID must be set for this return period before this will work
+'  If pComponents Is Nothing Then PopulateComponents
+'  Set Components = pComponents
+'End Property
 
 Public Property Set Units(ByRef newValue As nssUnits)
   Set pUnits = newValue
@@ -220,6 +221,13 @@ Public Property Let XiVectorText(ByVal newValue As String)
   pXiVectorText = newValue
 End Property
 
+Public Property Get OrderIndex() As Integer
+  OrderIndex = pOrderIndex
+End Property
+Public Property Let OrderIndex(ByVal newValue As Integer)
+  pOrderIndex = newValue
+End Property
+
 'Public Property Get VarCount() As Integer
 '  VarCount = pVarCount
 'End Property
@@ -227,48 +235,48 @@ End Property
 '  pVarCount = newValue
 'End Property
 
-Private Sub PopulateComponents()
-  Dim newComp As nssComponent
-  Dim comprec As Recordset
-  Dim sql$
-  
-  Set pComponents = New FastCollection
-  If pDB Is Nothing Then
-    ssMessageBox "Cannot read components" & vbCr & "DB not set."
-  Else
-    sql = "SELECT Components.* FROM [Components] " & _
-          "WHERE DepVarID=" & pID & " ORDER BY ExponentParmID, ParmID;"
-    Set comprec = pDB.DB.OpenRecordset(sql)
-    While Not comprec.EOF
-      Set newComp = New nssComponent
-      With newComp
-        Set .DB = pDB
-        Set .DepVar = Me
-        If Not IsNull(comprec.Fields("DepVarID")) Then .DepVarID = comprec.Fields("DepVarID")
-        If Not IsNull(comprec.Fields("ParmID")) Then .ParmID = comprec.Fields("ParmID")
-        If Not IsNull(comprec.Fields("BaseMod")) Then .BaseMod = comprec.Fields("BaseMod")
-        If Not IsNull(comprec.Fields("BaseCoeff")) Then .BaseCoeff = comprec.Fields("BaseCoeff")
-        If Not IsNull(comprec.Fields("BaseExp")) Then .BaseExp = comprec.Fields("BaseExp")
-        If Not IsNull(comprec.Fields("ExponentParmID")) Then .ExpID = comprec.Fields("ExponentParmID")
-        If Not IsNull(comprec.Fields("ExpMod")) Then .ExpMod = comprec.Fields("ExpMod")
-        If Not IsNull(comprec.Fields("ExpExp")) Then .ExpExp = comprec.Fields("ExpExp")
-      End With
-      pComponents.Add newComp, CStr(comprec("DepVarID") & " " & _
-                               comprec("ParmID") & " " & comprec("ExponentParmID"))
-      Set newComp = Nothing
-      comprec.MoveNext
-    Wend
-    comprec.Close
-  End If
-End Sub
-
+'Private Sub PopulateComponents()
+'  Dim newComp As nssComponent
+'  Dim comprec As Recordset
+'  Dim sql$
+'
+'  Set pComponents = New FastCollection
+'  If pDB Is Nothing Then
+'    ssMessageBox "Cannot read components" & vbCr & "DB not set."
+'  Else
+'    sql = "SELECT Components.* FROM [Components] " & _
+'          "WHERE DepVarID=" & pID & " ORDER BY ExponentParmID, ParmID;"
+'    Set comprec = pDB.DB.OpenRecordset(sql)
+'    While Not comprec.EOF
+'      Set newComp = New nssComponent
+'      With newComp
+'        Set .DB = pDB
+'        Set .DepVar = Me
+'        If Not IsNull(comprec.Fields("DepVarID")) Then .DepVarID = comprec.Fields("DepVarID")
+'        If Not IsNull(comprec.Fields("ParmID")) Then .ParmID = comprec.Fields("ParmID")
+'        If Not IsNull(comprec.Fields("BaseMod")) Then .BaseMod = comprec.Fields("BaseMod")
+'        If Not IsNull(comprec.Fields("BaseCoeff")) Then .BaseCoeff = comprec.Fields("BaseCoeff")
+'        If Not IsNull(comprec.Fields("BaseExp")) Then .BaseExp = comprec.Fields("BaseExp")
+'        If Not IsNull(comprec.Fields("ExponentParmID")) Then .ExpID = comprec.Fields("ExponentParmID")
+'        If Not IsNull(comprec.Fields("ExpMod")) Then .ExpMod = comprec.Fields("ExpMod")
+'        If Not IsNull(comprec.Fields("ExpExp")) Then .ExpExp = comprec.Fields("ExpExp")
+'      End With
+'      pComponents.Add newComp, CStr(comprec("DepVarID") & " " & _
+'                               comprec("ParmID") & " " & comprec("ExponentParmID"))
+'      Set newComp = Nothing
+'      comprec.MoveNext
+'    Wend
+'    comprec.Close
+'  End If
+'End Sub
+'
 Public Function Add(IsReturn As Boolean, ByVal Region As nssRegion, _
     ByVal Name As String, Optional ByVal StdErr As String, _
     Optional ByVal EstErr As String, Optional ByVal PreErr As String, _
     Optional ByVal eqyrs As String, Optional ByVal BCF As String, _
     Optional ByVal tDist As String, Optional ByVal Variance As String, _
     Optional ByVal ExpDA As String, Optional ByVal Equation As String, _
-    Optional ByVal XiVectorText As String) As Long
+    Optional ByVal XiVectorText As String, Optional ByVal OrderIndex As String) As Long
     'OPTIONAL ByVal Stations As String, OPTIONAL ByVal CoeffDet As String, OPTIONAL ByVal MAD As String) As Boolean
   Dim myRec As Recordset
   Dim Id&
@@ -318,6 +326,7 @@ Public Function Add(IsReturn As Boolean, ByVal Region As nssRegion, _
         If IsNumeric(ExpDA) Then !ExpDA = ExpDA
         !Equation = Equation
         !XiVector = XiVectorText
+        If IsNumeric(OrderIndex) Then !OrderIndex = OrderIndex
   '      if isnumeric(Stations) then !Stas = Stations
   '      if isnumeric(CoeffDet) then !CoeffDet = CoeffDet
   '      if isnumeric(MAD) then !MAD = MAD
@@ -355,7 +364,8 @@ Public Sub Edit(ByVal Name As String, _
     Optional ByVal Constant As String, Optional ByVal BCF As String, _
     Optional ByVal tDist As String, Optional ByVal Variance As String, _
     Optional ByVal ExpDA As String, _
-    Optional ByVal Equation As String, Optional ByVal XiVectorText As String)
+    Optional ByVal Equation As String, Optional ByVal XiVectorText As String, _
+    Optional ByVal OrderIndex As String)
     'ByVal Stations As String, ByVal CoeffDet As String, ByVal MAD As String) As Boolean
   Dim myRec As Recordset
   
@@ -380,6 +390,7 @@ Public Sub Edit(ByVal Name As String, _
       If IsNumeric(ExpDA) Then !ExpDA = ExpDA
       !Equation = Equation
       !XiVector = XiVectorText
+      If IsNumeric(OrderIndex) Then !OrderIndex = OrderIndex
 '      if isnumeric(Stations) then !Stas = Stations
 '      if isnumeric(CoeffDet) then !CoeffDet = CoeffDet
 '      if isnumeric(MAD) then !MAD = MAD
