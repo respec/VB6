@@ -301,7 +301,8 @@ Public Sub PopulateDepVars()
     sql = "SELECT DepVars.*, StatLabel.StatLabel, StatLabel.Alias, StatLabel.UnitID " & _
           "FROM StatLabel INNER JOIN DepVars ON StatLabel.StatisticLabelID = DepVars.StatisticLabelID " & _
           "WHERE DepVars.RegionID=" & pID & _
-          " ORDER BY Len(StatLabel.StatLabel), StatLabel.StatLabel;"
+          " ORDER BY DepVars.OrderIndex;"
+'          " ORDER BY Len(StatLabel.StatLabel), StatLabel.StatLabel;"
     Set depVarRec = pDB.DB.OpenRecordset(sql)
     While Not depVarRec.EOF
       DepVarID = depVarRec.Fields("DepVarID")
@@ -342,6 +343,7 @@ Public Sub PopulateDepVars()
           Wend
           Set .XiVector = lXiVector
         End If
+        If Not IsNull(depVarRec.Fields("OrderIndex")) Then .OrderIndex = depVarRec.Fields("OrderIndex")
       End With
 '      newDepVar.Components.Clear
 '      Set newDepVar.Components = Nothing

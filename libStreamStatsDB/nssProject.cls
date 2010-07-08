@@ -519,7 +519,7 @@ Private Function BuildEquations(ByVal aScenario As nssScenario) As String
   Dim InMultExp As Boolean
   Dim lRegion As nssRegion
   Dim vDepVar As nssDepVar
-  Dim vComp As nssComponent
+'  Dim vComp As nssComponent
 
 On Error GoTo BEErrHandler
   EqtnStr = "Equations used:" & vbCrLf
