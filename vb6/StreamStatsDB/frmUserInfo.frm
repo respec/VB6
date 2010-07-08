@@ -1,19 +1,19 @@
 VERSION 5.00
 Begin VB.Form frmUserInfo 
    Caption         =   "User Information"
-   ClientHeight    =   2244
-   ClientLeft      =   48
-   ClientTop       =   276
-   ClientWidth     =   4128
+   ClientHeight    =   2250
+   ClientLeft      =   45
+   ClientTop       =   270
+   ClientWidth     =   4125
    LinkTopic       =   "Form1"
-   ScaleHeight     =   2244
-   ScaleWidth      =   4128
+   ScaleHeight     =   2250
+   ScaleWidth      =   4125
    StartUpPosition =   3  'Windows Default
    Begin VB.CommandButton cmdOK 
       Caption         =   "OK"
       BeginProperty Font 
          Name            =   "MS Sans Serif"
-         Size            =   7.8
+         Size            =   8.25
          Charset         =   0
          Weight          =   700
          Underline       =   0   'False
@@ -106,6 +106,7 @@ Private Sub cmdOK_Click()
   userOrg = txtUserInfo(1).Text
   explanation = txtUserInfo(2).Text
   where = SSDB.state.Name
+  If Len(where) = 0 Then where = "<none>" 'catches the case of no state selected
   If Len(userName) = 0 Or Len(userOrg) = 0 Or Len(explanation) = 0 Then
     response = myMsgBox.Show("Information must be entered for all three" & _
         " requested fields" & vbCrLf & "in order to process the changes" & _

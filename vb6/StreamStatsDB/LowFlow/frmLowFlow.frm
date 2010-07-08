@@ -12,13 +12,12 @@ Begin VB.Form frmLowFlow
    ScaleHeight     =   10140
    ScaleWidth      =   10725
    StartUpPosition =   3  'Windows Default
-   Begin VB.CommandButton cmdComponentConvert 
-      Caption         =   "Convert Comps"
+   Begin VB.CommandButton cmdConvert 
+      Caption         =   "Update Order"
       Height          =   495
       Left            =   9840
       TabIndex        =   48
       Top             =   6120
-      Visible         =   0   'False
       Width           =   855
    End
    Begin VB.OptionButton rdoMainOpt 
@@ -364,7 +363,7 @@ Begin VB.Form frmLowFlow
             AllowEditHeader =   0   'False
             AllowLoad       =   0   'False
             AllowSorting    =   0   'False
-            Rows            =   561
+            Rows            =   580
             Cols            =   2
             ColWidthMinimum =   300
             gridFontBold    =   0   'False
@@ -559,7 +558,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -618,7 +617,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   6
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -952,45 +951,6 @@ Private Sub cmdCancel_Click()
   End If
 End Sub
 
-'Private Sub cmdComponent_Click(Index As Integer)
-'  Dim Resp As Integer, i As Integer
-'
-'  Resp = vbYes
-'  With grdComps
-'    If Index = 0 Then 'add row
-'      For i = 1 To .Rows 'make sure there isn't a blank row already
-'        If Len(.TextMatrix(i, 0)) = 0 Then
-'          Resp = MsgBox("There is already a blank component row available for adding a component." & vbCrLf & _
-'                 "Are you sure you want to add another component row?", vbYesNo + vbExclamation, "Add Component")
-'          Exit For
-'        End If
-'      Next i
-'      If Resp = vbYes Then
-'        .Rows = .Rows + 1
-'        .TextMatrix(.Rows, 1) = "0"
-'        .TextMatrix(.Rows, 2) = "1"
-'        .TextMatrix(.Rows, 4) = "none"
-'        .TextMatrix(.Rows, 5) = "0"
-'        .TextMatrix(.Rows, 6) = "0"
-'        .TextMatrix(.Rows, 7) = "0"
-'      End If
-'    ElseIf .Rows > 1 Then 'delete row
-'      If Len(.TextMatrix(.row, 0)) > 0 Then 'confirm delete of existing component
-'        Resp = MsgBox("Are you sure you want to delete the component " & .TextMatrix(.row, 0) & "?", vbYesNo + vbInformation, "Remove Component")
-'      End If
-'      If Resp = vbYes Then .Rows = .Rows - 1
-'    End If
-'  End With
-'  With grdMatrix
-'    .Rows = grdComps.Rows + 1
-'    .cols = .Rows
-'    For i = 0 To .cols - 1
-'      .ColEditable(i) = True
-'      .colWidth(i) = 1000
-'    Next i
-'  End With
-'End Sub
-
 'Private Sub cmdConvert_Click()
 '  Dim vState As nssState
 '  Dim vRegion As nssRegion
@@ -1066,6 +1026,72 @@ End Sub
 '  Me.MousePointer = vbDefault
 '
 'End Sub
+
+Private Sub cmdConvert_Click()
+  Dim vState As nssState
+  Dim vRegion As nssRegion
+  Dim vDepVar As nssDepVar
+  Dim lEqtnStr As String
+  Dim myRec As Recordset
+  Dim sql As String
+  Dim lDepVars As FastCollection
+  Dim lVarNames() As String
+  Dim lInd As Integer
+  Dim i As Integer
+  Dim lRank As Integer
+  Dim AllNumeric As Boolean
+
+  Me.MousePointer = vbHourglass
+  For Each vState In DB.States
+    For Each MyRegion In vState.Regions
+      ReDim lVarNames(MyRegion.DepVars.Count)
+      AllNumeric = True
+      For lInd = 1 To MyRegion.DepVars.Count
+        If MyRegion.id < 10000 Then 'peak flow region, try to sort return intervals
+          lVarNames(lInd) = ReplaceString(MyRegion.DepVars(lInd).Name, "_", ".")
+          If Left(lVarNames(lInd), 2) = "PK" Then
+            lVarNames(lInd) = Mid(lVarNames(lInd), 3)
+          End If
+          If Not IsNumeric(lVarNames(lInd)) Then
+            AllNumeric = False
+          End If
+        Else
+          AllNumeric = False
+        End If
+      Next lInd
+      
+      lInd = 0
+      lRank = 0
+      For Each vDepVar In MyRegion.DepVars
+        If AllNumeric Then 'apply sorted indices
+          lInd = lInd + 1
+          Dim thisDepVar As Single
+          lRank = 1
+          thisDepVar = CSng(lVarNames(lInd))
+          For i = 1 To MyRegion.DepVars.Count
+            If thisDepVar > CSng(lVarNames(i)) Then
+              lRank = lRank + 1
+            End If
+          Next i
+        Else
+          lRank = lRank + 1
+        End If
+        sql = "SELECT * FROM DepVars WHERE DepVarID=" & vDepVar.id
+        Set myRec = DB.DB.OpenRecordset(sql, dbOpenDynaset)
+        With myRec
+          If Not .NoMatch Then
+            .Edit
+            !OrderIndex = lRank
+            .Update
+          Else
+            MsgBox "There is no dependent variable with the ID= " & vDepVar.id & "."
+          End If
+        End With
+      Next
+    Next
+  Next
+  Me.MousePointer = vbDefault
+End Sub
 
 Private Sub cmdDatabase_Click()
   Dim lDBFName As String
@@ -1292,7 +1318,8 @@ TryAgain:
       Set MyDepVar = New nssDepVar
       DepVarID = MyDepVar.Add(isReturn, MyRegion, depVarVals(j, 0), depVarVals(j, 1), _
           depVarVals(j, 2), depVarVals(j, 3), depVarVals(j, 4), depVarVals(j, 5), _
-          depVarVals(j, 6), depVarVals(j, 7), depVarVals(j, 8), depVarVals(j, 9), depVarVals(j, 10))
+          depVarVals(j, 6), depVarVals(j, 7), depVarVals(j, 8), depVarVals(j, 9), _
+          depVarVals(j, 10), depVarVals(j, 11))
       MyRegion.PopulateDepVars
       'check equation being imported
       If lMath.StoreExpression(depVarVals(j, 9)) Then
@@ -1477,11 +1504,12 @@ Private Sub cmdExport_Click()
       End If
       If MyRegion.PredInt Then
         If InStr(MyDepVar.XiVectorText, ",") > 0 Then 'commas in XiVector, surround w/quotes
-          str = str & ",""" & MyDepVar.XiVectorText & """" & lBlankPredsStr
-        Else 'no quoates needed
-          str = str & "," & MyDepVar.XiVectorText & lBlankPredsStr
+          str = str & ",""" & MyDepVar.XiVectorText & """"
+        Else 'no quotes needed
+          str = str & "," & MyDepVar.XiVectorText
         End If
       End If
+      str = str & "," & MyDepVar.OrderIndex & lBlankPredsStr
       Print #OutFile, str
       If MyRegion.PredInt Then  'using prediction intervals
         covArray = MyDepVar.PopulateMatrix
@@ -1492,7 +1520,7 @@ Private Sub cmdExport_Click()
             For col = 1 To UBound(covArray, 2)
               str = str & covArray(row, col) & ","
             Next col
-            Print #OutFile, ",,,,,,,,,,,,,,,,,,,,,,,,,,," & Left(str, Len(str) - 1)
+            Print #OutFile, ",,,,,,,,,,,,,,,,,,,,,,,,,,,," & Left(str, Len(str) - 1)
           Next row
         End If
       End If
@@ -1513,153 +1541,6 @@ x:
   Me.MousePointer = vbDefault
 
 End Sub
-
-'Private Function BldComponentEqtn(MyComp As nssComponent) As String
-'  Dim str
-'
-'
-'  With MyComp
-'    'Set base portion of equation
-'    str = vbTab & "#" & vbTab & .BaseCoeff
-'    If .expID = -999 Then
-'      str = str & "ln(" & .BaseMod & "+" & GetAbbrev(.ParmID) & ")^" & .BaseExp
-'    Else
-'      str = str & "(" & .BaseMod & "+" & GetAbbrev(.ParmID) & ")^" & .BaseExp
-'    End If
-'    'Set exponent portion of equation, if applicable
-'    If GetAbbrev(.expID) <> "none" Then
-'      str = str & "(" & .ExpMod & "+" & GetAbbrev(.expID) & ")"
-'    End If
-'    'Set exponent of exponent, if applicable
-'    If .ExpExp <> 0 Then
-'      str = str & "^" & .ExpExp
-'    End If
-'    BldComponentEqtn = str
-'  End With
-'End Function
-'
-'Private Function BldPredIntComponent(MyComp As nssComponent) As String
-'  Dim str
-'
-'  With MyComp
-'    'Set base portion of equation
-'    If .BaseCoeff = 0 Or .BaseCoeff = 1 Then 'ignore base coeff
-'      str = ""
-'    Else
-'      str = .BaseCoeff & "*"
-'    End If
-'    If .expID = 0 Then 'variable not in exponent, take log
-'      If .BaseMod <> 0 Then
-'        str = "logN(" & str & "(" & .BaseMod & "+" & GetAbbrev(.ParmID) & ")" & ",10)"
-'      Else
-'        str = "logN(" & str & GetAbbrev(.ParmID) & ",10)"
-'      End If
-'    Else ' variable in exponent, no log
-'      If .ExpMod <> 0 Then
-'        str = str & "(" & .BaseMod & "+" & GetAbbrev(.expID) & ")"
-'      Else
-'        str = str & GetAbbrev(.expID)
-'      End If
-'    End If
-'    BldPredIntComponent = str
-'  End With
-'End Function
-'
-'Private Function BuildEquation(aDepVar As nssDepVar) As String
-'  Dim InMultExp As Boolean
-'  Dim i As Integer
-'  Dim lComp As nssComponent
-'  Dim lstr As String
-'  Dim lEqtnStr As String
-'  Dim lBaseVar As String
-'  Dim lBaseStr As String
-'  Dim lExpStr As String
-'  Dim lExpInUse As Boolean
-'
-'  On Error GoTo ErrHandler
-'
-'  If aDepVar.Constant <> 1 Then
-'    lEqtnStr = aDepVar.Constant
-'  Else
-'    lEqtnStr = ""
-'  End If
-'  InMultExp = False
-'  For Each lComp In aDepVar.Components
-'    lExpInUse = False
-'    If Not InMultExp Then
-'      lstr = GetAbbrev(lComp.ParmID)
-'      If lstr = "none" Then
-'        lBaseVar = ""
-'      Else
-'        If lComp.expID = -999 Then lstr = "ln(" & lstr & ")" 'indicates use natural log
-'        lBaseVar = lstr
-'      End If
-'      Select Case lComp.BaseMod
-'        Case Is > 0: lBaseStr = "(" & lBaseVar & "+" & lComp.BaseMod & ")"
-'        Case Is < 0: lBaseStr = "(" & lBaseVar & lComp.BaseMod & ")"
-'        Case Else: lBaseStr = "(" & lBaseVar & ")"
-'      End Select
-'      If lComp.BaseCoeff <> 1 Then lBaseStr = "(" & lComp.BaseCoeff & "*" & lBaseStr & ")"
-'      If lEqtnStr <> "" Then
-'        If aDepVar.Region.LowFlowRegnID < 0 Then 'probability equation, add components
-'          lEqtnStr = lEqtnStr & "+ " & lBaseStr
-'        Else 'multiply components
-'          lEqtnStr = lEqtnStr & "* " & lBaseStr
-'        End If
-'      Else 'nothing in equation yet, don't include + or *
-'        lEqtnStr = lBaseStr
-'      End If
-'    Else
-'      lExpInUse = True
-'    End If
-'    'try processing BaseExp's of "0" to handle MT equations that raise DA to 0 so it's ignored
-'    If lComp.BaseExp <> 1 Then
-'      If InMultExp Then
-'        lEqtnStr = lEqtnStr & lComp.BaseExp
-'      Else
-'        lEqtnStr = lEqtnStr & "^(" & lComp.BaseExp
-'        lExpInUse = True
-'      End If
-'    End If
-'    lstr = GetAbbrev(lComp.expID)
-'    If lstr = "none" Then
-'      lExpStr = ""
-'    Else
-'      lExpStr = lstr
-'      Select Case lComp.ExpMod
-'        Case Is > 0: lExpStr = "(" & lExpStr & "+" & lComp.ExpMod & ")" '"^" & "(" & ExpStr & "+" & ExpMod & ")"
-'        Case Is < 0: lExpStr = "(" & lExpStr & lComp.ExpMod & ")" '"^" & "(" & ExpStr & "-" & ExpMod & ")"
-'        Case Else: lExpStr = "(" & lExpStr & ")" '"^" & "(" & ExpStr & ")"
-'      End Select
-'      If lComp.ExpExp <> 0 And lComp.ExpExp <> 1 Then
-'        lExpStr = lExpStr & "^(" & lComp.ExpExp & ")"
-'      End If
-'      If Not InMultExp And Not lExpInUse Then 'not in mult exponent and base exp=1
-'        lEqtnStr = lEqtnStr & "^" & lExpStr
-'      Else
-'        lEqtnStr = lEqtnStr & "*" & lExpStr
-'      End If
-'    End If
-''    If lComp.ParmID < -2 Then 'indicates multiple parms in exponent
-'    If lExpInUse Then
-'      If lComp.ParmID = -3 Then 'not last parm in exponent
-'        InMultExp = True
-'      Else 'last exponent
-'        InMultExp = False
-'        lEqtnStr = lEqtnStr & ")"
-'      End If
-'    End If
-'  Next
-'  If aDepVar.Region.LowFlowRegnID < 0 Then 'probability, put equation in numerator and denominator
-'    lEqtnStr = "e#^(" & lEqtnStr & ")/(1+e#^(" & lEqtnStr & "))"
-'  End If
-'  BuildEquation = lEqtnStr
-'  Exit Function
-'
-'ErrHandler:
-'    BuildEquation = "Problem building equation - so far we've got:" & vbCrLf & lEqtnStr
-'
-'End Function
 
 Private Sub cmdTest_Click()
   Dim lPos As Integer
@@ -1697,12 +1578,6 @@ Private Sub cmdTest_Click()
     If lVarNotFound > 0 Then
       lblStatus.Caption = "Var not found:" & vbCrLf & lMath.VarName(lVarNotFound)
       lblStatus.BackColor = vbRed
-'    ElseIf MyRegion.PredInt Then 'set covariance matrix grid size
-'      grdMatrix.Rows = lVarCount + 1
-'      grdMatrix.cols = lVarCount + 1
-'      For i = 0 To grdMatrix.cols - 1
-'        grdMatrix.ColEditable(i) = True
-'      Next i
     End If
   Else
     lblStatus.Caption = "No Variables"
@@ -1827,7 +1702,7 @@ Private Sub grdInterval_RowColChange()
         Next i
       End If
       .ComboCheckValidValues = False
-    ElseIf .col = .cols - 1 Then
+    ElseIf .col = .cols - 2 Then
       If Metric Then
         For i = 1 To DB.Units.Count
           .addValue DB.Units(i).MetricLabel
@@ -2798,7 +2673,8 @@ Private Sub cmdSave_Click()
         tmpID = MyDepVar.Add(isReturn, MyRegion, grdInterval.TextMatrix(1, 0), _
             grdInterval.TextMatrix(1, 1), grdInterval.TextMatrix(1, 2), _
             grdInterval.TextMatrix(1, 3), grdInterval.TextMatrix(1, 4), _
-             BCF, tdist, Variance, ExpDA, txtEquation.Text, txtVector.Text)
+            BCF, tdist, Variance, ExpDA, txtEquation.Text, txtVector.Text, _
+            grdInterval.TextMatrix(1, grdInterval.cols - 1))
             'grdInterval.TextMatrix(1, 5), BCF, tdist, Variance, ExpDA)
         If tmpID = -1 Then GoTo x
         ResetDB
@@ -2810,7 +2686,8 @@ Private Sub cmdSave_Click()
         MyDepVar.Edit grdInterval.TextMatrix(1, 0), grdInterval.TextMatrix(1, 1), _
                       grdInterval.TextMatrix(1, 2), grdInterval.TextMatrix(1, 3), _
                       grdInterval.TextMatrix(1, 4), 1, BCF, tdist, Variance, ExpDA, _
-                      txtEquation.Text, txtVector.Text
+                      txtEquation.Text, txtVector.Text, _
+                      grdInterval.TextMatrix(1, grdInterval.cols - 1)
                       'grdInterval.TextMatrix(1, 5), BCF, tdist, Variance, ExpDA
         MyDepVar.ClearOldMatrix 'ClearOldComponents
         ResetDB
@@ -2941,10 +2818,10 @@ Private Sub SetGrid(Table As String)
       With grdInterval
         .Rows = lstRetPds.SelCount
         If MyRegion.PredInt Then
-          DepVarFlds = 9
+          DepVarFlds = 10
           AddSpace = 100
         Else
-          DepVarFlds = 6
+          DepVarFlds = 7
           AddSpace = 350
         End If
         .cols = DepVarFlds + 1
@@ -2989,12 +2866,18 @@ Private Sub SetGrid(Table As String)
           .TextMatrix(0, 7) = "Variance"
           .colWidth(7) = 740
         End If
-        .ColType(.cols - 2) = ATCoSng
-        .TextMatrix(-1, .cols - 2) = "Drn. Area"
-        .TextMatrix(0, .cols - 2) = "Exponent"
+        .ColType(.cols - 3) = ATCoSng
+        .TextMatrix(-1, .cols - 3) = "Drn. Area"
+        .TextMatrix(0, .cols - 3) = "Exponent"
+        .colWidth(.cols - 3) = 850 + AddSpace
+        .TextMatrix(0, .cols - 2) = "Units"
         .colWidth(.cols - 2) = 850 + AddSpace
-        .TextMatrix(0, .cols - 1) = "Units"
-        .colWidth(.cols - 1) = 850 + AddSpace
+        .ColType(.cols - 1) = ATCoTxt
+        .TextMatrix(-1, .cols - 1) = "Order"
+        .TextMatrix(0, .cols - 1) = "Index"
+        .ColType(.cols - 1) = ATCoInt
+        .ColMin(.cols - 1) = 1
+        .ColMax(.cols - 1) = MyRegion.DepVars.Count
         For col = 0 To .cols - 1
           .ColEditable(col) = True
           For row = 1 To lstRetPds.SelCount
@@ -3013,12 +2896,13 @@ Private Sub SetGrid(Table As String)
                         Else
                           .Text = MyDepVar.ExpDA
                         End If
-                Case .cols - 1:
+                Case .cols - 2:
                   If rdoUnits(0).Value Then
                     .Text = MyDepVar.Units.EnglishLabel
                   Else
                     .Text = MyDepVar.Units.MetricLabel
                   End If
+                Case .cols - 1: .Text = MyDepVar.OrderIndex
                 Case 6: .Text = MyDepVar.tdist
                 Case 7: .Text = MyDepVar.Variance
                 Case 8: .Text = MyDepVar.ExpDA
@@ -3200,7 +3084,6 @@ Private Sub AddUrbanNeedsRuralParms()
     MyRegion.Parameters.Add MyParm, "-2"
     Set MyParm = Nothing
 End Sub
-    
     
 Private Sub PopulateDepVars()
   Dim depVarIndex&, cntr&, thisDepVar!, rank&, intCnt
@@ -3423,8 +3306,9 @@ Private Function ChangesMade() As Boolean
         oldVals(6) = MyDepVar.tdist
         oldVals(7) = MyDepVar.Variance
       End If
-      oldVals(DepVarFlds - 1) = MyDepVar.ExpDA
-      oldVals(DepVarFlds) = MyDepVar.Units.id
+      oldVals(DepVarFlds - 2) = MyDepVar.ExpDA
+      oldVals(DepVarFlds - 1) = MyDepVar.Units.id
+      oldVals(DepVarFlds) = MyDepVar.OrderIndex
       Set MyDepVar.DB = DB
       If compCnt > 0 And MyRegion.PredInt Then
         OldMatrix = MyDepVar.PopulateMatrix()
@@ -3434,7 +3318,7 @@ Private Function ChangesMade() As Boolean
       For i = 0 To DepVarFlds
         tmpstr = grdInterval.TextMatrix(1, i)
         If tmpstr = "" Then tmpstr = "0"
-        If i = DepVarFlds Then 'convert unit label to index for comparison
+        If i = DepVarFlds - 1 Then 'convert unit label to index for comparison
           tmpstr = CStr(UnitIDFromLabel(grdInterval.TextMatrix(1, i), DB.Units))
         End If
         If tmpstr <> oldVals(i) Then
