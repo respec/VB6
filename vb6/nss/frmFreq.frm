@@ -143,10 +143,9 @@ Private Sub PlotFreq(agr As ATCoGraph) ', lst As ATCoGrid)
       ivar = ivar + 1
       'set x-axis values (probabilities)
       For i = 1 To lNumIntervals
-        If Left(Scenario.UserRegions(1).region.DepVars(i).Name, 2) = "PK" Then
-          IntervalName = Mid(Scenario.UserRegions(1).region.DepVars(i).Name, 3)
-        Else
-          IntervalName = Scenario.UserRegions(1).region.DepVars(i).Name
+        IntervalName = ReplaceString(Scenario.UserRegions(1).region.DepVars(i).Name, "_", ".")
+        If Left(IntervalName, 2) = "PK" Then
+          IntervalName = Mid(IntervalName, 3)
         End If
         t(i) = gausex(1 / CDbl(IntervalName))
 '        If Not graphing Then
