@@ -371,7 +371,7 @@ Private Sub PopulateSources()
   Set pSources = New FastCollection
 
   'builds collection of Sources
-  sql = "SELECT * FROM DATASOURCE" ' ORDER BY Citation"
+  sql = "SELECT * FROM DATASOURCE ORDER BY Citation"
   Set myRec = pnssDB.OpenRecordset(sql, dbOpenForwardOnly)
   With myRec
     While Not myRec.EOF
