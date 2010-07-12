@@ -363,7 +363,7 @@ Begin VB.Form frmLowFlow
             AllowEditHeader =   0   'False
             AllowLoad       =   0   'False
             AllowSorting    =   0   'False
-            Rows            =   580
+            Rows            =   582
             Cols            =   2
             ColWidthMinimum =   300
             gridFontBold    =   0   'False
@@ -1226,7 +1226,7 @@ TryAgain:
     isReturn = False
   End If
 
-  DepVarFlds = 10 'always set to import all possible DepVar fields
+  DepVarFlds = 11 'always set to import all possible DepVar fields
   
   'read in number of regions and metric flag
   regnCnt = CLng(StrRetRem(str))
@@ -1508,6 +1508,8 @@ Private Sub cmdExport_Click()
         Else 'no quotes needed
           str = str & "," & MyDepVar.XiVectorText
         End If
+      Else 'include blank XiVector field for proper importing of order index in next field
+        str = str & ","
       End If
       str = str & "," & MyDepVar.OrderIndex & lBlankPredsStr
       Print #OutFile, str
