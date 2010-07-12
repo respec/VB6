@@ -97,6 +97,39 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 
+Private Sub cboSource_Click()
+  Dim i As Integer
+  Dim lSrcInd As Integer
+  Dim lURLInd As Integer
+  
+  lSrcInd = cboSource.ItemData(cboSource.ListIndex)
+  lURLInd = -1
+  For i = 0 To cboSourceURL.ListCount - 1
+    If cboSourceURL.ItemData(i) = lSrcInd Then
+      lURLInd = i
+      Exit For
+    End If
+  Next i
+  cboSourceURL.Text = cboSourceURL.List(lURLInd)
+
+End Sub
+
+Private Sub cboSourceURL_Click()
+  Dim i As Integer
+  Dim lSrcInd As Integer
+  Dim lURLInd As Integer
+  
+  lURLInd = cboSourceURL.ItemData(cboSourceURL.ListIndex)
+  lSrcInd = -1
+  For i = 0 To cboSource.ListCount - 1
+    If cboSource.ItemData(i) = lURLInd Then
+      lSrcInd = i
+      Exit For
+    End If
+  Next i
+  cboSource.Text = cboSource.List(lSrcInd)
+End Sub
+
 Private Sub cmdCancel_Click()
   Me.Hide
 End Sub
@@ -142,12 +175,21 @@ End Sub
 
 Private Sub Form_Load()
   Dim vSrc As Variant
+  Dim i As Integer, j As Integer
 
   Me.Tag = 0
+  i = 0
+  j = 0
   For Each vSrc In SSDB.Sources
     If UCase(vSrc.Name) <> "NONE" Then
       cboSource.AddItem CStr(vSrc.Name)
-      If Len(vSrc.URL) > 0 Then cboSourceURL.AddItem CStr(vSrc.URL)
+      cboSource.ItemData(i) = i
+      If Len(vSrc.URL) > 0 Then
+        cboSourceURL.AddItem CStr(vSrc.URL)
+        cboSourceURL.ItemData(j) = i
+        j = j + 1
+      End If
+      i = i + 1
     End If
   Next
 
