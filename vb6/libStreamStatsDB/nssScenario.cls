@@ -1567,7 +1567,7 @@ Public Function Discharges() As Double()
                   GoTo NextInterval
                 End If
             ElseIf UCase(lMath.VarName(i)) = "RURAL_DA" Then 'need corresponding rural area for urban equation (IS THIS CORRECT?)
-              lMath.Variable(i) = Me.GetArea(StateMetric)
+              lMath.Variable(i) = Me.RuralScenario.GetArea(StateMetric)
             Else 'match variable name with UserParm name
               For Each vParm In CurRegion.Region.Parameters
                 If vParm.Abbrev = lMath.VarName(i) Then 'get the input value
