@@ -621,11 +621,17 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
 '      End With
     Case 6:
       'updated Citation, update Citation URL also
-      Dim lStat As New ssStatistic
-      'CitationCode = lStat.GetSourceID(grdStaData.TextMatrix(ChangeFromRow, ChangeFromCol))
       For i = 1 To SSDB.Sources.Count
         If grdStaData.TextMatrix(ChangeFromRow, ChangeFromCol) = SSDB.Sources(i).Name Then
           grdStaData.TextMatrix(ChangeFromRow, ChangeFromCol + 1) = SSDB.Sources(i).URL
+          Exit For
+        End If
+      Next i
+    Case 7:
+      'updated Citation URL, update Citation also
+      For i = 1 To SSDB.Sources.Count
+        If grdStaData.TextMatrix(ChangeFromRow, ChangeFromCol) = SSDB.Sources(i).URL Then
+          grdStaData.TextMatrix(ChangeFromRow, ChangeFromCol - 1) = SSDB.Sources(i).Name
           Exit For
         End If
       Next i
@@ -704,7 +710,7 @@ Private Sub SetGrid()
       .ColEditable(col) = True
     Next col
     .ColEditable(4) = False
-    .ColEditable(7) = False
+    '.ColEditable(7) = False
     If .Rows > 0 Then
       lblStatSel(1).Caption = .TextMatrix(1, 1)
     End If
