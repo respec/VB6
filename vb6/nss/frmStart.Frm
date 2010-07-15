@@ -2,23 +2,104 @@ VERSION 5.00
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "Comdlg32.ocx"
 Begin VB.Form frmStart 
    Caption         =   "NSS Options"
-   ClientHeight    =   2850
+   ClientHeight    =   3180
    ClientLeft      =   2670
    ClientTop       =   3285
-   ClientWidth     =   5505
+   ClientWidth     =   6690
    HelpContextID   =   11
    Icon            =   "frmStart.frx":0000
    LinkTopic       =   "Form1"
    PaletteMode     =   1  'UseZOrder
-   ScaleHeight     =   2850
-   ScaleWidth      =   5505
+   ScaleHeight     =   3180
+   ScaleWidth      =   6690
+   Begin VB.Frame fraAnalysisType 
+      BorderStyle     =   0  'None
+      Caption         =   "Frame1"
+      Height          =   375
+      Left            =   240
+      TabIndex        =   20
+      Top             =   120
+      Width           =   6255
+      Begin VB.OptionButton optAnalysisType 
+         Caption         =   "Other"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   255
+         Index           =   2
+         Left            =   5160
+         TabIndex        =   24
+         Top             =   0
+         Width           =   975
+      End
+      Begin VB.OptionButton optAnalysisType 
+         Caption         =   "Probability"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   255
+         Index           =   1
+         Left            =   3600
+         TabIndex        =   23
+         Top             =   0
+         Width           =   1575
+      End
+      Begin VB.OptionButton optAnalysisType 
+         Caption         =   "Peak"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   255
+         Index           =   0
+         Left            =   2040
+         TabIndex        =   21
+         Top             =   0
+         Width           =   1575
+      End
+      Begin VB.Label Label5 
+         BackStyle       =   0  'Transparent
+         Caption         =   "Analysis Type:"
+         BeginProperty Font 
+            Name            =   "MS Sans Serif"
+            Size            =   8.25
+            Charset         =   0
+            Weight          =   700
+            Underline       =   0   'False
+            Italic          =   0   'False
+            Strikethrough   =   0   'False
+         EndProperty
+         Height          =   255
+         Left            =   0
+         TabIndex        =   22
+         Top             =   0
+         Width           =   2055
+      End
+   End
    Begin VB.Frame fraVarLabel 
       BorderStyle     =   0  'None
       Caption         =   "Frame1"
       Height          =   375
       Left            =   240
-      TabIndex        =   19
-      Top             =   1080
+      TabIndex        =   16
+      Top             =   1320
       Width           =   5055
       Begin VB.OptionButton optVarianceType 
          Caption         =   "Log10"
@@ -34,7 +115,7 @@ Begin VB.Form frmStart
          Height          =   255
          Index           =   0
          Left            =   2040
-         TabIndex        =   21
+         TabIndex        =   18
          Top             =   0
          Width           =   1455
       End
@@ -52,7 +133,7 @@ Begin VB.Form frmStart
          Height          =   255
          Index           =   1
          Left            =   3600
-         TabIndex        =   20
+         TabIndex        =   17
          Top             =   0
          Width           =   1455
       End
@@ -70,7 +151,7 @@ Begin VB.Form frmStart
          EndProperty
          Height          =   255
          Left            =   0
-         TabIndex        =   22
+         TabIndex        =   19
          Top             =   0
          Width           =   2055
       End
@@ -80,8 +161,8 @@ Begin VB.Form frmStart
       Caption         =   "Frame1"
       Height          =   375
       Left            =   240
-      TabIndex        =   15
-      Top             =   600
+      TabIndex        =   12
+      Top             =   840
       Width           =   5055
       Begin VB.OptionButton optLabelType 
          Caption         =   "Traditional (Rec Intvl)"
@@ -97,7 +178,7 @@ Begin VB.Form frmStart
          Height          =   375
          Index           =   0
          Left            =   2040
-         TabIndex        =   17
+         TabIndex        =   14
          Top             =   0
          Width           =   1335
       End
@@ -115,7 +196,7 @@ Begin VB.Form frmStart
          Height          =   375
          Index           =   1
          Left            =   3600
-         TabIndex        =   16
+         TabIndex        =   13
          Top             =   0
          Width           =   1335
       End
@@ -133,7 +214,7 @@ Begin VB.Form frmStart
          EndProperty
          Height          =   255
          Left            =   0
-         TabIndex        =   18
+         TabIndex        =   15
          Top             =   60
          Width           =   2055
       End
@@ -141,10 +222,10 @@ Begin VB.Form frmStart
    Begin VB.Frame fraUnits 
       BorderStyle     =   0  'None
       Caption         =   "Frame1"
-      Height          =   372
+      Height          =   375
       Left            =   240
-      TabIndex        =   11
-      Top             =   240
+      TabIndex        =   8
+      Top             =   480
       Width           =   5055
       Begin VB.OptionButton optUnits 
          Caption         =   "&Metric"
@@ -161,7 +242,7 @@ Begin VB.Form frmStart
          HelpContextID   =   11
          Index           =   1
          Left            =   3600
-         TabIndex        =   14
+         TabIndex        =   11
          Top             =   0
          Width           =   1095
       End
@@ -180,7 +261,7 @@ Begin VB.Form frmStart
          HelpContextID   =   11
          Index           =   0
          Left            =   2040
-         TabIndex        =   13
+         TabIndex        =   10
          Top             =   0
          Width           =   1215
       End
@@ -198,48 +279,10 @@ Begin VB.Form frmStart
          EndProperty
          Height          =   255
          Left            =   0
-         TabIndex        =   12
+         TabIndex        =   9
          Top             =   0
          Width           =   2055
       End
-   End
-   Begin VB.OptionButton optAnalysisType 
-      Caption         =   "Other"
-      BeginProperty Font 
-         Name            =   "MS Sans Serif"
-         Size            =   8.25
-         Charset         =   0
-         Weight          =   700
-         Underline       =   0   'False
-         Italic          =   0   'False
-         Strikethrough   =   0   'False
-      EndProperty
-      Height          =   255
-      Index           =   1
-      Left            =   3840
-      TabIndex        =   10
-      Top             =   0
-      Visible         =   0   'False
-      Width           =   1575
-   End
-   Begin VB.OptionButton optAnalysisType 
-      Caption         =   "Peak"
-      BeginProperty Font 
-         Name            =   "MS Sans Serif"
-         Size            =   8.25
-         Charset         =   0
-         Weight          =   700
-         Underline       =   0   'False
-         Italic          =   0   'False
-         Strikethrough   =   0   'False
-      EndProperty
-      Height          =   255
-      Index           =   0
-      Left            =   2280
-      TabIndex        =   9
-      Top             =   0
-      Visible         =   0   'False
-      Width           =   1575
    End
    Begin VB.CommandButton cmdBrowse 
       Appearance      =   0  'Flat
@@ -259,23 +302,23 @@ Begin VB.Form frmStart
       Left            =   4320
       TabIndex        =   7
       ToolTipText     =   "Open a different project"
-      Top             =   1920
+      Top             =   2160
       Width           =   855
    End
    Begin VB.TextBox txtProject 
-      Height          =   288
+      Height          =   285
       HelpContextID   =   11
       Left            =   1080
       TabIndex        =   3
-      Top             =   1920
+      Top             =   2160
       Width           =   3135
    End
    Begin VB.TextBox txtUser 
-      Height          =   288
+      Height          =   285
       HelpContextID   =   11
       Left            =   1080
       TabIndex        =   1
-      Top             =   1560
+      Top             =   1800
       Width           =   1572
    End
    Begin MSComDlg.CommonDialog cdlg 
@@ -292,7 +335,7 @@ Begin VB.Form frmStart
       Height          =   372
       Left            =   240
       TabIndex        =   4
-      Top             =   2400
+      Top             =   2640
       Width           =   2055
       Begin VB.CommandButton cmdOk 
          Appearance      =   0  'Flat
@@ -335,25 +378,6 @@ Begin VB.Form frmStart
          Width           =   855
       End
    End
-   Begin VB.Label Label5 
-      BackStyle       =   0  'Transparent
-      Caption         =   "Analysis Type:"
-      BeginProperty Font 
-         Name            =   "MS Sans Serif"
-         Size            =   8.25
-         Charset         =   0
-         Weight          =   700
-         Underline       =   0   'False
-         Italic          =   0   'False
-         Strikethrough   =   0   'False
-      EndProperty
-      Height          =   255
-      Left            =   240
-      TabIndex        =   8
-      Top             =   0
-      Visible         =   0   'False
-      Width           =   2055
-   End
    Begin VB.Label Label2 
       BackStyle       =   0  'Transparent
       Caption         =   "&Project:"
@@ -369,7 +393,7 @@ Begin VB.Form frmStart
       Height          =   255
       Left            =   240
       TabIndex        =   2
-      Top             =   1965
+      Top             =   2205
       Width           =   1215
    End
    Begin VB.Label lblUserID 
@@ -387,7 +411,7 @@ Begin VB.Form frmStart
       Height          =   255
       Left            =   240
       TabIndex        =   0
-      Top             =   1560
+      Top             =   1800
       Width           =   735
    End
 End
@@ -426,6 +450,7 @@ End Sub
 
 Private Sub cmdOK_Click()
   Dim progress As String
+  Dim i As Integer
   On Error GoTo ShowProgress
   
   progress = "Setting Hourglass"
@@ -444,12 +469,6 @@ Private Sub cmdOK_Click()
   Else
     Project.Metric = True
   End If
-'  NOT HANDLING Analysis Type FOR NOW
-'  If optAnalysisType(0).Value Then
-'    Project.Peaks = True
-'  Else
-'    Project.Peaks = False
-'  End If
   If optLabelType(0).Value Then
     Project.Alias = False
   Else
@@ -460,6 +479,12 @@ Private Sub cmdOK_Click()
   Else
     Project.VarLog = False
   End If
+  For i = 0 To 2
+    If optAnalysisType(i).Value = True Then
+      Project.AnalysisType = i
+      Exit For
+    End If
+  Next i
   progress = progress & vbCr & "Setting Project.UserName = " & txtUser.Text
   Project.UserName = txtUser.Text
   Project.RaiseEdited
@@ -479,6 +504,7 @@ Private Sub Form_Load()
   On Error GoTo ShowProgress
   
   progress = "Setting options"
+  optAnalysisType(Project.AnalysisType).Value = True
   If Project.Metric Then optUnits(1).Value = True Else optUnits(0).Value = True
   If Project.Alias Then optLabelType(1).Value = True Else optLabelType(0).Value = True
   If Project.VarLog Then optVarianceType(0).Value = True Else optVarianceType(1).Value = True
