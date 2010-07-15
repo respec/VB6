@@ -253,6 +253,7 @@ Option Explicit
 'Copyright 2001 by AQUA TERRA Consultants
 Private pScenario As nssScenario
 Private pMetric As Boolean
+Private pAnalysisType As Integer
 
 Private RegUseCnt As Integer
 Private InAgd As Boolean
@@ -262,6 +263,7 @@ Private SashVdragging As Boolean
 Public Property Set Scenario(newValue As nssScenario)
   Set pScenario = newValue
   pMetric = pScenario.Project.Metric
+  pAnalysisType = pScenario.Project.AnalysisType
   If pMetric Then lblUnits.Caption = "km"
   txtScenario.Text = pScenario.Name
   txtBasinArea.Value = pScenario.GetArea(pMetric)
@@ -271,6 +273,7 @@ End Property
 
 Private Sub PopulateRegions()
   Dim myRegion As Variant, myUserRegion As Variant
+  Dim lID As Long 'local regions' low flow IDs
   lstRegion.Clear
   If pScenario.Urban Then
     lstRegion.AddItem pScenario.Project.NationalUrban.Name
@@ -280,15 +283,20 @@ Private Sub PopulateRegions()
       End If
     End If
   End If
-  For Each myRegion In pScenario.Project.DB.States(pScenario.Project.State.Code).Regions
-    If myRegion.Urban = pScenario.Urban Then
-      lstRegion.AddItem myRegion.Name
-      For Each myUserRegion In pScenario.UserRegions
-        If myUserRegion.Region.Name = myRegion.Name Then
-          lstRegion.Selected(lstRegion.ListCount - 1) = True
-          Exit For
-        End If
-      Next
+  For Each myRegion In pScenario.Project.DB.States(pScenario.Project.State.code).Regions
+    lID = CLng(myRegion.LowFlowRegnID)
+    If (pScenario.Project.AnalysisType = 0 And lID = 0) Or _
+       (pScenario.Project.AnalysisType = 1 And lID < 0) Or _
+       (pScenario.Project.AnalysisType = 2 And lID > 0) Then
+      If myRegion.Urban = pScenario.Urban Then
+        lstRegion.AddItem myRegion.Name
+        For Each myUserRegion In pScenario.UserRegions
+          If myUserRegion.Region.Name = myRegion.Name Then
+            lstRegion.Selected(lstRegion.ListCount - 1) = True
+            Exit For
+          End If
+        Next
+      End If
     End If
   Next myRegion
 End Sub
@@ -626,14 +634,14 @@ Private Sub Form_Resize()
   cmdCancel.Top = cmdOk.Top
 End Sub
 
-Private Sub sashV_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub sashV_MouseDown(Button As Integer, Shift As Integer, x As Single, y As Single)
   SashVdragging = True
 End Sub
 
-Private Sub sashV_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
-  If SashVdragging And (sashV.Left + X) > 100 And (sashV.Left + X < Width - 100) Then
+Private Sub sashV_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+  If SashVdragging And (sashV.Left + x) > 100 And (sashV.Left + x < Width - 100) Then
     Dim newLeftWidth&
-    sashV.Left = sashV.Left + X
+    sashV.Left = sashV.Left + x
     If sashV.Left < lstRegion.Left + 200 Then sashV.Left = lstRegion.Left + 200
     newLeftWidth = sashV.Left - lstRegion.Left
     If newLeftWidth > 0 And lstRegion.Width <> newLeftWidth Then lstRegion.Width = newLeftWidth
@@ -641,7 +649,7 @@ Private Sub sashV_MouseMove(Button As Integer, Shift As Integer, X As Single, Y 
   End If
 End Sub
 
-Private Sub sashV_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub sashV_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
   SashVdragging = False
 End Sub
 
@@ -688,7 +696,7 @@ Private Sub SetSelectedRegionsFromList()
         If lstRegion.List(lstRegion.ListIndex) = pScenario.Project.NationalUrban.Name Then
           Set newRegion.Region = pScenario.Project.NationalUrban
         Else
-          Set newRegion.Region = pScenario.Project.DB.States(pScenario.Project.State.Code).Regions(lstRegion.List(lstRegion.ListIndex))
+          Set newRegion.Region = pScenario.Project.DB.States(pScenario.Project.State.code).Regions(lstRegion.List(lstRegion.ListIndex))
         End If
         If newRegion.Region.UrbanNeedsRural Then
           If pScenario.Project.CurrentRuralScenario > 0 Then
@@ -715,7 +723,7 @@ Private Sub SetSelectedRegionsFromList()
           If myUserRegion.Region.Name = lstRegion.List(lstRegion.ListIndex) Then GoTo AlreadyHaveRegion
         Next
         Set newRegion = New userRegion
-        Set newRegion.Region = pScenario.Project.DB.States(pScenario.Project.State.Code).Regions(lstRegion.List(lstRegion.ListIndex))
+        Set newRegion.Region = pScenario.Project.DB.States(pScenario.Project.State.code).Regions(lstRegion.List(lstRegion.ListIndex))
         pScenario.UserRegions.Add newRegion, newRegion.Region.Name
         Set newRegion = Nothing
         If Left(newRegion.Region.Name, 3) = "ROI" Then
