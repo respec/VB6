@@ -53,8 +53,8 @@ Begin VB.Form frmStreamStatsDB
       TabCaption(1)   =   "Stat&istic Management"
       TabPicture(1)   =   "frmStreamStatsDB.frx":0326
       Tab(1).ControlEnabled=   0   'False
-      Tab(1).Control(0)=   "fraStatType"
-      Tab(1).Control(1)=   "fraStatistics"
+      Tab(1).Control(0)=   "fraStatistics"
+      Tab(1).Control(1)=   "fraStatType"
       Tab(1).ControlCount=   2
       Begin VB.Frame fraStatType 
          Caption         =   "Statistic Type"
@@ -625,7 +625,7 @@ Begin VB.Form frmStreamStatsDB
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   -1  'True
-         Rows            =   1
+         Rows            =   2
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -1753,15 +1753,17 @@ Private Sub cboCategory_Click()
       catCode = SSDB.state.StateBasins(cboCategory.ListIndex + 1).code
       Set SSDB.state.Statebasin = SSDB.state.StateBasins(catCode)
       stationCnt = SSDB.state.Statebasin.Stations.Count
-      ReDim ListedStations(1 To stationCnt)
-      For stationIndex = 1 To stationCnt
-'        If SSDB.state.Statebasin.Stations(stationIndex).HasData Then
-          lstStations.List(stationIndex - 1) = SSDB.state.Statebasin.Stations(stationIndex).label
-'        Else
-'          lstStations.List(stationIndex - 1) = "*" & SSDB.state.Statebasin.Stations(stationIndex).label
-'        End If
-        Set ListedStations(stationIndex) = SSDB.state.Statebasin.Stations(stationIndex)
-      Next
+      If stationCnt > 0 Then
+        ReDim ListedStations(1 To stationCnt)
+        For stationIndex = 1 To stationCnt
+  '        If SSDB.state.Statebasin.Stations(stationIndex).HasData Then
+            lstStations.List(stationIndex - 1) = SSDB.state.Statebasin.Stations(stationIndex).label
+  '        Else
+  '          lstStations.List(stationIndex - 1) = "*" & SSDB.state.Statebasin.Stations(stationIndex).label
+  '        End If
+          Set ListedStations(stationIndex) = SSDB.state.Statebasin.Stations(stationIndex)
+        Next
+      End If
       SaveSetting "StreamStatsDB", "Defaults", SSDB.state.code & "SSBasin", SSDB.state.Statebasin.Name
     ElseIf IsCounty Then
       Set SSDB.state.Counties = Nothing
