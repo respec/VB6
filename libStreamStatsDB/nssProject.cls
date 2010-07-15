@@ -25,7 +25,7 @@ Private pName As String
 Private pUserName As String
 Private pMetric As Boolean
 Private pAlias As Boolean 'True - use new Alias field for stat label; False use original label
-'Private pPeaks As Boolean 'True - only perform Peak flow analysis; False - other (low/duration/prob)
+Private pAnalysisType As Integer '0 - peak, 1 - probability, 2 - other
 Private PVarLog As Boolean 'True - display Variance in Log10; False - display as percent
 Private pChanged As Boolean
 Private pNationalState As nssState
@@ -80,16 +80,16 @@ Public Property Let Alias(newValue As Boolean)
   End If
 End Property
 
-'Public Property Get Peaks() As Boolean
-'  Peaks = pPeaks
-'End Property
-'Public Property Let Peaks(newValue As Boolean)
-'  If newValue <> pPeaks Then
-'    pPeaks = newValue
-'    pChanged = True
-'  End If
-'End Property
-'
+Public Property Get AnalysisType() As Integer
+  AnalysisType = pAnalysisType
+End Property
+Public Property Let AnalysisType(newValue As Integer)
+  If newValue <> pAnalysisType Then
+    pAnalysisType = newValue
+    pChanged = True
+  End If
+End Property
+
 Public Property Get VarLog() As Boolean
   VarLog = PVarLog
 End Property
@@ -159,7 +159,7 @@ Public Property Get XML() As String
   retval = retval & " state=""" & Me.State.code & """"
   retval = retval & " metric=""" & Me.Metric & """"
   retval = retval & " alias=""" & Me.Alias & """"
-'  retval = retval & " peaks=""" & Me.Peaks & """"
+  retval = retval & " analysistype=""" & Me.AnalysisType & """"
   retval = retval & " varlog=""" & Me.VarLog & """"
   retval = retval & " currentrural=""" & Me.CurrentRuralScenario & """"
   retval = retval & " currenturban=""" & Me.CurrentUrbanScenario & """"
@@ -229,7 +229,7 @@ Public Property Let XML(newValue As String)
     pUserName = projectXML.AttributeValue("username")
     If LCase(projectXML.AttributeValue("metric")) = "true" Then pMetric = True Else pMetric = False
     If LCase(projectXML.AttributeValue("alias")) = "true" Then pAlias = True Else pAlias = False
-'    If LCase(projectXML.AttributeValue("peaks")) = "true" Then pPeaks = True Else pPeaks = False
+    pAnalysisType = projectXML.AttributeValue("analysistype")
     If LCase(projectXML.AttributeValue("varlog")) = "true" Then PVarLog = True Else PVarLog = False
     Set Me.State = pDB.States(projectXML.AttributeValue("state"))
     pCurrentRuralScenario = projectXML.AttributeValue("currentrural", 0)
