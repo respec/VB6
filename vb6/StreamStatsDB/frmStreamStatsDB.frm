@@ -53,8 +53,8 @@ Begin VB.Form frmStreamStatsDB
       TabCaption(1)   =   "Stat&istic Management"
       TabPicture(1)   =   "frmStreamStatsDB.frx":0326
       Tab(1).ControlEnabled=   0   'False
-      Tab(1).Control(0)=   "fraStatistics"
-      Tab(1).Control(1)=   "fraStatType"
+      Tab(1).Control(0)=   "fraStatType"
+      Tab(1).Control(1)=   "fraStatistics"
       Tab(1).ControlCount=   2
       Begin VB.Frame fraStatType 
          Caption         =   "Statistic Type"
@@ -625,7 +625,7 @@ Begin VB.Form frmStreamStatsDB
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   -1  'True
-         Rows            =   2
+         Rows            =   1
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -962,7 +962,8 @@ Private Sub cmdNWIS_Click()
       Me.MousePointer = vbHourglass
       NWISImport .filename
       'Reassign class structure to previous selections
-      cboState_Click
+      ResetClass "Stations"
+      'cboState_Click
     End If
   End With
 x:

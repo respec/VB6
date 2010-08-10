@@ -6,6 +6,7 @@ Sub NWISImport(ImpFileName As String)
       XLBook As Excel.Workbook
   Dim bumSheets$, stationID$, bumFields$, filename$, stateFIPS$
   Dim staCnt&, header&, lastRow&, firstCol&, fldCnt&, h&, i&, response&
+  Dim iskip&, ibad&
   Dim value As String, staName As String
   Dim stationValues() As String, dataValues() As String, impStates() As String
   Dim OutFile As Integer
@@ -13,6 +14,9 @@ Sub NWISImport(ImpFileName As String)
   Dim myStatistic As ssStatistic
   
   On Error GoTo errTrap
+  bumFields = ""
+  iskip = 0
+  ibad = 0
   
   IPC.SendMonitorMessage "(OPEN StreamStatsDB)"
   IPC.SendMonitorMessage "(BUTTOFF DETAILS)"
@@ -81,11 +85,13 @@ Sub NWISImport(ImpFileName As String)
             Case 3:
               If value <> "" Then
                 If value < 17.5 Or (value > 360 And value < 173000) Then
-                  bumFields = vbCrLf & stationID & " on row " & staCnt & _
+                  bumFields = bumFields & vbCrLf & stationID & " on row " & staCnt & _
                       " indicates a latitude south of the Virgin Islands."
+                  ibad = 1
                 ElseIf (value > 72 And value <= 360) Or value > 720000 Then
-                  bumFields = vbCrLf & stationID & " on row " & staCnt & _
+                  bumFields = bumFields & vbCrLf & stationID & " on row " & staCnt & _
                       " indicates a latitude north of Alaska."
+                  ibad = 1
                 End If
                 'Convert degrees, minutes, seconds to decimal degrees if necessary
                 If value > 360 Then
@@ -97,11 +103,13 @@ Sub NWISImport(ImpFileName As String)
             Case 4:
               If value <> "" Then
                 If Abs(value) < 64 Or (Abs(value) > 360 And Abs(value) < 640000) Then
-                  bumFields = vbCrLf & stationID & " on row " & staCnt & _
+                  bumFields = bumFields & vbCrLf & stationID & " on row " & staCnt & _
                       " indicates a longitude east of the Virgin Islands."
+                  ibad = 1
                 ElseIf (Abs(value) > 172 And Abs(value) <= 360) Or Abs(value) > 1720000 Then
-                  bumFields = vbCrLf & stationID & " on row " & staCnt & _
+                  bumFields = bumFields & vbCrLf & stationID & " on row " & staCnt & _
                       " indicates a longitude west of Alaska."
+                  ibad = 1
                 End If
                 'Convert degrees, minutes, seconds to decimal degrees if necessary
                 'always store longitude as negative (prh from kries, 5/2005)
@@ -116,12 +124,16 @@ Sub NWISImport(ImpFileName As String)
               dataValues(2, 1, 4) = value
               dataValues(2, 1, 7) = "Imported from NWIS file"
               dataValues(2, 1, 8) = "http://waterdata.usgs.gov/nwis/si"
-            Case 7:  'state code
-              dataValues(2, 2, 3) = "DISTRICT"
+            Case 6: 'district code
               If Len(value) = 1 Then value = "0" & value
-              dataValues(2, 2, 4) = value
-              dataValues(2, 2, 7) = "Imported from NWIS file"
-              dataValues(2, 1, 8) = "http://waterdata.usgs.gov/nwis/si"
+              stationValues(2, 1, 10) = value
+            Case 7:  'state code
+'              dataValues(2, 2, 3) = "DISTRICT"
+              If Len(value) = 1 Then value = "0" & value
+              stationValues(2, 1, 11) = value
+'              dataValues(2, 2, 4) = value
+'              dataValues(2, 2, 7) = "Imported from NWIS file"
+'              dataValues(2, 1, 8) = "http://waterdata.usgs.gov/nwis/si"
               stateFIPS = value
               If Len(stateFIPS) = 1 Then stateFIPS = "0" & stateFIPS
               'Keep collection of state codes for all states in import file
@@ -143,9 +155,11 @@ Sub NWISImport(ImpFileName As String)
               If Not IsNumeric(value) Then
                 If value <> "" Then bumFields = bumFields & vbCrLf & stationID & _
                     " on row " & staCnt & " has a non-numeric value for the drainage area."
+                ibad = 1
               ElseIf value < 0 Then
-                bumFields = vbCrLf & stationID & " on row " & staCnt & _
+                bumFields = bumFields & vbCrLf & stationID & " on row " & staCnt & _
                     " has a negative value for the drainage area."
+                ibad = 1
               End If
               dataValues(2, 3, 3) = "DRNAREA"
               dataValues(2, 3, 4) = value
@@ -156,9 +170,11 @@ Sub NWISImport(ImpFileName As String)
                 If value <> "" Then bumFields = bumFields & vbCrLf & stationID & _
                     " on row " & staCnt & " has a non-numeric value for the " & _
                     "contributing drainage area."
+                ibad = 1
               ElseIf value < 0 Then
-                bumFields = vbCrLf & stationID & " on row " & staCnt & _
+                bumFields = bumFields & vbCrLf & stationID & " on row " & staCnt & _
                     " has a negative value for the contributing drainage area."
+                ibad = 1
               End If
               dataValues(2, 4, 3) = "CONTDA"
               dataValues(2, 4, 4) = value
@@ -173,10 +189,15 @@ Sub NWISImport(ImpFileName As String)
           GoTo nextSta
         End If
         If SSDB.state.Stations.IndexFromKey(stationID) > 0 Then
-          'MsgBox "There is already data stored for station " & _
-              stationID & "-" & staName & vbCrLf & _
-              "No data will be imported for this station.", , _
-              "Station already in database"
+          bumFields = bumFields & vbCrLf & "Skipped importing station " & stationID & _
+                      " as it already exists on the database."
+          If iskip = 0 Then
+            MsgBox "Some stations on the import file already exist." & vbCrLf & _
+              "No data will be imported for these stations." & vbCrLf & _
+              "See the file " & CurDir & "\NWIS_Import.txt for details.", , _
+              "NWIS Import"
+            iskip = 1
+          End If
           GoTo nextSta
         End If
         Set myStation = New ssStation
@@ -228,10 +249,12 @@ errTrap:
     Open "NWIS-Import.txt" For Output As OutFile
     Print #OutFile, bumFields
     Close OutFile
-    myMsgBox.Show "The import file " & ImpFileName & " contains bad values." _
-        & vbCrLf & "Check the '" & CurDir & "\NWIS-Import.txt' file " & _
-        "to see which fields these were.", _
-        "Bad Data Value(s)", "+-&OK"
+    If ibad = 1 Then
+      myMsgBox.Show "The import file " & ImpFileName & " contains bad values." _
+          & vbCrLf & "Check the '" & CurDir & "\NWIS-Import.txt' file " & _
+          "to see which fields these were.", _
+          "Bad Data Value(s)", "+-&OK"
+    End If
   End If
 End Sub
 
@@ -391,7 +414,7 @@ errTrap:
     Open FilenameNoExt(ImpFileName) & "_Import.txt" For Output As OutFile
     Print #OutFile, "This file contains summary information regarding the"
     Print #OutFile, "import of the Basin Characteristics file " & ImpFileName
-    Print #OutFile, "into the StreamStats database for " & SSDB.state.Name
+    Print #OutFile, "into the StreamStats database " & SSDB.filename & " for " & SSDB.state.Name
     If Len(Trim(OverWriteInfo)) > 0 Then
       Print #OutFile, ""
       Print #OutFile, ""
@@ -805,6 +828,7 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
   Dim Src As New ssSource
   Dim YrsRecCol As Long
   Dim YearsOfRecord As Double
+  Dim StaResp As Integer
   
   On Error GoTo errTrapXLS
   
@@ -903,11 +927,24 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
           ElseIf ImportCol(fldCnt) > 0 And Len(value) > 0 Then
             If ImportCol(fldCnt) <= 14 Or ImportCol(fldCnt) = 24 Then 'station data
               StaAttCnt = StaAttCnt + 1
-              If ImportCol(fldCnt) = 24 Then 'map DistrictCode to 15th element in array
-                stationValues(2, 1, 15) = value
-              Else
-                stationValues(2, 1, ImportCol(fldCnt)) = value
-              End If
+              Select Case ImportCol(fldCnt)
+                Case 24  'map DistrictCode to 15th element in array
+                  stationValues(2, 1, 10) = value
+                Case 14 'State code
+                  stationValues(2, 1, 11) = value
+                Case 13  'directions
+                  stationValues(2, 1, 6) = value
+                Case 11, 12 'county or MCD code
+                  stationValues(2, 1, ImportCol(fldCnt) + 1) = value
+                Case 10 'state basin
+                  stationValues(2, 1, 15) = value
+                Case 9  'HUC
+                  stationValues(2, 1, 14) = value
+                Case Is < 6 '1st 5 StatLabelIDs match field numbers 1 - 5
+                  stationValues(2, 1, ImportCol(fldCnt)) = value
+                Case Else 'remaining StatLabelIDs (6 - 8) are 1 less than field number
+                  stationValues(2, 1, ImportCol(fldCnt) + 1) = value
+              End Select
             Else 'statistic data
               attCnt = attCnt + 1
               dataValues(2, attCnt, 2) = CStr(ImportCol(fldCnt))
@@ -940,7 +977,19 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
         ElseIf staIndex > 0 Then 'Station exists - check whether its stats also exist
           Set myStation = SSDB.state.Stations(staIndex)
           If StaAttCnt > 0 Then 'station data to update
-            myStation.Edit stationValues(), 1
+            If StaResp <> 2 And StaResp <> 4 Then
+              StaResp = myMsgBox.Show("For station " & myStation.Name & ", " & StaAttCnt & _
+                                       " station-descriptive values already exist." & _
+                                       "What do you want to do?", "Excel Import - Data Exists", _
+                                       "&Replace", "Replace &All", "+&Keep", "K&eep All", "-&Cancel")
+            End If
+            If StaResp = 5 Then Err.Raise 999
+            If StaResp < 3 Then
+              OverWriteInfo = OverWriteInfo & vbCrLf & vbTab & _
+                              Left(myStation.id & "       ", 15) & vbTab & _
+                              "Overwrote " & StaAttCnt & " station-descriptive values"
+              myStation.Edit stationValues(), 1
+            End If
           End If
           For i = 1 To attCnt
             attIndex = myStation.Statistics.IndexFromKey(dataValues(2, i, 2))
@@ -955,7 +1004,7 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
               If response <> 2 And response <> 4 Then 'user hasn't chosen to replace or keep all
                 response = myMsgBox.Show("For station " & myStation.Name & " the statistic " & myStation.Statistics(attIndex).Name & _
                                          " already exists." & vbCrLf & "Existing value: " & myStation.Statistics(attIndex).value & _
-                                         "  New value: " & dataValues(2, i, 4) & vbCrLf & "What do you want to do?", "BCF Import - Data Exists", _
+                                         "  New value: " & dataValues(2, i, 4) & vbCrLf & "What do you want to do?", "Excel Import - Data Exists", _
                                          "&Replace", "Replace &All", "+&Keep", "K&eep All", "-&Cancel")
               End If
               If response = 5 Then Err.Raise 999
@@ -1004,7 +1053,7 @@ errTrapXLS:
     Open FilenameNoExt(ImpFileName) & "_Import.txt" For Output As OutFile
     Print #OutFile, "This file contains summary information regarding the"
     Print #OutFile, "import of the Excel Spreadsheet file " & ImpFileName
-    Print #OutFile, "into the StreamStats database for " & SSDB.state.Name
+    Print #OutFile, "into the StreamStats database " & SSDB.filename & " for " & SSDB.state.Name
     If Len(Trim(badFields)) > 0 Then
       Print #OutFile, ""
       Print #OutFile, ""
