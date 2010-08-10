@@ -18,6 +18,7 @@ Begin VB.Form frmLowFlow
       Left            =   9840
       TabIndex        =   48
       Top             =   6120
+      Visible         =   0   'False
       Width           =   855
    End
    Begin VB.OptionButton rdoMainOpt 
@@ -363,7 +364,7 @@ Begin VB.Form frmLowFlow
             AllowEditHeader =   0   'False
             AllowLoad       =   0   'False
             AllowSorting    =   0   'False
-            Rows            =   582
+            Rows            =   584
             Cols            =   2
             ColWidthMinimum =   300
             gridFontBold    =   0   'False
