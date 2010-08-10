@@ -217,6 +217,8 @@ Public Property Let XML(newValue As String)
   Dim searchRuralScenarios As Variant
   Dim RegionName As String
   
+  On Error GoTo ReadProblem
+  
   Set projectXML = New clsXMLelement
   projectXML.SetString newValue
   
@@ -229,7 +231,7 @@ Public Property Let XML(newValue As String)
     pUserName = projectXML.AttributeValue("username")
     If LCase(projectXML.AttributeValue("metric")) = "true" Then pMetric = True Else pMetric = False
     If LCase(projectXML.AttributeValue("alias")) = "true" Then pAlias = True Else pAlias = False
-    pAnalysisType = projectXML.AttributeValue("analysistype")
+    If Len(projectXML.AttributeValue("analysistype")) Then pAnalysisType = projectXML.AttributeValue("analysistype")
     If LCase(projectXML.AttributeValue("varlog")) = "true" Then PVarLog = True Else PVarLog = False
     Set Me.State = pDB.States(projectXML.AttributeValue("state"))
     pCurrentRuralScenario = projectXML.AttributeValue("currentrural", 0)
@@ -300,7 +302,8 @@ Public Property Let XML(newValue As String)
   Exit Property
 
 ReadProblem:
-  ssMessageBox "Problem Reading Project XML" & vbCr & Err.Description
+  ssMessageBox "Problem Reading Project file " & Me.filename
+  Clear
 End Property
 
 Public Property Get filename() As String

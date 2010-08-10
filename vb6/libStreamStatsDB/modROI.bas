@@ -111,22 +111,29 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
       SimVarCnt = SimVarCnt + 1
     End If
     If tmpParm.RegressionVar Then
-      If Right(lROIData.StateCode, 2) = "47" Then
-        'may need to make adjustments to TN ROI parameters
-        If tmpParm.LabelCode = 7 Then
-          'change Latitude to TN Physiographic factor
-          tmpParm.Abbrev = "TNPHYSFAC"
-          tmpParm.LabelCode = 1223
-        ElseIf tmpParm.LabelCode = 8 Then
-          'change Longitude to TN 2-year climate factor
-          tmpParm.Abbrev = "TNCLFACT2"
-          tmpParm.LabelCode = 1195
-        End If
-      End If
+'      If Right(lROIData.StateCode, 2) = "47" Then
+'        'may need to make adjustments to TN ROI parameters
+'        If tmpParm.LabelCode = 7 Then
+'          'change Latitude to TN Physiographic factor
+'          tmpParm.Abbrev = "TNPHYSFAC"
+'          tmpParm.LabelCode = 1223
+'        ElseIf tmpParm.LabelCode = 8 Then
+'          'change Longitude to TN 2-year climate factor
+'          tmpParm.Abbrev = "TNCLFACT2"
+'          tmpParm.LabelCode = 1195
+'        End If
+'      End If
       RegParms.Add vParm, tmpParm.Abbrev
       RegVarCnt = RegVarCnt + 1
     End If
   Next vParm
+  If lROIData.StateCode = "47" Then 'add Physiographic factor to regression variables
+    Dim lParm As New nssParameter
+    lParm.Abbrev = "TNPHYSFAC"
+    lParm.LabelCode = 1223
+    RegParms.Add lParm, lParm.Abbrev
+    RegVarCnt = RegVarCnt + 1
+  End If
   RegVarCnt = RegVarCnt + 1
   
 '  If uRegion.Region.State.ROIClimateFactor Then SimVarCnt = SimVarCnt + 1
@@ -284,18 +291,18 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     End If
   Next i
 
-  If lROIData.StateCode = "10047" Then
-    'TEMPORARY CODE TO EMULATE TN LF FORTRAN CODE
-    If Abs(roiRegion) = 1 Then 'central+east
-      SimVarSDs(1) = 0.32
-      SimVarSDs(2) = 0.12
-      SimVarSDs(3) = 0.008
-    Else 'west
-      SimVarSDs(1) = 0.348
-      SimVarSDs(2) = 0.2
-      SimVarSDs(3) = 0.01
-    End If
-  Else 'Compute St. Dev. of independent variables used in similarity calcs
+'  If lROIData.StateCode = "10047" Then
+'    'TEMPORARY CODE TO EMULATE TN LF FORTRAN CODE
+'    If Abs(roiRegion) = 1 Then 'central+east
+'      SimVarSDs(1) = 0.32
+'      SimVarSDs(2) = 0.12
+'      SimVarSDs(3) = 0.008
+'    Else 'west
+'      SimVarSDs(1) = 0.348
+'      SimVarSDs(2) = 0.2
+'      SimVarSDs(3) = 0.01
+'    End If
+'  Else 'Compute St. Dev. of independent variables used in similarity calcs
     For i = 1 To SimVarCnt
       SimVarSDs(i) = sum(i) / StaCnt  'actually calcing avg of variable here
       sum(i) = 0
@@ -304,7 +311,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
       Next j
       SimVarSDs(i) = (sum(i) / (StaCnt - 1)) ^ 0.5
     Next i
-  End If
+'  End If
 
   'Compute climate factor from lat and long coordinates
   icall = 0
@@ -386,27 +393,22 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   sig = sig / Nsites  ' = avg StDev of peak flows across all stations
   Print #OutFile,
   
-  i = 1
-  str = vbCrLf
-  For Each vParm In RegParms
-    i = i + 1
-    Set uParm = uRegion.UserParms(vParm.Name)
-    If lROIData.StateCode = "47" Then 'may need to set special parm values for TN ROI peak estimates
-      If vParm.Abbrev = "TNPHYSFAC" Then 'use TN formulae to compute PF
-        If uRegion.Region.ROIRegnID = 1 Then UserRegressVars(i) = -0.213 + 0.0626 * UserRegressVars(2)
-        If uRegion.Region.ROIRegnID = 2 Then UserRegressVars(i) = 0.0168 + 0.0353 * UserRegressVars(2)
-        If uRegion.Region.ROIRegnID = 3 Then UserRegressVars(i) = 0.2319 - 0.0242 * UserRegressVars(2)
-        If uRegion.Region.ROIRegnID = 4 Then UserRegressVars(i) = 0.3044 - 0.1541 * UserRegressVars(2)
-      ElseIf vParm.Abbrev = "TNCLFACT2" Then 'use TN 2-year climate factor
-        UserRegressVars(i) = Log10(CDbl(Cf2))
-      Else
-        UserRegressVars(i) = Log10(uParm.GetValue(pMetric))
-      End If
-    Else
-      UserRegressVars(i) = Log10(uParm.GetValue(pMetric))
-    End If
-    str = str & vParm.Abbrev & " = " & 10 ^ UserRegressVars(i) & vbCrLf
-  Next
+'  i = 1
+'  str = vbCrLf
+'  For Each vParm In RegParms
+'    i = i + 1
+'    If lROIData.StateCode = "47" And vParm.Abbrev = "TNPHYSFAC" Then
+'      'set special parm values for TN ROI peak estimates
+'      If uRegion.Region.ROIRegnID = 1 Then UserRegressVars(i) = -0.213 + 0.0626 * UserRegressVars(2)
+'      If uRegion.Region.ROIRegnID = 2 Then UserRegressVars(i) = 0.0168 + 0.0353 * UserRegressVars(2)
+'      If uRegion.Region.ROIRegnID = 3 Then UserRegressVars(i) = 0.2319 - 0.0242 * UserRegressVars(2)
+'      If uRegion.Region.ROIRegnID = 4 Then UserRegressVars(i) = 0.3044 - 0.1541 * UserRegressVars(2)
+'    Else
+'      Set uParm = uRegion.UserParms(vParm.Name)
+'      UserRegressVars(i) = Log10(uParm.GetValue(pMetric))
+'    End If
+'    str = str & vParm.Abbrev & " = " & 10 ^ UserRegressVars(i) & vbCrLf
+'  Next
   
 '  If RegParms.KeyExists("CONTDA") Then
 '    str = vbCrLf & "area = " & uRegion.UserParms("Contributing_Drainage_Area").GetValue(False)
@@ -434,29 +436,27 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     Rhoc = Scenario.RHO
   End If
 
+  str = vbCrLf
+
   For jpeak = 1 To NumPeaks
     'Reset user-entered parameters in case of backward-step regression
     RegVarCnt = RegParms.Count + 1
     i = 1
     UserRegressVars(i) = 1#
     For Each vParm In RegParms
-      Set uParm = uRegion.UserParms(vParm.Name)
       i = i + 1
-      If lROIData.StateCode = "47" Then 'may need to set special parm values for TN ROI peak estimates
-        If vParm.Abbrev = "TNPHYSFAC" Then 'use TN formulae to compute PF
-          If uRegion.Region.ROIRegnID = 1 Then UserRegressVars(i) = -0.213 + 0.0626 * UserRegressVars(2)
-          If uRegion.Region.ROIRegnID = 2 Then UserRegressVars(i) = 0.0168 + 0.0353 * UserRegressVars(2)
-          If uRegion.Region.ROIRegnID = 3 Then UserRegressVars(i) = 0.2319 - 0.0242 * UserRegressVars(2)
-          If uRegion.Region.ROIRegnID = 4 Then UserRegressVars(i) = 0.3044 - 0.1541 * UserRegressVars(2)
-        ElseIf vParm.Abbrev = "TNCLFACT2" Then 'use TN 2-year climate factor
-          UserRegressVars(i) = Log10(CDbl(Cf2))
-        Else
-          UserRegressVars(i) = Log10(uParm.GetValue(pMetric))
-        End If
+      If lROIData.StateCode = "47" And vParm.Abbrev = "TNPHYSFAC" Then
+        'set special parm values for TN ROI peak estimates
+        If uRegion.Region.ROIRegnID = 1 Then UserRegressVars(i) = -0.213 + 0.0626 * UserRegressVars(2)
+        If uRegion.Region.ROIRegnID = 2 Then UserRegressVars(i) = 0.0168 + 0.0353 * UserRegressVars(2)
+        If uRegion.Region.ROIRegnID = 3 Then UserRegressVars(i) = 0.2319 - 0.0242 * UserRegressVars(2)
+        If uRegion.Region.ROIRegnID = 4 Then UserRegressVars(i) = 0.3044 - 0.1541 * UserRegressVars(2)
       Else
+        Set uParm = uRegion.UserParms(vParm.Name)
         UserRegressVars(i) = Log10(uParm.GetValue(pMetric))
       End If
       Correlation(i) = vParm.CorrelationType
+      If jpeak = 1 Then str = str & vParm.Abbrev & " = " & 10 ^ UserRegressVars(i) & vbCrLf
     Next
     
     If lROIData.StateCode = "10047" Then
