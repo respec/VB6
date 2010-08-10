@@ -51,10 +51,10 @@ Public Property Set DB(newValue As nssDatabase)
   Set pDB = newValue
 End Property
 
-Public Property Get ID() As String
-  ID = pID
+Public Property Get Id() As String
+  Id = pID
 End Property
-Public Property Let ID(ByVal newValue As String)
+Public Property Let Id(ByVal newValue As String)
   pID = newValue
 End Property
 
@@ -142,10 +142,10 @@ Public Property Let MCDCode(ByVal newValue As String)
   pMCDCode = newValue
 End Property
 
-Public Property Get Statebasin() As ssStateBasin
-  Set Statebasin = pStatebasin
+Public Property Get StateBasin() As ssStateBasin
+  Set StateBasin = pStatebasin
 End Property
-Public Property Set Statebasin(ByVal newValue As ssStateBasin)
+Public Property Set StateBasin(ByVal newValue As ssStateBasin)
   Set pStatebasin = newValue
 End Property
 
@@ -245,6 +245,7 @@ Public Sub Add(ByRef NewValues() As String, ByVal StaIndex As Long, _
   Dim myRec As Recordset
   Dim fld&, ROIIndex As Long
   Dim sql$
+  Dim lVal As String
   
   On Error Resume Next
   
@@ -266,7 +267,7 @@ Public Sub Add(ByRef NewValues() As String, ByVal StaIndex As Long, _
 
   sql = "SELECT STATION.* " & _
         "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
-        "WHERE [StationState].[StateCode]='" & Me.State.Code & "';"
+        "WHERE [StationState].[StateCode]='" & Me.State.code & "';"
   
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
@@ -294,39 +295,48 @@ Public Sub Add(ByRef NewValues() As String, ByVal StaIndex As Long, _
     End If
     .AddNew
     For fld = 1 To UBound(NewValues, 3)  'currently set to 15
-      If Trim(NewValues(2, StaIndex, fld)) <> "" Then
+      lVal = Trim(NewValues(2, StaIndex, fld))
+      If Len(lVal) > 0 Then
         Select Case fld
-          Case 1: .Fields("StaID") = Trim(NewValues(2, StaIndex, fld))
-          Case 2: .Fields("StationName") = Trim(NewValues(2, StaIndex, fld))
-          Case 3:  NewValues(2, StaIndex, fld) = GetStationTypeCode(NewValues(2, StaIndex, fld))
-                  .Fields("StationTypeCode") = Trim(NewValues(2, StaIndex, fld))
-          Case 4: .Fields("IsRegulated") = Trim(NewValues(2, StaIndex, fld))
-          Case 5: .Fields("PeriodOfRecord") = Trim(NewValues(2, StaIndex, fld))
-          Case 6: .Fields("Directions") = Trim(NewValues(2, StaIndex, fld))
-          Case 7: .Fields("StationRemarks") = Trim(NewValues(2, StaIndex, fld))
-          Case 8: .Fields("Latitude") = Trim(NewValues(2, StaIndex, fld))
-          Case 9: .Fields("Longitude") = Trim(NewValues(2, StaIndex, fld))
-          Case 10: .Fields("DistrictCode") = GetStateCode(Trim(NewValues(2, StaIndex, fld)))
-          Case 11: .Fields("StateCode") = GetStateCode(Trim(NewValues(2, StaIndex, fld)))
-          Case 12: .Fields("CountyCode") = Trim(NewValues(2, StaIndex, fld))
-          Case 13: .Fields("MCDCode") = Trim(NewValues(2, StaIndex, fld))
-          Case 14: .Fields("HUC") = Trim(NewValues(2, StaIndex, fld))
-          Case 15: .Fields("StateBasinCode") = Trim(NewValues(2, StaIndex, fld))
+          Case 1: .Fields("StaID") = lVal
+          Case 2: .Fields("StationName") = lVal
+          Case 3:  lVal = GetStationTypeCode(lVal)
+                  .Fields("StationTypeCode") = lVal
+          Case 4: .Fields("IsRegulated") = lVal
+          Case 5: .Fields("PeriodOfRecord") = lVal
+          Case 6: .Fields("Directions") = lVal
+          Case 7: .Fields("StationRemarks") = lVal
+          Case 8: .Fields("Latitude") = lVal
+          Case 9: .Fields("Longitude") = lVal
+          Case 10:
+                  If IsNumeric(lVal) Then
+                    .Fields("DistrictCode") = lVal
+                  Else
+                    .Fields("DistrictCode") = GetStateCode(lVal)
+                  End If
+          Case 11:
+                  If IsNumeric(lVal) Then
+                    .Fields("StateCode") = lVal
+                  Else
+                    .Fields("StateCode") = GetStateCode(lVal)
+                  End If
+          Case 12: .Fields("CountyCode") = lVal
+          Case 13: .Fields("MCDCode") = lVal
+          Case 14: .Fields("HUC") = lVal
+          Case 15:
+                  If IsNumeric(lVal) Then
+                    .Fields("StateBasinCode") = lVal
+                  Else
+                    .Fields("StateBasinCode") = GetBasinCode(lVal)
+                  End If
         End Select
       End If
     Next fld
-'    If ImportFlg = 1 Then
-'      .Fields("HasData") = 1
-'    Else
-'      .Fields("HasData") = 0
-'    End If
-'this is now stored on StationState table
-'    .Fields("StateCode") = Me.State.code
     .Update
   End With
 
 AddStateStationReference:
-  sql = "SELECT * FROM [StationState] WHERE StateCode='" & Me.State.Code & "'"
+  sql = "SELECT * FROM [StationState] WHERE StateCode='" & Me.State.code & "'"
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
     If .RecordCount > 0 Then 'check to see if station with this ID or name already exists
@@ -339,7 +349,7 @@ AddStateStationReference:
     If .NoMatch Or .RecordCount <= 0 Then 'add this station for this state
       .AddNew
       .Fields("StaID") = Trim(NewValues(2, StaIndex, 1))
-      .Fields("StateCode") = Me.State.Code
+      .Fields("StateCode") = Me.State.code
       If Me.IsROI Then 'assign station index for ordering
         .Fields("ROI") = ROIIndex
       Else
@@ -359,56 +369,81 @@ End Sub
 Public Sub Delete()
   Dim myRec As Recordset
   Dim sql$
+  Dim LoneState As Boolean
 
-'  sql = "SELECT * FROM STATION WHERE StateCode='" & pDB.State.code & "'"
-  sql = "SELECT STATION.* " & _
-        "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
-        "WHERE [StationState].[StateCode]='" & pDB.State.Code & "';"
+  'first delete from State Station table
+  LoneState = True
+  sql = "SELECT * FROM [StationState] WHERE StaID='" & Me.Id & "'"
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
-    .FindFirst "StaID='" & Me.ID & "'"
-    If Not .NoMatch Then
-      .Delete
-    End If
+    .MoveFirst
+    While Not .EOF
+      If .Fields("StateCode") = pDB.State.code Then
+        .Delete
+      Else 'this station associated with another state
+        LoneState = False
+      End If
+      .MoveNext
+    Wend
   End With
-' now delete from State Station table
-  sql = "SELECT * FROM [StationState] WHERE StateCode='" & pDB.State.Code & "'"
-  Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
-  With myRec
-    .FindFirst "StaID='" & Me.ID & "'"
-    If Not .NoMatch Then
-      .Delete
-    End If
-  End With
+
+  If LoneState Then
+    'delete any statistics for this station
+    sql = "SELECT * FROM [Statistic] WHERE StaID='" & Me.Id & "'"
+    Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
+    With myRec
+      .MoveFirst
+      While Not .EOF
+        .Delete
+        .MoveNext
+      Wend
+    End With
   
+    sql = "SELECT * FROM STATION WHERE StaID='" & Me.Id & "'"
+'    sql = "SELECT STATION.* " & _
+'          "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
+'          "WHERE [StationState].[StateCode]='" & pDB.State.code & "';"
+    Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
+    If myRec.RecordCount > 0 Then
+      myRec.Delete
+    End If
+'    With myRec
+'      .FindFirst "StaID='" & Me.Id & "'"
+'      If Not .NoMatch Then
+'        .Delete
+'      End If
+'    End With
+  End If
 End Sub
 
 Public Sub Edit(ByRef NewValues() As String, StaIndex As Long)
   Dim myRec As Recordset
   Dim sql$
   Dim fld&
+  Dim lVal As String
   
 '  sql = "SELECT * FROM STATION WHERE StateCode='" & pDB.State.code & "'"
   sql = "SELECT STATION.* " & _
         "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
-        "WHERE [StationState].[StateCode]='" & pDB.State.Code & "';"
+        "WHERE [StationState].[StateCode]='" & pDB.State.code & "';"
   Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
   With myRec
-    .FindFirst "StaID='" & Me.ID & "'"
+    .FindFirst "StaID='" & Me.Id & "'"
     If Not .NoMatch Then
       .Edit
       For fld = 2 To UBound(NewValues, 3)
-        If fld = 3 Then NewValues(2, StaIndex, fld) = _
-            GetStationTypeCode(NewValues(2, StaIndex, fld))
-        If (fld = 15 And NewValues(2, StaIndex, fld) = "") Then
-          .Fields(fld - 1) = Null
-        ElseIf Len(NewValues(2, StaIndex, fld)) > 0 Then 'only update if array element contains something
-'          If fld > 13 Then 'State and District codes fall after HasData field on Station table
-          If fld = 10 Or fld = 11 Then 'State or District codes
-            .Fields(fld - 1) = GetStateCode(NewValues(2, StaIndex, fld))
-          Else
-            .Fields(fld - 1) = NewValues(2, StaIndex, fld)
+        lVal = Trim(NewValues(2, StaIndex, fld))
+        If Len(lVal) > 0 Then 'only update if array element contains something
+          If fld = 3 Then 'convert station type to code
+            lVal = GetStationTypeCode(lVal)
           End If
+          If fld = 15 And Not IsNumeric(lVal) Then 'convert basin name to code
+            lVal = GetBasinCode(lVal)
+          End If
+          If (fld = 10 Or fld = 11) And Not IsNumeric(lVal) Then 'convert State or District to codes
+            lVal = GetStateCode(lVal)
+          End If
+          .Fields(fld - 1) = lVal
         End If
       Next fld
       .Update
@@ -463,7 +498,7 @@ Public Sub PopulateStatistics()
       With newStatistic
         Set .DB = pDB
         Set .Station = Me
-        .Code = statRec.Fields("StatisticLabelID")
+        .code = statRec.Fields("StatisticLabelID")
         .Abbrev = statRec.Fields("StatLabel")
         .Name = statRec.Fields("StatisticLabel")
         If Not IsNull(statRec.Fields("StatisticValue")) Then _
@@ -484,7 +519,7 @@ Public Sub PopulateStatistics()
         If Not IsNull(statRec.Fields("CitationURL")) Then _
             .SourceURL = statRec.Fields("CitationURL")
       End With
-      pStatistics.Add newStatistic, CStr(newStatistic.Code)
+      pStatistics.Add newStatistic, CStr(newStatistic.code)
       Set newStatistic = Nothing
       statRec.MoveNext
     Wend
@@ -517,6 +552,23 @@ Private Function GetStateCode(StateAbbrev As String) As String
       GetStateCode = .Fields("StateCode")
     End If
   End With
+End Function
+
+Private Function GetBasinCode(StateBasin As String) As String
+  Dim myRec As Recordset
+  
+  Set myRec = pDB.DB.OpenRecordset("STATEBASIN", dbOpenSnapshot)
+  With myRec
+    .FindFirst "StateCode='" & pStateCode & "' AND StateBasin='" & StateBasin & "'"
+    If .NoMatch Then 'need to add this StateBasin
+      Dim lStateBasin As New ssStateBasin
+      Set lStateBasin.DB = pDB
+      lStateBasin.Add StateBasin
+    Else
+      GetBasinCode = .Fields("StateBasinCode")
+    End If
+  End With
+
 End Function
 
 Private Sub Class_Initialize()
