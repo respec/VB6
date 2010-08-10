@@ -721,6 +721,8 @@ Private Sub Clear()
 End Sub
 
 Private Sub UpdateLabels()
+  Dim lUpdate As Boolean
+  lUpdate = False
   With Project
     Dim i As Long
     For i = 0 To cboState.ListCount - 1
@@ -731,11 +733,15 @@ Private Sub UpdateLabels()
     Next
     txtName = .Name
     
-    cboScenario(0).ListIndex = .CurrentRuralScenario - 1
+    If cboScenario(0).ListIndex <> .CurrentRuralScenario - 1 Then
+      cboScenario(0).ListIndex = .CurrentRuralScenario - 1
+      lUpdate = True
+    End If
     If .CurrentRuralScenario > 0 Then
       txtSummary(0) = .RuralScenarios(.CurrentRuralScenario).Summary
     Else
       txtSummary(0) = "No Scenarios Available"
+      lUpdate = True 'always do this so results from last deleted scenario are cleared
     End If
     
     cboScenario(1).ListIndex = .CurrentUrbanScenario - 1
@@ -745,7 +751,7 @@ Private Sub UpdateLabels()
       txtSummary(1) = "No Scenarios Available"
     End If
   End With
-  UpdateEstimates
+  If lUpdate Then UpdateEstimates
 End Sub
 
 Private Sub UpdateEstimates()
