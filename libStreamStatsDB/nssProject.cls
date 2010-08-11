@@ -372,17 +372,17 @@ Public Function Report() As String
   retval = retval & "Based on Techniques and Methods Book 4-A6" & vbCrLf
   retval = retval & "Equations from database " & pDB.filename & vbCrLf
   retval = retval & "Updated by " & pDB.LastEdited & vbCrLf
+  retval = retval & vbCrLf
+  retval = retval & "Site: " & Me.Name & ", " & Me.State.Name & vbCrLf
+  retval = retval & "User: " & Me.UserName & vbCrLf
+  retval = retval & "Date: " & Format(Date, "Long Date") & " " & Format(Time, "hh:mm ampm") & vbCrLf
+  retval = retval & vbCrLf
   retval = retval & "Equations for " & Me.State.Name & " developed using "
   If Me.State.Metric Then
     retval = retval & "Metric units" & vbCrLf
   Else
     retval = retval & "English units" & vbCrLf
   End If
-  retval = retval & vbCrLf
-  retval = retval & "Site: " & Me.Name & ", " & Me.State.Name & vbCrLf
-  retval = retval & "User: " & Me.UserName & vbCrLf
-  retval = retval & "Date: " & Format(Date, "Long Date") & " " & Format(Time, "hh:mm ampm") & vbCrLf
-  retval = retval & vbCrLf
   
 '  For Each vScenario In Me.RuralScenarios
 '    GoSub AddScenario
