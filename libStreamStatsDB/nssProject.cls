@@ -367,7 +367,7 @@ Public Function Report() As String
   
   retval = ""
   retval = retval & "National Streamflow Statistics Program" & vbCrLf
-  retval = retval & "Version 5.0" ' & App.Major & "." & App.Minor '& "." & App.Revision & vbCrLf
+  retval = retval & "Version 5" ' & App.Major & "." & App.Minor '& "." & App.Revision & vbCrLf
   retval = retval & vbCrLf
   retval = retval & "Based on Techniques and Methods Book 4-A6" & vbCrLf
   retval = retval & "Equations from database " & pDB.filename & vbCrLf
