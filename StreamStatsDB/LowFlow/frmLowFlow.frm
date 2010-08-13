@@ -364,7 +364,7 @@ Begin VB.Form frmLowFlow
             AllowEditHeader =   0   'False
             AllowLoad       =   0   'False
             AllowSorting    =   0   'False
-            Rows            =   584
+            Rows            =   585
             Cols            =   2
             ColWidthMinimum =   300
             gridFontBold    =   0   'False
@@ -559,7 +559,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   2
+         Rows            =   1
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -618,7 +618,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   2
+         Rows            =   1
          Cols            =   6
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -1299,7 +1299,7 @@ TryAgain:
           If k >= 9 And Left(str, 1) = """" Then 'strip quotes from Equation and XiVector fields
             depVarVals(j, k) = StrSplit(str, """", "") 'finds first quote
             depVarVals(j, k) = StrSplit(str, """", "") 'finds equations up to 2nd quote
-            If k = 9 And Len(str) > 0 Then 'another field, find comma
+            If (k = 9 Or k = 10) And Len(str) > 0 Then 'another field, find comma
               depVarVals(j, k + 1) = StrSplit(str, ",", "")
             End If
 '            If Left(depVarVals(j, k), 1) = """" Then
