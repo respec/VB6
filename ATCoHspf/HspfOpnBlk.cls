@@ -526,7 +526,7 @@ Public Sub WriteUciFile(f As Integer, M As HspfMsg)
     Else 'this is a multiple occurance group (like pqual, iqual, gqual)
     
       If lInGroup Then
-        If lTableDef.OccurGroup <> lCurrentOccurGroup Or i = lBlockDef.TableDefs.Count Then
+        If lTableDef.OccurGroup <> lCurrentOccurGroup Or i > lBlockDef.TableDefs.Count Then
           'we were in a multiple occurance group but have reached end of group
           lGroupIndex = lGroupIndex + 1  'look for next occurance
           If lGroupIndex > lLastGroupIndex Then
