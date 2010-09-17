@@ -3,10 +3,10 @@ Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#..\..\..\WINDOWS\syste
 Reference=*\G{18F0904D-D01A-4967-90D6-FB9B55A332EC}#1.0#0#..\..\..\WINDOWS\system32\FColl.dll#Edanmo's FastCollection Class v1
 Reference=*\G{00025E01-0000-0000-C000-000000000046}#5.0#0#..\..\..\Program Files\Common Files\Microsoft Shared\DAO\dao360.dll#Microsoft DAO 3.6 Object Library
 Reference=*\A..\libStreamStatsDB\libStreamStatsDB.vbp
-Object={F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0; COMDLG32.OCX
+Object={F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0; Comdlg32.ocx
+Object=*\A..\ATCoCtl\ATCoCtl.vbp
 Form=frmDBMerge.frm
 Module=UTILITY; ..\Utility\Utility.bas
-Object=*\A..\ATCoCtl\ATCoCtl.vbp
 IconForm="frmDBMerge"
 Startup="frmDBMerge"
 ExeName32="SSDBMerge.exe"
@@ -35,6 +35,7 @@ Unattended=0
 Retained=0
 ThreadPerObject=0
 MaxNumberOfThreads=1
+DebugStartupOption=0
 
 [MS Transaction Server]
 AutoRefresh=1
