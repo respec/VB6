@@ -142,10 +142,10 @@ Public Property Let MCDCode(ByVal newValue As String)
   pMCDCode = newValue
 End Property
 
-Public Property Get StateBasin() As ssStateBasin
-  Set StateBasin = pStatebasin
+Public Property Get Statebasin() As ssStateBasin
+  Set Statebasin = pStatebasin
 End Property
-Public Property Set StateBasin(ByVal newValue As ssStateBasin)
+Public Property Set Statebasin(ByVal newValue As ssStateBasin)
   Set pStatebasin = newValue
 End Property
 
@@ -550,20 +550,24 @@ Private Function GetStateCode(StateAbbrev As String) As String
     .FindFirst "St='" & StateAbbrev & "'"
     If Not .NoMatch Then
       GetStateCode = .Fields("StateCode")
+      If Left(GetStateCode, 3) = "100" Then
+        'must be low-flow ROI state record, trim left side
+        GetStateCode = Mid(GetStateCode, 4)
+      End If
     End If
   End With
 End Function
 
-Private Function GetBasinCode(StateBasin As String) As String
+Private Function GetBasinCode(Statebasin As String) As String
   Dim myRec As Recordset
   
   Set myRec = pDB.DB.OpenRecordset("STATEBASIN", dbOpenSnapshot)
   With myRec
-    .FindFirst "StateCode='" & pStateCode & "' AND StateBasin='" & StateBasin & "'"
+    .FindFirst "StateCode='" & pStateCode & "' AND StateBasin='" & Statebasin & "'"
     If .NoMatch Then 'need to add this StateBasin
       Dim lStateBasin As New ssStateBasin
       Set lStateBasin.DB = pDB
-      lStateBasin.Add StateBasin
+      lStateBasin.Add Statebasin
     Else
       GetBasinCode = .Fields("StateBasinCode")
     End If
