@@ -99,7 +99,7 @@ Private Renumb As New FastCollection 'of new stat label ids, with old id as key
 
 Private Sub cboState_Click()
   Dim STKey As String
-  If Len(Master.Filename) > 0 And Len(Adding.Filename) > 0 Then
+  If Len(Master.filename) > 0 And Len(Adding.filename) > 0 Then
     STKey = CStr(cboState.ItemData(cboState.ListIndex))
     If Len(STKey) = 1 Then STKey = "0" & STKey
     If Master.States(STKey).Name = Adding.States(STKey).Name Then
@@ -127,10 +127,10 @@ Private Sub cmdDB_Click(Index As Integer)
     cdlDB.DialogTitle = "Open Additional StreamStats Database"
   End If
   cdlDB.ShowOpen
-  DBName = cdlDB.Filename
+  DBName = cdlDB.filename
   If Index = 0 Then
     With Master
-      .Filename = DBName
+      .filename = DBName
       For i = 1 To .States.Count
         cboState.AddItem .States(i).Abbrev
         cboState.ItemData(i - 1) = CStr(.States(i).Code)
@@ -138,7 +138,7 @@ Private Sub cmdDB_Click(Index As Integer)
     End With
   Else
     Set Adding = New nssDatabase
-    Adding.Filename = DBName
+    Adding.filename = DBName
   End If
   lblDBName(Index).Caption = DBName
 End Sub
@@ -208,6 +208,7 @@ Private Sub MergeStatLabels()
 '          'this is how it currently is done in StreamStats
 '          .Fields("Definition") = ReplaceString(vStatLabel.Name, "_", " ")
           .Fields("Definition") = vStatLabel.definition
+          .Fields("Alias") = vStatLabel.Alias
           .Update
         End With
       End If

@@ -2206,10 +2206,16 @@ y:
 End Sub
 
 Private Sub mnuDatabase_Click()
-  Dim state$
-  GetDatabaseFilename (True)
-  state = GetSetting("StreamStatsDB", "Defaults", "ssState")
-  InitializeFromDatabase (state)
+  Dim lState As String
+  Dim lFName As String
+  lFName = GetDatabaseFilename(True)
+  If Len(lFName) > 0 Then
+    SSDB.DB.Close
+    SSDB.filename = lFName
+    lState = GetSetting("StreamStatsDB", "Defaults", "ssState")
+    InitializeFromDatabase (lState)
+    cboFilter_Click
+  End If
 End Sub
 
 Private Sub mnuExit_Click()
@@ -2329,6 +2335,7 @@ Private Sub InitializeFromDatabase(aState$)
 
   'Populate state listbox on tab 1
   cboState.Clear
+  lstStations.Clear
   For tmpIndex = 1 To SSDB.States.Count - 1 'the "-1" eliminates "Dummy" from the state list
     cboState.List(tmpIndex - 1) = SSDB.States(tmpIndex).Name
     cboState.ItemData(tmpIndex - 1) = SSDB.States(tmpIndex).code
