@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "Comdlg32.ocx"
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form frmStart 
    Caption         =   "NSS Options"
    ClientHeight    =   3180
@@ -479,12 +479,6 @@ Private Sub cmdOK_Click()
   Else
     Project.VarLog = False
   End If
-  For i = 0 To 2
-    If optAnalysisType(i).Value = True Then
-      Project.AnalysisType = i
-      Exit For
-    End If
-  Next i
   progress = progress & vbCr & "Setting Project.UserName = " & txtUser.Text
   Project.UserName = txtUser.Text
   Project.RaiseEdited
@@ -504,7 +498,6 @@ Private Sub Form_Load()
   On Error GoTo ShowProgress
   
   progress = "Setting options"
-  optAnalysisType(Project.AnalysisType).Value = True
   If Project.Metric Then optUnits(1).Value = True Else optUnits(0).Value = True
   If Project.Alias Then optLabelType(1).Value = True Else optLabelType(0).Value = True
   If Project.VarLog Then optVarianceType(0).Value = True Else optVarianceType(1).Value = True
