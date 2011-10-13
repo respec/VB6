@@ -1121,104 +1121,25 @@ Public Function EstimateString() As String
   
   txt = MismatchedRegions
   
-  'the following code will become simpler when database mods are made
-  'to reference the StatLabel from the DepVars table
-'  'for starters, assume flow
-'  If useMetric Then
-'    lUnitStr = "    m3/s "
-'  Else
-'    lUnitStr = "    cfs  "
-'  End If
-'  If Me.UserRegions(1).Region.DepVars(1).Units.ID <> 13 Then
-    lUnitStr = Me.UserRegions(1).Region.DepVars(1).Units.Abbrev(useMetric)
-    lLen = Len(lUnitStr)
-    If lLen > 9 Then 'too long, need to truncate
-      lUnitStr = Left(lUnitStr, 9)
-    ElseIf lLen < 9 Then
-      lUnitStr = Space(8 - lLen) & lUnitStr & " "
-    End If
-'  End If
-'  'for starters, assume cfs
-'  If useMetric Then
-'    lUnitStr = "    m3/s "
-'  Else
-'    lUnitStr = "    cfs  "
-'  End If
-'  lDepVarName = Me.UserRegions(1).Region.DepVars(1).Name
-'  If Me.Project.DB.Parameters.KeyExists(lDepVarName) Then
-'    lUnitCode = Me.Project.DB.Parameters(lDepVarName).ConvFlag
-'    If lUnitCode <> 13 Then 'something besides flow (cfs or m3/s)
-'      If Me.Project.DB.Units.KeyExists(CStr(lUnitCode)) Then
-'        If useMetric Then
-'          lUnitStr = Me.Project.DB.Units(CStr(lUnitCode)).MetricLabel
-'        Else
-'          lUnitStr = Me.Project.DB.Units(CStr(lUnitCode)).EnglishLabel
-'        End If
-'      End If
-'      lLen = Len(lUnitStr)
-'      If lLen > 9 Then 'too long, need to truncate
-'        lUnitStr = Left(lUnitStr, 9)
-'      ElseIf lLen < 9 Then
-'        lUnitStr = Space(8 - lLen) & lUnitStr & " "
-'      End If
-'    End If
-'  End If
+  lUnitStr = Me.UserRegions(1).Region.DepVars(1).Units.Abbrev(useMetric)
+  lLen = Len(lUnitStr)
+  If lLen > 9 Then 'too long, need to truncate
+    lUnitStr = Left(lUnitStr, 9)
+  ElseIf lLen < 9 Then
+    lUnitStr = Space(8 - lLen) & lUnitStr & " "
+  End If
   
   AllNumeric = True
   If Len(txt) > 0 Then
     EstimateString = txt
-  ElseIf Me.Urban Then
-    Flows = Me.Discharges
-    StdError = Me.StdError
-'    txt = "Recurrence     Peak,  Standard  " & vbCrLf _
-'        & "Interval, yrs   cfs   Error, %  "
-    txt = "              Value,  Standard  " & vbCrLf _
-        & "Statistic  " & lUnitStr & "  Error, %  "
-    If useMetric Then txt = ReplaceString(txt, " cfs", "m3/s")
-    nIntervals = UBound(Flows)
-    ReDim IntervalText(nIntervals)
-    ReDim FlowText(nIntervals)
-    ReDim StdErrText(nIntervals)
-    For Index = 1 To nIntervals
-      If Flows(Index) > -1 Then 'check for no urban estimate due to no rural at this interval
-        IntervalText(Index) = Me.UserRegions(1).Region.DepVars(Index).Name
-        If IsNumeric(IntervalText(Index)) Then
-          IntervalText(Index) = SignificantDigits(Me.UserRegions(1).Region.DepVars(Index).Name, 3)
-        ElseIf Len(IntervalText(Index)) < 7 Then
-          IntervalText(Index) = IntervalText(Index) & Space(7 - Len(IntervalText(Index)))
-        End If
-        If IsNumeric(IntervalText(Index)) Then
-          IntervalText(Index) = SignificantDigits(Me.UserRegions(1).Region.DepVars(Index).Name, 3)
-        Else
-          AllNumeric = False
-        End If
-        FlowText(Index) = SignificantDigits(Flows(Index), 3)
-        If StdError(Index) > 0 Then
-          StdErrText(Index) = SignificantDigits(StdError(Index), 2)
-        End If
-      End If
-    Next
-    If AllNumeric Then DecimalAlign IntervalText, True, True, 7
-    DecimalAlign FlowText, True, True, 11
-    DecimalAlign StdErrText, True, True, 8
-    For Index = 1 To nIntervals
-      If Len(Trim(IntervalText(Index))) > 0 Then
-        txt = txt & vbCrLf & IntervalText(Index) _
-                    & "  " & FlowText(Index) _
-                           & StdErrText(Index)
-      End If
-    Next
-    
   Else
     If Me.ROI Then
-'      txt = "Recurrence     Peak,   Pred. Intervals   Standard Error    Equivalent" & vbCrLf _
-'          & "Interval, yrs   cfs       Low     High     (-%)    (+%)    Years"
       If Me.LowFlow And Me.Project.State.code = "47" Then
-        txt = "              Value,   Pred. Intervals   Adjusted for" & vbCrLf _
-            & "Statistic  " & lUnitStr & "      Low     High   Prob. of Zero"
+        txt = "                Value,   Pred. Intervals   Adjusted for" & vbCrLf _
+            & "Statistic    " & lUnitStr & "      Low     High   Prob. of Zero"
       Else
-        txt = "              Value,   Pred. Intervals   Standard Error    Equivalent" & vbCrLf _
-            & "Statistic  " & lUnitStr & "      Low     High     (-%)    (+%)    Years"
+        txt = "                Value,   Pred. Intervals   Standard Error    Equivalent" & vbCrLf _
+            & "Statistic    " & lUnitStr & "      Low     High     (-%)    (+%)    Years"
       End If
       Flows = Me.Discharges
       StdErrorPlus = Me.StdErrorPlus
@@ -1226,7 +1147,6 @@ Public Function EstimateString() As String
       Years = Me.EquivalentYears
       PredInts = Me.PredInts
     Else
-      
       If Me.LowFlow Or Me.ProbEqtn Then
         Flows = Me.Discharges
       Else
@@ -1252,16 +1172,19 @@ Public Function EstimateString() As String
       End If
       
       'use generic labels to handle different kinds of stats
-      lab1 = "             Value,"
-'      lab2 = "Statistic " & lUnitStr
-      'use the following 3 lines when DepVars Units in place
-      lab2 = "Statistic"
-      lab2 = lab2 & Space((11 - Len(lUnitStr)) / 2) & lUnitStr
+      If Me.LowFlow Then 'include units column
+        lab1 = "                                "
+        lab2 = "Statistic        Value Units    "
+      Else
+        lab1 = "                 Value,"
+        lab2 = "Statistic"
+        lab2 = lab2 & Space((19 - Len(lUnitStr)) / 2) & lUnitStr
+      End If
 
       If Me.UsePredInts And Me.Weight.WeightType = 0 And Not Me.ParmOutOfRange Then
         PredInts = Me.PredInts
-        txt = lab1 & "   Pred. Intervals   Standard  Equivalent" & vbCrLf & _
-              lab2 & "      Low     High   Error, %  Years"
+        txt = lab1 & "  Pred. Intervals   Standard  Equivalent" & vbCrLf & _
+              lab2 & "     Low     High   Error, %  Years"
       ElseIf Not Me.ParmOutOfRange Then 'no pred intervals or don't show 'em for weighted estimates or parm value out or range
         txt = lab1 & "  Standard  Equivalent" & vbCrLf _
             & lab2 & "  Error, %  Years"
@@ -1269,9 +1192,6 @@ Public Function EstimateString() As String
         txt = lab1 & vbCrLf & lab2
       End If
     End If
-    
-    'next line goes away when DepVars Units in place
-    'If useMetric Then txt = ReplaceString(txt, " cfs", "m3/s")
     
     If Me.Weight.WeightType > 0 And pWeight.WeightType <> 2 Then 'Don't show std err for weighted estimates
       txt = ReplaceString(txt, "Standard  ", "")
@@ -1282,7 +1202,8 @@ Public Function EstimateString() As String
       txt = ReplaceString(txt, "Years", "")
     End If
     If UsePredErr Then
-      txt = ReplaceString(txt, "  Standard", "Prediction")
+      txt = ReplaceString(txt, "   Standard ", "  Prediction ")
+      txt = ReplaceString(txt, "Years", " Years")
     ElseIf UseEstErr Then
       txt = ReplaceString(txt, "Standard", "Estimate")
     End If
@@ -1313,8 +1234,8 @@ Public Function EstimateString() As String
       End If
       If IsNumeric(IntervalText(Index)) Then
         IntervalText(Index) = SignificantDigits(IntervalText(Index), 3)
-      ElseIf Len(IntervalText(Index)) < 7 Then
-        IntervalText(Index) = IntervalText(Index) & Space(7 - Len(IntervalText(Index)))
+      ElseIf Len(IntervalText(Index)) < 11 Then
+        IntervalText(Index) = IntervalText(Index) & Space(11 - Len(IntervalText(Index)))
       End If
       If Not IsNumeric(IntervalText(Index)) Then AllNumeric = False
               
@@ -1342,15 +1263,6 @@ Public Function EstimateString() As String
           'StdErrText = StrPad(StdErrText, 8)
         End If
         
-    '*** NOTE: this conditional should be removed as Me.ROI conditional above makes it unnecessary
-'        If Me.ROI Then
-'          If StdErrorPlus(Index) = 0 Then
-'            'StdErrText = StdErrText & Space(8)
-'          Else
-'            StdErrText(Index) = StrPad(StdErrText(Index), 6) & StrPad(SignificantDigits(StdErrorPlus(Index), 2), 8)
-'          End If
-'        End If
-        
         If Years(Index) = 0 Or Me.Weight.WeightType = 2 Then 'no Eq Years for weight by variance
           YearsText(Index) = "" 'Space(10)
         Else
@@ -1365,9 +1277,9 @@ Public Function EstimateString() As String
     End If
     If AllNumeric Then DecimalAlign IntervalText, True, True, 7
     If Me.LowFlow Then
-      DecimalAlign FlowText, True, True, 9
-    Else
       DecimalAlign FlowText, True, True, 11
+    Else
+      DecimalAlign FlowText, True, True, 12
     End If
     
     If pExtrapolated Then 'add "*" to extrapolated 500-year value
@@ -1384,23 +1296,34 @@ Public Function EstimateString() As String
       DecimalAlign StdErrText, True, True, 8
     End If
     For Index = 1 To nIntervals
+      If Me.LowFlow Then
+        lUnitStr = Me.UserRegions(1).Region.DepVars(Index).Units.Abbrev(useMetric)
+        lLen = Len(lUnitStr)
+        If lLen > 9 Then 'too long, need to truncate
+          lUnitStr = Left(lUnitStr, 9)
+        ElseIf lLen < 9 Then
+          lUnitStr = " " & lUnitStr & Space(8 - lLen)
+        End If
+      Else
+        lUnitStr = ""
+      End If
       If Me.UsePredInts And Me.Weight.WeightType = 0 Then
         If Me.LowFlow And Me.Project.State.code = "47" Then
-          txt = txt & vbCrLf & IntervalText(Index) & "  " _
-                             & FlowText(Index) _
+          txt = txt & vbCrLf & IntervalText(Index) & "" _
+                             & FlowText(Index) & lUnitStr _
                              & PredIntsText(Index) _
                              & PredIntsText2(Index) & Space(5) _
                              & pZeroAdjusted(Index)
         Else
-          txt = txt & vbCrLf & IntervalText(Index) & "  " _
-                             & FlowText(Index) _
+          txt = txt & vbCrLf & IntervalText(Index) & "" _
+                             & FlowText(Index) & lUnitStr _
                              & PredIntsText(Index) _
                              & PredIntsText2(Index) & Space(2) _
                              & StdErrText(Index)
         End If
       Else
-        txt = txt & vbCrLf & IntervalText(Index) & "  " _
-                           & FlowText(Index) _
+        txt = txt & vbCrLf & IntervalText(Index) & "" _
+                           & FlowText(Index) & lUnitStr _
                            & StdErrText(Index)
       End If
       If YearsOn Then txt = txt & YearsText(Index)
