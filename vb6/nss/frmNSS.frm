@@ -1,10 +1,10 @@
 VERSION 5.00
-Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "Comdlg32.ocx"
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Begin VB.Form frmNSS 
    Caption         =   "National Streamflow Statistics (NSS)"
    ClientHeight    =   7440
    ClientLeft      =   165
-   ClientTop       =   735
+   ClientTop       =   855
    ClientWidth     =   11190
    HelpContextID   =   12
    Icon            =   "frmNSS.frx":0000
@@ -12,6 +12,60 @@ Begin VB.Form frmNSS
    ScaleHeight     =   7440
    ScaleWidth      =   11190
    StartUpPosition =   3  'Windows Default
+   Begin VB.OptionButton optAnalysisType 
+      Caption         =   "Peak"
+      BeginProperty Font 
+         Name            =   "MS Sans Serif"
+         Size            =   8.25
+         Charset         =   0
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   255
+      Index           =   0
+      Left            =   1680
+      TabIndex        =   29
+      Top             =   120
+      Width           =   1215
+   End
+   Begin VB.OptionButton optAnalysisType 
+      Caption         =   "Probability"
+      BeginProperty Font 
+         Name            =   "MS Sans Serif"
+         Size            =   8.25
+         Charset         =   0
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   255
+      Index           =   1
+      Left            =   2880
+      TabIndex        =   28
+      Top             =   120
+      Width           =   1575
+   End
+   Begin VB.OptionButton optAnalysisType 
+      Caption         =   "Other"
+      BeginProperty Font 
+         Name            =   "MS Sans Serif"
+         Size            =   8.25
+         Charset         =   0
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   255
+      Index           =   2
+      Left            =   4440
+      TabIndex        =   27
+      Top             =   120
+      Width           =   975
+   End
    Begin MSComDlg.CommonDialog cdlg 
       Left            =   7920
       Top             =   0
@@ -95,7 +149,7 @@ Begin VB.Form frmNSS
       Index           =   1
       Left            =   4920
       TabIndex        =   11
-      Top             =   600
+      Top             =   960
       Width           =   3852
       Begin VB.Frame fraNewEditDel 
          BorderStyle     =   0  'None
@@ -187,7 +241,7 @@ Begin VB.Form frmNSS
          Width           =   3612
       End
       Begin VB.ComboBox cboScenario 
-         Height          =   288
+         Height          =   315
          HelpContextID   =   12
          Index           =   1
          Left            =   120
@@ -214,7 +268,7 @@ Begin VB.Form frmNSS
       Index           =   0
       Left            =   120
       TabIndex        =   4
-      Top             =   600
+      Top             =   960
       Width           =   4692
       Begin VB.Frame fraNewEditDel 
          BorderStyle     =   0  'None
@@ -306,7 +360,7 @@ Begin VB.Form frmNSS
          Width           =   4452
       End
       Begin VB.ComboBox cboScenario 
-         Height          =   288
+         Height          =   315
          HelpContextID   =   12
          Index           =   0
          Left            =   120
@@ -333,18 +387,18 @@ Begin VB.Form frmNSS
       Left            =   3840
       TabIndex        =   3
       Text            =   "txtName"
-      Top             =   120
+      Top             =   480
       Width           =   3972
    End
    Begin VB.ComboBox cboState 
       Appearance      =   0  'Flat
-      Height          =   288
+      Height          =   315
       HelpContextID   =   12
       Left            =   720
       Style           =   2  'Dropdown List
       TabIndex        =   1
       Tag             =   "-999"
-      Top             =   120
+      Top             =   480
       Width           =   1812
    End
    Begin VB.Frame fraSashLeftRight 
@@ -354,8 +408,26 @@ Begin VB.Form frmNSS
       Left            =   4800
       MousePointer    =   9  'Size W E
       TabIndex        =   24
-      Top             =   720
+      Top             =   480
       Width           =   132
+   End
+   Begin VB.Label Label5 
+      BackStyle       =   0  'Transparent
+      Caption         =   "Analysis Type:"
+      BeginProperty Font 
+         Name            =   "MS Sans Serif"
+         Size            =   8.25
+         Charset         =   0
+         Weight          =   700
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   255
+      Left            =   240
+      TabIndex        =   30
+      Top             =   120
+      Width           =   2055
    End
    Begin VB.Label lblBasinName 
       Alignment       =   1  'Right Justify
@@ -364,11 +436,11 @@ Begin VB.Form frmNSS
       BackStyle       =   0  'Transparent
       Caption         =   "Site &Name:"
       ForeColor       =   &H80000008&
-      Height          =   252
+      Height          =   255
       Left            =   2640
       TabIndex        =   2
-      Top             =   168
-      Width           =   1092
+      Top             =   480
+      Width           =   1095
    End
    Begin VB.Label lblState 
       Alignment       =   1  'Right Justify
@@ -377,11 +449,11 @@ Begin VB.Form frmNSS
       BackStyle       =   0  'Transparent
       Caption         =   "&State:"
       ForeColor       =   &H80000008&
-      Height          =   252
+      Height          =   255
       Left            =   120
       TabIndex        =   0
-      Top             =   168
-      Width           =   492
+      Top             =   480
+      Width           =   495
    End
    Begin VB.Menu mnuTop 
       Caption         =   "&File"
@@ -697,6 +769,7 @@ Private Sub Form_Load()
   progress = progress & vbCr & "cboState.ListIndex = " & selState - 1
   cboState.ListIndex = selState - 1
   progress = progress & vbCr & "ProjectEvents_Edited"
+  optAnalysisType(Project.AnalysisType).Value = True
   ProjectEvents_Edited
   Exit Sub
 
@@ -1120,6 +1193,10 @@ End Sub
 
 Private Sub mnuWeb_Click()
   OpenFile "http://water.usgs.gov/software/nss.html"
+End Sub
+
+Private Sub optAnalysisType_Click(Index As Integer)
+  Project.AnalysisType = Index
 End Sub
 
 Private Sub ProjectEvents_Edited()
