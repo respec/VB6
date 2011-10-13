@@ -110,22 +110,22 @@ Public Function CrippenBueMaxFloodEnvelope(ByVal drainage_area As Double, ByVal 
     k3(17) = -1.461
   End If
   If flood_region >= 1 And flood_region <= 17 Then
-    Dim tmp#
-    tmp = 5# + drainage_area ^ 0.5
+    Dim Tmp#
+    Tmp = 5# + drainage_area ^ 0.5
     CrippenBueMaxFloodEnvelope = k1(flood_region) _
                                * drainage_area ^ k2(flood_region) _
-                               * tmp ^ k3(flood_region)
+                               * Tmp ^ k3(flood_region)
   End If
 End Function
 
-Public Function nss500(q() As Double, T() As Single) As Double
+Public Function nss500(Q() As Double, t() As Single) As Double
 
   'Perform extrapolation of state-equation flood freq. curves
   'to 500 year flood along Log-Pearson Type III curves.
   'q() is array of flow values for intervals up to 500
   't() is array of intervals corresponding to q() (e.g. 2, 5, 10, 25, 50, 100, 500)
 
-  Dim b0!, b1!, b2!
+  Dim B0!, B1!, b2!
   Dim bt0!, bt1!, bt2!
   Dim zx!, wx#
   Dim npts&, errflg&
@@ -139,37 +139,42 @@ Public Function nss500(q() As Double, T() As Single) As Double
   Dim i As Integer, k As Integer
   Dim pz As Double
 
-  b0 = 0#
-  b1 = 0#
+  B0 = 0#
+  B1 = 0#
   b2 = 0#
 
 
-  npts = UBound(q) - 1
+  npts = UBound(Q) - 1
   If npts > 1 Then
     ReDim ql(0 To npts - 1)
     ReDim z(0 To npts - 1)
     ReDim w(0 To npts - 1)
     
     For i = 1 To npts
-      ql(i - 1) = Log10(q(i))
-      tempa = one / T(i)
+      ql(i - 1) = Log10(Q(i))
+      tempa = one / t(i)
       z(i - 1) = gausex(tempa)
     Next i
+    
+    If Q(1) = 0 Then
+      'use 5-year peak for 2-year peak value of 0
+      ql(0) = Log10(Q(2))
+    End If
     'Fit quadratic to freq curve on log-probability coordinates
 '      bt0 = CSng(b0)
 '      bt1 = CSng(b1)
 '      bt2 = CSng(b2)
-    Call slreg2(ql(), z(), npts, b0, b1, b2) ', bt0, bt1, bt2)
+    Call slreg2(ql(), z(), npts, B0, B1, b2) ', bt0, bt1, bt2)
 '      b0 = CDbl(bt0)
 '      b1 = CDbl(bt1)
 '      b2 = CDbl(bt2)
 
     'Determine Pearson Type III skew 2, 10, 100-year points on curve
-    w2 = b0
+    w2 = B0
     pz = gausex(0.1)
-    w10 = b0 + pz * (b1 + pz * b2)
+    w10 = B0 + pz * (B1 + pz * b2)
     pz = gausex(0.01)
-    w100 = b0 + pz * (b1 + pz * b2)
+    w100 = B0 + pz * (B1 + pz * b2)
     If Abs(w10 - w2) < 0.0000001 Then
       ssMessageBox "Division by zero in estimating 500-year flow value"
       sku = 0
@@ -184,7 +189,7 @@ Public Function nss500(q() As Double, T() As Single) As Double
     'Fit straight line to freq curve in log-Pearson coordinates */
 '      bt0 = b0
 '      bt1 = b1
-    Call slreg(ql(), w(), npts, b0, b1) ' bt1, bt0)
+    Call slreg(ql(), w(), npts, B0, B1) ' bt1, bt0)
 '      b0 = bt0
 '      b1 = bt1
     b2 = zero
@@ -193,13 +198,13 @@ Public Function nss500(q() As Double, T() As Single) As Double
     zx = gausex(1# / 500#)
     wx = wilfrt(sku, zx, errflg)
     
-    qx = b0 + wx * (b1 + wx * b2)
+    qx = B0 + wx * (B1 + wx * b2)
     nss500 = 10# ^ qx
 
   End If
 End Function
 
-Private Sub slreg(Y() As Single, X() As Single, n&, ByRef b0!, ByRef b1!)
+Private Sub slreg(y() As Single, x() As Single, n&, ByRef B0!, ByRef B1!)
 
   'simple linear (straight line) regression of Y on X.  WK 750212.
   Dim i&, sy!, sx!, sxy!, sxx!, varx!
@@ -209,25 +214,25 @@ Private Sub slreg(Y() As Single, X() As Single, n&, ByRef b0!, ByRef b1!)
   sxy = 0#
   sxx = 0#
   For i = 0 To n - 1
-    sy = sy + Y(i)
-    sx = sx + X(i)
-    sxy = sxy + X(i) * Y(i)
-    sxx = sxx + X(i) ^ 2
+    sy = sy + y(i)
+    sx = sx + x(i)
+    sxy = sxy + x(i) * y(i)
+    sxx = sxx + x(i) ^ 2
   Next i
   sy = sy / n
   sx = sx / n
   sxy = sxy / n
   sxx = sxx / n
   varx = sxx - sx ^ 2
-  b1 = 0#
+  B1 = 0#
   If varx > 0 Then
-    b1 = (sxy - sx * sy) / varx
+    B1 = (sxy - sx * sy) / varx
   End If
-  b0 = sy - b1 * sx
+  B0 = sy - B1 * sx
 
 End Sub
 
-Private Sub slreg2(Y!(), X!(), n&, ByRef b0!, ByRef b1!, ByRef b2!)
+Private Sub slreg2(y!(), x!(), n&, ByRef B0!, ByRef B1!, ByRef b2!)
 
   'SLREG2 - simple quadratic regression of Y on X
   '         Y = B0 + B1*X + B2*X**2
@@ -242,14 +247,14 @@ Private Sub slreg2(Y!(), X!(), n&, ByRef b0!, ByRef b1!, ByRef b2!)
   ybar = 0#
   xbar = 0#
   For i = 0 To n - 1
-    xbar = xbar + X(i)
-    ybar = ybar + Y(i)
+    xbar = xbar + x(i)
+    ybar = ybar + y(i)
   Next i
   xbar = xbar / n
   ybar = ybar / n
   For i = 0 To n - 1
-    xi = X(i) - xbar
-    yi = Y(i) - ybar
+    xi = x(i) - xbar
+    yi = y(i) - ybar
     sxx = sxx + xi ^ 2
     sx3 = sx3 + xi ^ 3
     sx4 = sx4 + xi ^ 4
@@ -258,10 +263,10 @@ Private Sub slreg2(Y!(), X!(), n&, ByRef b0!, ByRef b1!, ByRef b2!)
   Next i
   d = sx4 - sxx ^ 2 / n
   b2 = (sxxy * sxx - sx3 * sxy) / (sxx * d - sx3 ^ 2)
-  b1 = (sxy - sx3 * b2) / sxx
-  b0 = -b2 * sxx / n
-  b0 = b0 + ybar - b1 * xbar + b2 * xbar ^ 2
-  b1 = b1 - b2 * xbar * 2#
+  B1 = (sxy - sx3 * b2) / sxx
+  B0 = -b2 * sxx / n
+  B0 = B0 + ybar - B1 * xbar + b2 * xbar ^ 2
+  B1 = B1 - b2 * xbar * 2#
 
 End Sub
 
@@ -324,25 +329,25 @@ Private Function wilfrt(sku!, zeta!, errflg&) As Single
   'REV 7/86 BY AML TO OSW CODING CONVENTION
   'rev 9/96 by PRH for VB
     
-  Dim ask!, A!, B!, G!, h!, z!, sig!, fmu!
+  Dim ask!, a!, b!, G!, h!, z!, sig!, fmu!
   Const skutol As Single = 0.0003
 
   'first time thru or new sku (skew)
   ask = Abs(sku)
   If ask >= skutol Then
     'nonzero skew
-    Call wilfrs(ask, G, h, A, B, errflg)
+    Call wilfrs(ask, G, h, a, b, errflg)
     sig = G * 0.1666667
     fmu = 1# - sig * sig
     If sku < 0# Then
       sig = -sig
-      A = -A
+      a = -a
     End If
     z = fmu + sig * zeta
     If z < h Then
       z = h
     End If
-    wilfrt = A * (z * z * z - B)
+    wilfrt = a * (z * z * z - b)
   Else
     'zero skew
     wilfrt = zeta
@@ -350,7 +355,7 @@ Private Function wilfrt(sku!, zeta!, errflg&) As Single
 
 End Function
 
-Private Sub wilfrs(sk!, G!, h!, A!, B!, errflg&)
+Private Sub wilfrs(sk!, G!, h!, a!, b!, errflg&)
 
   'COMPUTES PARAMETERS USED BY WILFRT TRANSFORMATIN
   'USES APPROX FORMULA AND CORRECTION TERMS PREPARED FROM
@@ -364,7 +369,7 @@ Private Sub wilfrs(sk!, G!, h!, A!, B!, errflg&)
   Static table!(1 To 40, 1 To 4)
   Dim flag&, i&, k&
   Dim row!(1 To 4)
-  Dim s!, q!, p!, tog!
+  Dim s!, Q!, p!, tog!
   
   If table(1, 1) = 0 Then
     table(1, 1) = 0#
@@ -551,9 +556,9 @@ Private Sub wilfrs(sk!, G!, h!, A!, B!, errflg&)
 '      tog = table(nroz, 4)
   Else
     p = (s - table(k, 1)) / (table(k + 1, 1) - table(k, 1))
-    q = 1# - p
+    Q = 1# - p
     For i = 2 To 4
-      row(i) = q * table(k, i) + p * table(k + 1, i)
+      row(i) = Q * table(k, i) + p * table(k + 1, i)
     Next i
 '     replace "row" equivalence
 '      q = q * table(k, 2) + p * table(k + 1, 2)
@@ -566,21 +571,21 @@ Private Sub wilfrs(sk!, G!, h!, A!, B!, errflg&)
 '    g = s + q
   If s > 1# Then G = G - 0.063 * (s - 1#) ^ 1.85
   tog = 2# / s
-  q = tog
-  If q < 0.4 Then q = 0.4
-  A = q + row(3)
+  Q = tog
+  If Q < 0.4 Then Q = 0.4
+  a = Q + row(3)
 '   replace "row" equivalence
 '    a = q + p
-  q = 0.12 * (s - 2.25)
-  If q < 0# Then q = 0#
-  B = 1# + q * q + row(4)
+  Q = 0.12 * (s - 2.25)
+  If Q < 0# Then Q = 0#
+  b = 1# + Q * Q + row(4)
 '   replace "row" equivalence
 '    b = 1# + q * q + tog
-  If (B - tog / A) < 0# Then
+  If (b - tog / a) < 0# Then
     'Stop WILFRS
     ssMessageBox "Very serious problem in routine WILFRS.  Contact software distributor", 16
   End If
-  h = (B - tog / A) ^ 0.3333333
+  h = (b - tog / a) ^ 0.3333333
 
 End Sub
 
@@ -593,13 +598,13 @@ Public Function gausex(exprob!) As Single
     '76-05-04 WK -- TRAP UNDERFLOWS IN EXP IN GUASCF AND DY.
 
     'rev 8/96 by PRH for VB
-    Const c0! = 2.515517
-    Const c1! = 0.802853
+    Const C0! = 2.515517
+    Const C1! = 0.802853
     Const C2! = 0.010328
-    Const d1! = 1.432788
+    Const D1! = 1.432788
     Const d2! = 0.189269
     Const d3! = 0.001308
-    Dim pr!, rtmp!, p!, T!, numerat!, denom!
+    Dim pr!, rtmp!, p!, t!, numerat!, denom!
     
     p = exprob
     If p >= 1# Then
@@ -612,10 +617,10 @@ Public Function gausex(exprob!) As Single
       'compute value
       pr = p
       If p > 0.5 Then pr = 1# - pr
-      T = (-2# * Log(pr)) ^ 0.5
-      numerat = (c0 + T * (c1 + T * C2))
-      denom = (1# + T * (d1 + T * (d2 + T * d3)))
-      rtmp = T - numerat / denom
+      t = (-2# * Log(pr)) ^ 0.5
+      numerat = (C0 + t * (C1 + t * C2))
+      denom = (1# + t * (D1 + t * (d2 + t * d3)))
+      rtmp = t - numerat / denom
       If p > 0.5 Then rtmp = -rtmp
     End If
     gausex = rtmp
