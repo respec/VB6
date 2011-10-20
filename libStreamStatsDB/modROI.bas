@@ -224,7 +224,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   'Read in station attributes from STATION/STATISTIC tables: ~5 secs for NC
   For i = 1 To StaCnt
     Set myStation = lROIData.Stations(i)
-    StaIDs(i) = myStation.Id
+    StaIDs(i) = myStation.ID
     StaLats(i) = myStation.Latitude
     StaLngs(i) = myStation.Longitude
     If myStation.ROIRegionID <> 0 Then
@@ -239,7 +239,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     j = 0
     For Each vParm In lROIData.FlowStats
       j = j + 1
-      Flows(i, j) = Log10(myStation.Statistics(CStr(vParm.Id)).Value)
+      Flows(i, j) = Log10(myStation.Statistics(CStr(vParm.ID)).Value)
     Next vParm
     j = 0
     'Read in current station's stat values used in similarity calcs
@@ -249,7 +249,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
       If myStation.Statistics.KeyExists(CStr(vParm.LabelCode)) Then
         SimVars(i, j) = Log10(myStation.Statistics(CStr(vParm.LabelCode)).Value)
       Else
-        MsgBox "for " & myStation.Id & " no statlabel=" & vParm.LabelCode
+        MsgBox "for " & myStation.ID & " no statlabel=" & vParm.LabelCode
       End If
       'Keep running tally of vars for ensuing stat calcs
       sum(j) = sum(j) + SimVars(i, j)
@@ -291,18 +291,18 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     End If
   Next i
 
-'  If lROIData.StateCode = "10047" Then
-'    'TEMPORARY CODE TO EMULATE TN LF FORTRAN CODE
-'    If Abs(roiRegion) = 1 Then 'central+east
-'      SimVarSDs(1) = 0.32
-'      SimVarSDs(2) = 0.12
-'      SimVarSDs(3) = 0.008
-'    Else 'west
-'      SimVarSDs(1) = 0.348
-'      SimVarSDs(2) = 0.2
-'      SimVarSDs(3) = 0.01
-'    End If
-'  Else 'Compute St. Dev. of independent variables used in similarity calcs
+  If lROIData.StateCode = "10047" Then
+    'CODE TO EMULATE TN LF FORTRAN CODE
+    If Abs(roiRegion) = 1 Then 'central+east
+      SimVarSDs(1) = 0.32
+      SimVarSDs(2) = 0.12
+      SimVarSDs(3) = 0.008
+    Else 'west
+      SimVarSDs(1) = 0.348
+      SimVarSDs(2) = 0.2
+      SimVarSDs(3) = 0.01
+    End If
+  Else 'Compute St. Dev. of independent variables used in similarity calcs
     For i = 1 To SimVarCnt
       SimVarSDs(i) = sum(i) / StaCnt  'actually calcing avg of variable here
       sum(i) = 0
@@ -311,7 +311,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
       Next j
       SimVarSDs(i) = (sum(i) / (StaCnt - 1)) ^ 0.5
     Next i
-'  End If
+  End If
 
   'Compute climate factor from lat and long coordinates
   icall = 0
@@ -379,13 +379,13 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   'loop thru sites - calc avg StdDev for peak flows across all sites
   For i = 1 To Nsites
     'write values for this station to outfile
-    str = StaIDs(INDX(i)) & vbTab & Format(Distance(INDX(i)), "#0.00") & vbTab & Format(StaLats(INDX(i)), "#0.0") & vbTab & Format(StaLngs(INDX(i)), "#0.0") & vbTab
+    str = StaIDs(INDX(i)) & vbTab & Format(Distance(INDX(i)), "#0.00") & vbTab & Format(StaLats(INDX(i)), "#0.00") & vbTab & Format(StaLngs(INDX(i)), "#0.00") & vbTab
     For j = 1 To SimVarCnt
       'str = str & Format(10 ^ SimVars(INDX(i), j), "####0.0") & vbTab
-      str = str & Format(SimVars(INDX(i), j), "####0.00") & vbTab
+      str = str & Format(SimVars(INDX(i), j), "####0.000") & vbTab
     Next j
     For j = 1 To NumPeaks
-      str = str & Format(Flows(INDX(i), j), "#0.000") & vbTab
+      str = str & Format(Flows(INDX(i), j), "#0.00") & vbTab
     Next j
     Print #OutFile, str
     sig = sig + FlowSDs(INDX(i))
@@ -593,17 +593,27 @@ Regress:
       ysav = yhat
     End If
   Next jpeak
-  If lROIData.StateCode = "10047" Then
-    str = str & vbCrLf & vbCrLf & "Statistic" & vbTab & " PREDICTED(cfs)" & _
-          vbTab & vbTab & "90% PRED INT (cfs)" & vbCrLf
-    Print #OutFile, str
-    For jpeak = 1 To NumPeaks
-      Print #OutFile, PkLab(jpeak) _
-            & vbTab & Format(retval(jpeak), "#####0.0") _
-            & vbTab & vbTab & Trim(Format(PredInts(1, jpeak), "######0.0")) _
-            & " - " & Trim(Format(PredInts(2, jpeak), "######0.0"))
-    Next jpeak
-  End If
+'  If lROIData.StateCode = "47" Or lROIData.StateCode = "10047" Then
+'    str = "     ID     HA   LATITUDE  LONGITUDE  MAP NO.  LOG(CDA)   LOG(CS)   LOG(PF)   LOG(CF)" & vbCrLf
+'    For i = 1 To Nsites
+'      'write values for this station to outfile
+'      str = str & StaIDs(INDX(i)) & "  " & Format(StaLats(INDX(i)), "#0.00000") & "  " & Format(StaLngs(INDX(i)), "#0.00000") & "   "
+'      For j = 1 To RegParms.Count
+'        'str = str & Format(10 ^ SimVars(INDX(i), j), "####0.0") & vbTab
+'        str = str & Format(RegVars(INDX(i), j), "####0.00000") & "   "
+'      Next j
+'      str = str & vbCrLf
+'    Next i
+'    str = str & vbCrLf & vbCrLf & "Statistic" & vbTab & " PREDICTED(cfs)" & _
+'          vbTab & vbTab & "90% PRED INT (cfs)" & vbCrLf
+'    Print #OutFile, str
+'    For jpeak = 1 To NumPeaks
+'      Print #OutFile, PkLab(jpeak) _
+'            & vbTab & Format(retval(jpeak), "#####0.0") _
+'            & vbTab & vbTab & Trim(Format(PredInts(1, jpeak), "######0.0")) _
+'            & " - " & Trim(Format(PredInts(2, jpeak), "######0.0"))
+'    Next jpeak
+'  End If
   Close OutFile
   ComputeROIdischarge = retval
 End Function
@@ -1438,11 +1448,11 @@ Private Function STUTX(p As Single, n As Long) As Single
   '           REV BY WKIRBY 10/76. 2/79.  10/79.
   Dim Q As Single, a As Single, b As Single, c As Single, d As Single, _
       HPI As Single, FN As Single, x As Single, y As Single
-  Dim Sign As Long, IER As Long
+  Dim sign As Long, IER As Long
 
       HPI = 1.5707963268
-      Sign = 1#
-      If p < 0.5 Then Sign = -1#
+      sign = 1#
+      If p < 0.5 Then sign = -1#
       Q = 2# * p
       If Q > 1# Then Q = 2# * (1# - p)
       If Q < 1# Then GoTo Next1
@@ -1453,17 +1463,17 @@ Next1:
       If (n >= 1 And Q > 0# And Q < 1#) Then GoTo Next2
       IER = 3
       If n >= 1 Then IER = 2
-      STUTX = Sign * 1E+38
+      STUTX = sign * 1E+38
       Exit Function
 Next2:
       If n <> 1 Then GoTo Next3
 '  -- 1 DEG FR - EXACT
-      STUTX = Sign / Tan(HPI * Q)
+      STUTX = sign / Tan(HPI * Q)
       Exit Function
 Next3:
       If n <> 2 Then GoTo Next4
 '  -- 2 DEG FR - EXACT
-      STUTX = ((2# / (Q * (2# - Q)) - 2#) ^ 0.5) * Sign
+      STUTX = ((2# / (Q * (2# - Q)) - 2#) ^ 0.5) * sign
       Exit Function
 Next4:
 '  -- EXPANSION FOR N .GT. 2
@@ -1476,7 +1486,7 @@ Next4:
       If y > (a + 0.05) Then GoTo Next5
       y = ((1# / (((FN + 6#) / (FN * y) - 0.089 * d - 0.822) * (FN + 2#) * 3#) + _
           0.5 / (FN + 4#)) * y - 1#) * (FN + 1#) / (FN + 2#) + 1# / y
-      STUTX = ((FN * y) ^ 0.5) * Sign
+      STUTX = ((FN * y) ^ 0.5) * sign
       Exit Function
 Next5:
 '   -- ASYMPTOTIC INVERSE EXPANSION ABOUT NORMAL
@@ -1488,7 +1498,7 @@ Next5:
       x = a * y ^ 2
       y = x + 0.5 * x ^ 2
       If x > 0.002 Then y = Exp(x) - 1#
-      STUTX = ((FN * y) ^ 0.5) * Sign
+      STUTX = ((FN * y) ^ 0.5) * sign
 End Function
   
 Private Function GausAB(CUMPRB As Single) As Single
