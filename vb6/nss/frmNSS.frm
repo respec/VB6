@@ -535,8 +535,25 @@ Private SashDraggingLeftRightX As Long
 Private LeftWidthFraction As Single
 
 Private Sub cboScenario_Click(Index As Integer)
-  If Index = 0 Then Project.CurrentRuralScenario = cboScenario(0).ListIndex + 1
-  If Index = 1 Then Project.CurrentUrbanScenario = cboScenario(1).ListIndex + 1
+  If Index = 0 Then 'rural scenario selection made
+    Project.CurrentRuralScenario = cboScenario(0).ListIndex + 1
+    If Project.RuralScenarios(Project.CurrentRuralScenario).LowFlow Then
+      optAnalysisType(2).Value = True
+    ElseIf Project.RuralScenarios(Project.CurrentRuralScenario).ProbEqtn Then
+      optAnalysisType(1).Value = True
+    Else
+      optAnalysisType(0).Value = True
+    End If
+  ElseIf Index = 1 Then 'urban scenario selection made
+    Project.CurrentUrbanScenario = cboScenario(1).ListIndex + 1
+    If Project.UrbanScenarios(Project.CurrentUrbanScenario).LowFlow Then
+      optAnalysisType(2).Value = True
+    ElseIf Project.UrbanScenarios(Project.CurrentUrbanScenario).ProbEqtn Then
+      optAnalysisType(1).Value = True
+    Else
+      optAnalysisType(0).Value = True
+    End If
+  End If
   UpdateLabels
 End Sub
 
@@ -591,6 +608,13 @@ Private Sub cmdEdit_Click(Index As Integer)
   If myScenario Is Nothing Then
     cmdNew_Click Index
   Else
+    If myScenario.LowFlow Then
+      optAnalysisType(2).Value = True
+    ElseIf myScenario.ProbEqtn Then
+      optAnalysisType(1).Value = True
+    Else
+      optAnalysisType(0).Value = True
+    End If
     myScenario.Edit
   End If
 End Sub
@@ -599,12 +623,12 @@ Private Sub cmdFrequency_Click()
   Dim i As Long, NumFloodScens As Long
   NumFloodScens = 0
   For i = 1 To Project.RuralScenarios.Count
-    If Not Project.RuralScenarios(i).lowflow Then
+    If Not Project.RuralScenarios(i).LowFlow Then
       NumFloodScens = NumFloodScens + 1
     End If
   Next i
   For i = 1 To Project.UrbanScenarios.Count
-    If Not Project.UrbanScenarios(i).lowflow Then
+    If Not Project.UrbanScenarios(i).LowFlow Then
       NumFloodScens = NumFloodScens + 1
     End If
   Next i
@@ -619,12 +643,12 @@ Private Sub cmdHydrograph_Click()
   Dim i As Long, NumFloodScens As Long
   NumFloodScens = 0
   For i = 1 To Project.RuralScenarios.Count
-    If Not Project.RuralScenarios(i).lowflow Then
+    If Not Project.RuralScenarios(i).LowFlow Then
       NumFloodScens = NumFloodScens + 1
     End If
   Next i
   For i = 1 To Project.UrbanScenarios.Count
-    If Not Project.UrbanScenarios(i).lowflow Then
+    If Not Project.UrbanScenarios(i).LowFlow Then
       NumFloodScens = NumFloodScens + 1
     End If
   Next i
@@ -698,7 +722,7 @@ Private Sub cmdWeight_Click()
   
   If Project.CurrentRuralScenario > 0 Then
     Set scen = Project.RuralScenarios(Project.CurrentRuralScenario)
-    If scen.lowflow Then
+    If scen.LowFlow Then
       MsgBox "Weighting not available for Low Flow scenarios.", vbInformation, "NSS Weight"
     Else
       If scen.Weight.WeightType > 0 Then 'This is already a weighted scenario, just edit it
@@ -1146,7 +1170,7 @@ AddRegionScenario:
   Set newScenario = New nssScenario
   Set newScenario.Project = Project
   newScenario.Urban = region.Urban
-  If Abs(region.LowFlowRegnID) > 0 Then newScenario.lowflow = True
+  If Abs(region.LowFlowRegnID) > 0 Then newScenario.LowFlow = True
   If doMax Then
     newScenario.Name = region.State.Abbrev & "_" & region.Name & "_Max"
   Else
@@ -1167,7 +1191,7 @@ AddRegionScenario:
     End If
     Project.UrbanScenarios.Add newScenario, LCase(newScenario.Name)
   Else
-    If Not newScenario.lowflow Then 'make sure last rural is a peak flow scenario for urban use
+    If Not newScenario.LowFlow Then 'make sure last rural is a peak flow scenario for urban use
       Set lastRural = newScenario
     End If
     Project.RuralScenarios.Add newScenario, LCase(newScenario.Name)
