@@ -224,7 +224,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   'Read in station attributes from STATION/STATISTIC tables: ~5 secs for NC
   For i = 1 To StaCnt
     Set myStation = lROIData.Stations(i)
-    StaIDs(i) = myStation.ID
+    StaIDs(i) = myStation.Id
     StaLats(i) = myStation.Latitude
     StaLngs(i) = myStation.Longitude
     If myStation.ROIRegionID <> 0 Then
@@ -239,7 +239,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
     j = 0
     For Each vParm In lROIData.FlowStats
       j = j + 1
-      Flows(i, j) = Log10(myStation.Statistics(CStr(vParm.ID)).Value)
+      Flows(i, j) = Log10(myStation.Statistics(CStr(vParm.Id)).Value)
     Next vParm
     j = 0
     'Read in current station's stat values used in similarity calcs
@@ -249,7 +249,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
       If myStation.Statistics.KeyExists(CStr(vParm.LabelCode)) Then
         SimVars(i, j) = Log10(myStation.Statistics(CStr(vParm.LabelCode)).Value)
       Else
-        MsgBox "for " & myStation.ID & " no statlabel=" & vParm.LabelCode
+        MsgBox "for " & myStation.Id & " no statlabel=" & vParm.LabelCode
       End If
       'Keep running tally of vars for ensuing stat calcs
       sum(j) = sum(j) + SimVars(i, j)
@@ -1595,14 +1595,6 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
   Dim pru As Double
   Dim pruz7 As Single
   Dim predz7 As Single
-  Dim cl90z7 As Single
-  Dim cu90z7 As Single
-  Dim pruz30 As Single
-  Dim predz30 As Single
-  Dim cl90z30 As Single
-  Dim cu90z30 As Single
-  Dim pruzd As Single
-  Dim predzd As Single
   Dim cl90zd As Single
   Dim cu90zd As Single
   Dim altm As Single
@@ -1733,33 +1725,23 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
   If jpeak = 1 Then 'Zero-flow-7Q10 transition West region
       If jreg = 1 And Area < 50 And gf < 40 Or _
          jreg = 1 And Area < 2.5 And gf < 60 Then
-          If probz7 >= 0.075 Then
-            pru = -6.1711 + 1.2383 * logda + 2.5665 * lsf30
-            pred = 10 ^ pru
-            cu90 = 10 ^ (tstat + pru)
-            cl90 = 10 ^ (-tstat + pru)
-            'p7meth = 1
-            ZeroAdjust = True
-          End If
           If probz7 >= 0.1 Then
-            pred = 0#
+            ZeroAdjust = True
             cl90 = 0#
+            If Area >= 40 Then
+              pred = ((Area - 40) / 10) * pred
+            End If
           End If
       End If
       'Zero-flow-7Q10 transition Central+East region
       If jreg = 0 And Area < 100 And gf < 40 Or _
          jreg = 0 And Area < 2.5 And gf < 60 Then
-          If probz7 >= 0.075 Then
-            pru = -2.4432 + 0.133 * logda + 0.7604 * lgf30 + 0.6515 * logsf
-            pred = 10 ^ pru
-            cu90 = 10 ^ (tstat + pru)
-            cl90 = 10 ^ (-tstat + pru)
-            'p7meth = 1
+          If probz7 >= 0.1 Then
             ZeroAdjust = True
-          End If
-          If (probz7 >= 0.1) Then
-            pred = 0#
             cl90 = 0#
+            If Area >= 80 Then
+              pred = ((Area - 80) / 20) * pred
+            End If
           End If
       End If
   End If
@@ -1768,33 +1750,23 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
       'Zero-flow-30Q5 transition equation West region
       If jreg = 1 And Area < 50 And gf < 40 Or _
          jreg = 1 And Area < 2.5 And gf < 60 Then
-          If (probz7 >= 0.075 And probz30 >= 0.075) Then
-            pru = -4.7262 + 1.1254 * logda + 1.846 * lsf30
-            pred = 10 ^ pru
-            cu90 = 10 ^ (tstat + pru)
-            cl90 = 10 ^ (-tstat + pru)
-            'p30meth = 1
+          If probz30 >= 0.2 Then
             ZeroAdjust = True
-          End If
-          If (probz7 >= 0.1 And probz30 >= 0.175) Then
-            pred = 0#
             cl90 = 0#
+            If Area >= 40 Then
+              pred = ((Area - 40) / 10) * pred
+            End If
           End If
       End If
       'Zero-flow-30Q5 transition Central+East region
       If jreg = 0 And Area < 100 And gf < 40 Or _
          jreg = 0 And Area < 2.5 And gf < 60 Then
-          If (probz7 >= 0.075 And probz30 >= 0.075) Then
-            pru = -2.1026 + 0.4918 * logda + 0.5746 * lgf30 + 0.4189 * logsf
-            pred = 10 ^ pru
-            cu90 = 10 ^ (tstat + pru)
-            cl90 = 10 ^ (-tstat + pru)
-            'p30meth = 1
+          If probz30 >= 0.2 Then
             ZeroAdjust = True
-          End If
-          If (probz7 >= 0.1 And probz30 >= 0.175) Then
-            pred = 0#
             cl90 = 0#
+            If Area >= 80 Then
+              pred = ((Area - 80) / 20) * pred
+            End If
           End If
       End If
   End If
@@ -1803,197 +1775,132 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
      jreg = 1 And Area < 2.5 And gf < 60 Then
       'D99.5
       If (jpeak = 5) Then
-        If (probzd >= 0.00375) Then
-          pru = -6.0678 + 1.2098 * logda + 2.5093 * lsf30
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          ''pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.005) Then
-          pred = 0#
+        If probzd >= 0.005 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area >= 40 Then
+            pred = ((Area - 40) / 10) * pred
+          End If
         End If
       End If
       'D99
       If (jpeak = 6) Then
-        If (probzd >= 0.00375) Then
-          pru = -5.2298 + 1.1421 * logda + 2.0878 * lsf30
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.01) Then
-          pred = 0#
+        If probzd >= 0.01 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area >= 40 Then
+            pred = ((Area - 40) / 10) * pred
+          End If
         End If
       End If
       'D98
       If (jpeak = 7) Then
-        If (probzd >= 0.00375) Then
-          pru = -4.8427 + 1.1283 * logda + 1.8955 * lsf30
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.02) Then
-          pred = 0#
+        If probzd >= 0.02 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area >= 40 Then
+            pred = ((Area - 40) / 10) * pred
+          End If
         End If
       End If
       'D95
       If (jpeak = 8) Then
-        If (probzd >= 0.00375) Then
-          pru = -4.6096 + 1.1224 * logda + 1.7964 * lsf30
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.05) Then
-          pred = 0#
+        If probzd >= 0.05 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area >= 40 Then
+            pred = ((Area - 40) / 10) * pred
+          End If
         End If
       End If
       'D90
       If (jpeak = 9) Then
-        If (probzd >= 0.00375) Then
-          pru = -4.4253 + 1.1741 * logda + 1.6665 * lsf30
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.1) Then
-          pred = 0#
+        If probzd >= 0.1 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area >= 40 Then
+            pred = ((Area - 40) / 10) * pred
+          End If
         End If
       End If
       'D80
       If (jpeak = 10) Then
-        If (probzd >= 0.00375) Then
-          pru = -4.0544 + 1.2957 * logda + 1.3722 * lsf30
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.2) Then
-          pred = 0#
+        If probzd >= 0.2 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area >= 40 Then
+            pred = ((Area - 40) / 10) * pred
+          End If
         End If
       End If
 'D70
       If (jpeak = 11) Then
-        If (probzd >= 0.00375) Then
-          pru = -3.6581 + 1.3536 * logda + 1.116 * lsf30
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.3) Then
-          pred = 0#
+        If probzd >= 0.3 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area >= 40 Then
+            pred = ((Area - 40) / 10) * pred
+          End If
         End If
       End If
 'D60
       If (jpeak = 12) Then
-        If (probzd >= 0.00375) Then
-          pru = -2.5746 + 1.2535 * logda + 0.6026 * lsf30
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.4) Then
-          pred = 0#
+        If probzd >= 0.4 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area >= 40 Then
+            pred = ((Area - 40) / 10) * pred
+          End If
         End If
       End If
 'D50
       If (jpeak = 13) Then
-        If (probzd >= 0.00375) Then
-          pru = -1.2838 + 1.0278 * logda + 0.1184 * lsf30
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.5) Then
-          pred = 0#
+        If probzd >= 0.5 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area >= 40 Then
+            pred = ((Area - 40) / 10) * pred
+          End If
         End If
       End If
 'D40
       If (jpeak = 14) Then
-        If (probzd >= 0.00375) Then
-          pru = -0.5498 + 0.9582 * logda - 0.1216 * lsf30
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.6) Then
-          pred = 0#
+        If probzd >= 0.6 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area >= 40 Then
+            pred = ((Area - 40) / 10) * pred
+          End If
         End If
       End If
 'D30
       If (jpeak = 15) Then
-        If (probzd >= 0.00375) Then
-          pru = -0.2352 + 0.9871 * logda - 0.1502 * lsf30
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.7) Then
-          pred = 0#
+        If probzd >= 0.7 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area >= 40 Then
+            pred = ((Area - 40) / 10) * pred
+          End If
         End If
       End If
 'D20
       If (jpeak = 16) Then
-        If (probzd >= 0.00375) Then
-          pru = -0.2289 + 1.0303 * logda + 0.1307 * lsf30
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.8) Then
-          pred = 0#
+        If probzd >= 0.8 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area >= 40 Then
+            pred = ((Area - 40) / 10) * pred
+          End If
         End If
       End If
 'D10
       If (jpeak = 17) Then
-        If (probzd >= 0.00375) Then
-          pru = 0.4276 + 0.9945 * logda - 0.00026 * lsf30
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.9) Then
-          pred = 0#
+        If probzd >= 0.9 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area >= 40 Then
+            pred = ((Area - 40) / 10) * pred
+          End If
         End If
       End If
   End If
@@ -2003,197 +1910,132 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
      jreg = 0 And Area < 2.5 And gf < 60 Then
       'D99.5
       If (jpeak = 5) Then
-        If probzd > 0.00375 Then
-          pru = -2.4813 + 0.2087 * logda + 0.7651 * lgf30 + 0.5961 * logsf
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.005) Then
-          pred = 0#
+        If probzd >= 0.005 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area > 80 Then
+            pred = ((Area - 80) / 20) * pred
+          End If
         End If
       End If
 'D99
       If (jpeak = 6) Then
-        If probzd > 0.00375 Then
-          pru = -2.3135 + 0.3469 * logda + 0.7091 * lgf30 + 0.482 * logsf
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.01) Then
-          pred = 0#
+        If probzd >= 0.01 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area > 80 Then
+            pred = ((Area - 80) / 20) * pred
+          End If
         End If
       End If
 'D98
       If (jpeak = 7) Then
-        If probzd > 0.00375 Then
-          pru = -2.2318 + 0.4259 * logda + 0.6299 * lgf30 + 0.48 * logsf
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.02) Then
-          pred = 0#
+        If probzd >= 0.02 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area > 80 Then
+            pred = ((Area - 80) / 20) * pred
+          End If
         End If
       End If
 'D95
       If (jpeak = 8) Then
-        If probzd > 0.00375 Then
-          pru = -1.9735 + 0.5576 * logda + 0.5192 * lgf30 + 0.3577 * logsf
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.05) Then
-          pred = 0#
+        If probzd >= 0.05 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area > 80 Then
+            pred = ((Area - 80) / 20) * pred
+          End If
         End If
       End If
 'D90
       If (jpeak = 9) Then
-        If probzd > 0.00375 Then
-          pru = -1.8975 + 0.748 * logda + 0.4782 * lgf30 + 0.2912 * logsf
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.1) Then
-          pred = 0#
+        If probzd >= 0.1 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area > 80 Then
+            pred = ((Area - 80) / 20) * pred
+          End If
         End If
       End If
 'D80
       If (jpeak = 10) Then
-        If probzd > 0.00375 Then
-          pru = -1.5125 + 0.9246 * logda + 0.2986 * lgf30 + 0.1813 * logsf
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.2) Then
-          pred = 0#
+        If probzd >= 0.2 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area > 80 Then
+            pred = ((Area - 80) / 20) * pred
+          End If
         End If
       End If
 'D70
       If (jpeak = 11) Then
-        If probzd > 0.00375 Then
-          pru = -1.0564 + 0.9812 * logda + 0.0436 * lgf30 + 0.1288 * logsf
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.3) Then
-          pred = 0#
+        If probzd >= 0.3 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area > 80 Then
+            pred = ((Area - 80) / 20) * pred
+          End If
         End If
       End If
 'D60
       If (jpeak = 12) Then
-        If probzd > 0.00375 Then
-          pru = -0.6306 + 1.00669 * logda - 0.1574 * lgf30 + 0.08886 * logsf
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.4) Then
-          pred = 0#
+        If probzd >= 0.4 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area > 80 Then
+            pred = ((Area - 80) / 20) * pred
+          End If
         End If
       End If
 'D50
       If (jpeak = 13) Then
-        If probzd > 0.00375 Then
-          pru = -0.2607 + 1.00574 * logda - 0.2719 * lgf30 + 0.07162 * logsf
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.5) Then
-          pred = 0#
+        If probzd >= 0.5 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area > 80 Then
+            pred = ((Area - 80) / 20) * pred
+          End If
         End If
       End If
 'D40
       If (jpeak = 14) Then
-        If probzd > 0.00375 Then
-          pru = -0.0496 + 1.01541 * logda - 0.26701 * lgf30 + 0.08017 * logsf
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.6) Then
-          pred = 0#
+        If probzd >= 0.6 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area > 80 Then
+            pred = ((Area - 80) / 20) * pred
+          End If
         End If
       End If
 'D30
       If (jpeak = 15) Then
-        If probzd > 0.00375 Then
-          pru = 0.18335 + 1.01168 * logda - 0.23826 * lgf30 + 0.05126 * logsf
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.7) Then
-          pred = 0#
+        If probzd >= 0.7 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area > 80 Then
+            pred = ((Area - 80) / 20) * pred
+          End If
         End If
       End If
 'D20
       If (jpeak = 16) Then
-        If probzd > 0.00375 Then
-          pru = 0.39862 + 1.01 * logda - 0.22086 * lgf30 + 0.0359 * logsf
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.8) Then
-          pred = 0#
+        If probzd >= 0.8 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area > 80 Then
+            pred = ((Area - 80) / 20) * pred
+          End If
         End If
       End If
 'D10
       If (jpeak = 17) Then
-        If probzd > 0.00375 Then
-          pru = 0.65007 + 1.02589 * logda - 0.21643 * lgf30 + 0.0258 * logsf
-          pred = 10 ^ pru
-          cu90 = 10 ^ (tstat + pru)
-          cl90 = 10 ^ (-tstat + pru)
-          'pdmeth = 1
-            ZeroAdjust = True
-        End If
-        If (probz7 >= 0.1 And probzd >= 0.9) Then
-          pred = 0#
+        If probzd >= 0.9 Then
+          ZeroAdjust = True
           cl90 = 0#
+          If Area > 80 Then
+            pred = ((Area - 80) / 20) * pred
+          End If
         End If
       End If
   End If
