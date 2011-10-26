@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "Comdlg32.ocx"
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Object = "*\A..\..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmLowFlow 
    Caption         =   "Streamflow Equation Editor"
@@ -364,7 +364,7 @@ Begin VB.Form frmLowFlow
             AllowEditHeader =   0   'False
             AllowLoad       =   0   'False
             AllowSorting    =   0   'False
-            Rows            =   585
+            Rows            =   587
             Cols            =   2
             ColWidthMinimum =   300
             gridFontBold    =   0   'False
@@ -1165,6 +1165,7 @@ Private Sub cmdImport_Click()
   Dim covArray() As String
   Dim lXiVector As FastCollection
   Dim lVarNotFound As Integer
+  Dim lRegID As Long
 
   On Error GoTo x
   
@@ -1244,12 +1245,18 @@ TryAgain:
     While Len(regnName) = 0 And Len(str) > 0
       regnName = StrRetRem(str)
     Wend
+    lstr = StrRetRem(str)
+    If Len(lstr) > 0 Then 'Region ID found
+      lRegID = CInt(lstr)
+    Else
+      lRegID = -1
+    End If
     If StrRetRem(str) = "0" Then urban = False Else urban = True
     regnVals(0) = StrRetRem(str)
     regnVals(1) = StrRetRem(str)
     Set MyRegion = New nssRegion
     Set MyRegion.DB = DB
-    MyRegion.Add RDO, regnName, urban, regnVals(0), regnVals(1), 0
+    MyRegion.Add RDO, regnName, urban, regnVals(0), regnVals(1), 0, , lRegID
     DB.State.PopulateRegions
     Set MyRegion = DB.State.Regions(regnName)
     'Read in parameters info - NOT ANY MORE, records merged 1/21/2010, prh
@@ -1466,13 +1473,13 @@ Private Sub cmdExport_Click()
     Else
       j = 0
     End If
-    str = ",,,,," & MyRegion.Name & "," & j
+    str = ",,,,," & MyRegion.Name & "," & MyRegion.id & "," & j
     If MyRegion.UrbanNeedsRural Then j = 1 Else j = 0
     str = str & "," & j
     If MyRegion.PredInt Then j = 1 Else j = 0
     str = str & "," & j
     'append blank fields at end of string to match Excel formatting
-    str = str & "," & MyRegion.Parameters.Count & "," & MyRegion.DepVars.Count & ",,,,,,,,,,,,,,,"
+    str = str & "," & MyRegion.Parameters.Count & "," & MyRegion.DepVars.Count & ",,,,,,,,,,,,,,"
     If MyRegion.PredInt Then
       lBlankPredsStr = ""
       For j = 1 To MyRegion.Parameters.Count + 1
@@ -1484,7 +1491,7 @@ Private Sub cmdExport_Click()
     'Loop thru Parameters
     For j = 1 To MyRegion.Parameters.Count
       Set MyParm = MyRegion.Parameters(j)
-      str = ",,,,,,,,,,," & MyParm.Abbrev & "," & MyParm.Name & "," & _
+      str = ",,,,,,,,,,,," & MyParm.Abbrev & "," & MyParm.Name & "," & _
             MyParm.GetMin(DB.State.Metric) & "," & MyParm.GetMax(DB.State.Metric) & "," & _
             MyParm.Units.id & ",,,,,,,,,,"
       If MyRegion.PredInt Then str = str & lBlankPredsStr
@@ -1493,7 +1500,7 @@ Private Sub cmdExport_Click()
     'Loop thru Return Periods/Statistics
     For j = 1 To MyRegion.DepVars.Count
       Set MyDepVar = MyRegion.DepVars(j)
-      str = ",,,,,,,,,,,,,,,," & MyDepVar.Name & "," & Round(MyDepVar.StdErr, 1) & "," & _
+      str = ",,,,,,,,,,,,,,,,," & MyDepVar.Name & "," & Round(MyDepVar.StdErr, 1) & "," & _
             Round(MyDepVar.EstErr, 1) & "," & Round(MyDepVar.PreErr, 1) & "," & _
             Round(MyDepVar.EquivYears, 1) & "," & MyDepVar.BCF & "," & _
             Round(MyDepVar.tdist, 4) & "," & Round(MyDepVar.Variance, 4) & "," & _
@@ -1523,7 +1530,7 @@ Private Sub cmdExport_Click()
             For col = 1 To UBound(covArray, 2)
               str = str & covArray(row, col) & ","
             Next col
-            Print #OutFile, ",,,,,,,,,,,,,,,,,,,,,,,,,,,," & Left(str, Len(str) - 1)
+            Print #OutFile, ",,,,,,,,,,,,,,,,,,,,,,,,,,,,," & Left(str, Len(str) - 1)
           Next row
         End If
       End If
