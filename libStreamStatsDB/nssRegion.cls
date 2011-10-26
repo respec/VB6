@@ -409,38 +409,44 @@ End Sub
 'End Sub
 
 Public Function Add(ByVal RegType As Long, ByVal RegName As String, ByVal Urban As Boolean, _
-    ByVal RuralInput As Long, ByVal PredInt As Long, ByVal ROIRegnID As Long, Optional NoWarnFlg As Boolean) As Boolean
+    ByVal RuralInput As Long, ByVal PredInt As Long, ByVal ROIRegnID As Long, _
+    Optional NoWarnFlg As Boolean, Optional RegnID As Long = -1) As Boolean
   'RegType: 0 - Peak Flow, 1 - Low Flow, 2 - Probability
+  'optional RegnID allows for re-use of Region IDs when importing from SEE
   Dim myRec As Recordset
   Dim Id&, lowFlowID&
   Dim sql$
   Dim lInc As Integer
   
   RegName = NoSpaces(RegName)
-  Set myRec = Me.DB.DB.OpenRecordset("Regions", dbOpenDynaset)
-  With myRec
-    'check to see if region with this name already exists
-    If .RecordCount > 0 Then
-      .FindFirst "RegionName='" & RegName & "' AND StateCode='" & DB.State.code & "'"
-    End If
-    If .NoMatch Or .RecordCount = 0 Then
-      'find an unused ID
-      .MoveLast
-      Id = !Regionid
-      .FindFirst "RegionID=" & Id
-      While Not .NoMatch
-        Id = !Regionid + 1
-        .FindFirst "RegionID=" & Id
-      Wend
-    Else
-      If Not NoWarnFlg Then
-        ssMessageBox "There is already a region in " & DB.State.Name & _
-               " with the name " & RegName & "." & vbCrLf & "No new region was created.", vbCritical
+  If RegnID < 0 Then 'need to find an ID
+    Set myRec = Me.DB.DB.OpenRecordset("Regions", dbOpenDynaset)
+    With myRec
+      'check to see if region with this name already exists
+      If .RecordCount > 0 Then
+        .FindFirst "RegionName='" & RegName & "' AND StateCode='" & DB.State.code & "'"
       End If
-      Exit Function
-    End If
-    .Close
-  End With
+      If .NoMatch Or .RecordCount = 0 Then
+        'find an unused ID
+        .MoveLast
+        Id = !Regionid
+        .FindFirst "RegionID=" & Id
+        While Not .NoMatch
+          Id = !Regionid + 1
+          .FindFirst "RegionID=" & Id
+        Wend
+      Else
+        If Not NoWarnFlg Then
+          ssMessageBox "There is already a region in " & DB.State.Name & _
+                 " with the name " & RegName & "." & vbCrLf & "No new region was created.", vbCritical
+        End If
+        Exit Function
+      End If
+      .Close
+    End With
+  Else
+    Id = RegnID
+  End If
   'quicker to open new recordset than to search all regions for LowFlow ID
   sql = "SELECT * FROM Regions " & _
         "WHERE StateCode='" & DB.State.code & "';"
