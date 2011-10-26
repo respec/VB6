@@ -1259,8 +1259,10 @@ Public Function EstimateString() As String
             txt = ReplaceString(txt, "Error, %", "Err, log")
           Else
             StdErrText(Index) = SignificantDigits(StdError(Index), 2) 'Percent to two sig digits
-            If Me.ROI And StdErrorPlus(Index) > 0 Then 'include both neg and pos Std Err
-              StdErrText(Index) = "  " & StdErrText(Index) & "      " & SignificantDigits(StdErrorPlus(Index), 2)
+            If Me.ROI Then
+              If StdErrorPlus(Index) > 0 Then 'include both neg and pos Std Err
+                StdErrText(Index) = "  " & StdErrText(Index) & "      " & SignificantDigits(StdErrorPlus(Index), 2)
+              End If
             End If
           End If
           'StdErrText = StrPad(StdErrText, 8)
