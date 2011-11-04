@@ -39,7 +39,7 @@ Private C1(1, 1) As Single
 Private Bhat(MaxInd, 1) As Single
 Private Gamasq!, Atse!, Atscov!
 
-Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Double, _
+Public Function ComputeROIdischarge(Incoming As nssScenario, RegInd As Long, EquivYears() As Double, _
                 stdErrMinus() As Double, stdErrPlus() As Double, _
                 PredInts() As Double, ZeroAdjusted() As Boolean) As Double()
 'Program to estimate flood frequency in North Carolina
@@ -76,7 +76,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, EquivYears() As Dou
   Dim SimParms As FastCollection 'nssParameters
 
   Set Scenario = Incoming
-  Set uRegion = Scenario.UserRegions(1)
+  Set uRegion = Scenario.UserRegions(RegInd) '(1)
   '!!! FOR NOW ASSUME ALL ROI APPS ARE IN ENGLISH (resolves AR metric confusion)
   pMetric = False ' uRegion.Region.State.Metric
   StaName = Scenario.Name
@@ -1654,8 +1654,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
     'yv(i, 1) = q(INDX(i), jpeak)
     yv(i, 1) = Flows(INDX(i), jpeak)
     'next 2 lines only used for regional regression eqtns, prh 2/2009
-'        if jpeak = 1)sums=sums+v(indx(i),5)
-'        if jpeak = 2)sums=sums+v(indx(i),6)
+'    If jpeak = 1 Then sums = sums + v(INDX(i), 5)
+'    If jpeak = 2 Then sums = sums + v(INDX(i), 6)
   Next i
   xo(1, 1) = 1#
 '      xo(2, 1) = logda
@@ -1671,8 +1671,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
   xot(1, 3) = xo(3, 1)
   xot(1, 4) = xo(4, 1)
   'next 2 lines only used for regional regression eqtns, prh 2/2009
-'      xL = Float(Nsites)
-'      if jpeak.le.2)asig2=(sums/xL)**2
+'  xL = Float(Nsites)
+'  If jpeak <= 2 Then asig2 = (sums / xL) ^ 2
   Call mltply(xtx, xvt, xv, ne, Nsites, ne, 10, 10, 50)
   Call invert(ne, 10, det, XtXinv, xtx)
   Call mltply(work, XtXinv, xvt, ne, ne, Nsites, 10, 10, 10)
@@ -1730,6 +1730,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
             cl90 = 0#
             If Area >= 40 Then
               pred = ((Area - 40) / 10) * pred
+            Else
+              pred = 0
             End If
           End If
       End If
@@ -1741,6 +1743,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
             cl90 = 0#
             If Area >= 80 Then
               pred = ((Area - 80) / 20) * pred
+            Else
+              pred = 0
             End If
           End If
       End If
@@ -1755,6 +1759,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
             cl90 = 0#
             If Area >= 40 Then
               pred = ((Area - 40) / 10) * pred
+            Else
+              pred = 0
             End If
           End If
       End If
@@ -1766,6 +1772,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
             cl90 = 0#
             If Area >= 80 Then
               pred = ((Area - 80) / 20) * pred
+            Else
+              pred = 0
             End If
           End If
       End If
@@ -1780,6 +1788,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area >= 40 Then
             pred = ((Area - 40) / 10) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1790,6 +1800,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area >= 40 Then
             pred = ((Area - 40) / 10) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1800,6 +1812,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area >= 40 Then
             pred = ((Area - 40) / 10) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1810,6 +1824,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area >= 40 Then
             pred = ((Area - 40) / 10) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1820,6 +1836,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area >= 40 Then
             pred = ((Area - 40) / 10) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1830,6 +1848,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area >= 40 Then
             pred = ((Area - 40) / 10) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1840,6 +1860,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area >= 40 Then
             pred = ((Area - 40) / 10) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1850,6 +1872,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area >= 40 Then
             pred = ((Area - 40) / 10) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1860,6 +1884,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area >= 40 Then
             pred = ((Area - 40) / 10) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1870,6 +1896,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area >= 40 Then
             pred = ((Area - 40) / 10) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1880,6 +1908,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area >= 40 Then
             pred = ((Area - 40) / 10) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1890,6 +1920,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area >= 40 Then
             pred = ((Area - 40) / 10) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1900,6 +1932,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area >= 40 Then
             pred = ((Area - 40) / 10) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1915,6 +1949,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area > 80 Then
             pred = ((Area - 80) / 20) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1925,6 +1961,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area > 80 Then
             pred = ((Area - 80) / 20) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1935,6 +1973,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area > 80 Then
             pred = ((Area - 80) / 20) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1945,6 +1985,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area > 80 Then
             pred = ((Area - 80) / 20) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1955,6 +1997,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area > 80 Then
             pred = ((Area - 80) / 20) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1965,6 +2009,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area > 80 Then
             pred = ((Area - 80) / 20) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1975,6 +2021,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area > 80 Then
             pred = ((Area - 80) / 20) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1985,6 +2033,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area > 80 Then
             pred = ((Area - 80) / 20) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -1995,6 +2045,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area > 80 Then
             pred = ((Area - 80) / 20) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -2005,6 +2057,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area > 80 Then
             pred = ((Area - 80) / 20) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -2015,6 +2069,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area > 80 Then
             pred = ((Area - 80) / 20) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -2025,6 +2081,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area > 80 Then
             pred = ((Area - 80) / 20) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
@@ -2035,6 +2093,8 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
           cl90 = 0#
           If Area > 80 Then
             pred = ((Area - 80) / 20) * pred
+          Else
+            pred = 0
           End If
         End If
       End If
