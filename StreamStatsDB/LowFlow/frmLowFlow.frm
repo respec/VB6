@@ -364,7 +364,7 @@ Begin VB.Form frmLowFlow
             AllowEditHeader =   0   'False
             AllowLoad       =   0   'False
             AllowSorting    =   0   'False
-            Rows            =   587
+            Rows            =   589
             Cols            =   2
             ColWidthMinimum =   300
             gridFontBold    =   0   'False
@@ -3106,28 +3106,11 @@ Private Sub PopulateDepVars()
     If intCnt = 0 Then Exit Sub
     ReDim rankedDepVars(1, intCnt - 1)
     ReDim lVarNames(intCnt)
-    If RDO = 0 Then 'remove PK from DepVar names so they can be sorted numerically
-      For depVarIndex = 1 To intCnt
-        lVarNames(depVarIndex) = ReplaceString(MyRegion.DepVars(depVarIndex).Name, "_", ".")
-        If Left(lVarNames(depVarIndex), 2) = "PK" Then
-          lVarNames(depVarIndex) = Mid(lVarNames(depVarIndex), 3)
-        End If
-      Next depVarIndex
-    End If
+    rank = 0
     For depVarIndex = 1 To intCnt
-      If RDO = 0 Then  'peak flow
-        rank = 0
-        thisDepVar = CSng(lVarNames(depVarIndex))
-        For cntr = 1 To intCnt
-          If thisDepVar > CSng(lVarNames(cntr)) Then
-            rank = rank + 1
-          End If
-        Next cntr
-      ElseIf RDO >= 1 Then  'low flow
-        If depVarIndex > 1 Then rank = rank + 1
-      End If
       rankedDepVars(0, rank) = MyRegion.DepVars(depVarIndex).Name
       rankedDepVars(1, rank) = MyRegion.DepVars(depVarIndex).id
+      rank = rank + 1
     Next depVarIndex
     For depVarIndex = 0 To intCnt - 1
       lstRetPds.List(depVarIndex) = rankedDepVars(0, depVarIndex)
