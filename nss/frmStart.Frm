@@ -12,94 +12,13 @@ Begin VB.Form frmStart
    PaletteMode     =   1  'UseZOrder
    ScaleHeight     =   3180
    ScaleWidth      =   6690
-   Begin VB.Frame fraAnalysisType 
-      BorderStyle     =   0  'None
-      Caption         =   "Frame1"
-      Height          =   375
-      Left            =   240
-      TabIndex        =   20
-      Top             =   120
-      Width           =   6255
-      Begin VB.OptionButton optAnalysisType 
-         Caption         =   "Other"
-         BeginProperty Font 
-            Name            =   "MS Sans Serif"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   700
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   255
-         Index           =   2
-         Left            =   5160
-         TabIndex        =   24
-         Top             =   0
-         Width           =   975
-      End
-      Begin VB.OptionButton optAnalysisType 
-         Caption         =   "Probability"
-         BeginProperty Font 
-            Name            =   "MS Sans Serif"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   700
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   255
-         Index           =   1
-         Left            =   3600
-         TabIndex        =   23
-         Top             =   0
-         Width           =   1575
-      End
-      Begin VB.OptionButton optAnalysisType 
-         Caption         =   "Peak"
-         BeginProperty Font 
-            Name            =   "MS Sans Serif"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   700
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   255
-         Index           =   0
-         Left            =   2040
-         TabIndex        =   21
-         Top             =   0
-         Width           =   1575
-      End
-      Begin VB.Label Label5 
-         BackStyle       =   0  'Transparent
-         Caption         =   "Analysis Type:"
-         BeginProperty Font 
-            Name            =   "MS Sans Serif"
-            Size            =   8.25
-            Charset         =   0
-            Weight          =   700
-            Underline       =   0   'False
-            Italic          =   0   'False
-            Strikethrough   =   0   'False
-         EndProperty
-         Height          =   255
-         Left            =   0
-         TabIndex        =   22
-         Top             =   0
-         Width           =   2055
-      End
-   End
    Begin VB.Frame fraVarLabel 
       BorderStyle     =   0  'None
       Caption         =   "Frame1"
       Height          =   375
       Left            =   240
       TabIndex        =   16
-      Top             =   1320
+      Top             =   1080
       Width           =   5055
       Begin VB.OptionButton optVarianceType 
          Caption         =   "Log10"
@@ -162,7 +81,7 @@ Begin VB.Form frmStart
       Height          =   375
       Left            =   240
       TabIndex        =   12
-      Top             =   840
+      Top             =   600
       Width           =   5055
       Begin VB.OptionButton optLabelType 
          Caption         =   "Traditional (Rec Intvl)"
@@ -225,7 +144,7 @@ Begin VB.Form frmStart
       Height          =   375
       Left            =   240
       TabIndex        =   8
-      Top             =   480
+      Top             =   240
       Width           =   5055
       Begin VB.OptionButton optUnits 
          Caption         =   "&Metric"
@@ -302,7 +221,7 @@ Begin VB.Form frmStart
       Left            =   4320
       TabIndex        =   7
       ToolTipText     =   "Open a different project"
-      Top             =   2160
+      Top             =   2040
       Width           =   855
    End
    Begin VB.TextBox txtProject 
@@ -310,7 +229,7 @@ Begin VB.Form frmStart
       HelpContextID   =   11
       Left            =   1080
       TabIndex        =   3
-      Top             =   2160
+      Top             =   2040
       Width           =   3135
    End
    Begin VB.TextBox txtUser 
@@ -318,7 +237,7 @@ Begin VB.Form frmStart
       HelpContextID   =   11
       Left            =   1080
       TabIndex        =   1
-      Top             =   1800
+      Top             =   1680
       Width           =   1572
    End
    Begin MSComDlg.CommonDialog cdlg 
@@ -335,7 +254,7 @@ Begin VB.Form frmStart
       Height          =   372
       Left            =   240
       TabIndex        =   4
-      Top             =   2640
+      Top             =   2520
       Width           =   2055
       Begin VB.CommandButton cmdOk 
          Appearance      =   0  'Flat
@@ -393,7 +312,7 @@ Begin VB.Form frmStart
       Height          =   255
       Left            =   240
       TabIndex        =   2
-      Top             =   2205
+      Top             =   2085
       Width           =   1215
    End
    Begin VB.Label lblUserID 
@@ -411,7 +330,7 @@ Begin VB.Form frmStart
       Height          =   255
       Left            =   240
       TabIndex        =   0
-      Top             =   1800
+      Top             =   1680
       Width           =   735
    End
 End
