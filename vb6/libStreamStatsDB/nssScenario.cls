@@ -1135,8 +1135,10 @@ Public Function EstimateString() As String
   Else
     If Me.ROI Then
       If Me.LowFlow And Me.Project.State.code = "47" Then
-        txt = "                Value,   Pred. Intervals   Adjusted for" & vbCrLf _
-            & "Statistic    " & lUnitStr & "      Low     High   Prob. of Zero"
+'        txt = "                Value,   Pred. Intervals   Adjusted for" & vbCrLf _
+'            & "Statistic    " & lUnitStr & "      Low     High   Prob. of Zero"
+        txt = "                Value,   Pred. Intervals" & vbCrLf _
+            & "Statistic    " & lUnitStr & "      Low     High"
       Else
         txt = "                Value,   Pred. Intervals   Standard Error    Equivalent" & vbCrLf _
             & "Statistic    " & lUnitStr & "      Low     High     (-%)    (+%)    Years"
@@ -1243,12 +1245,12 @@ Public Function EstimateString() As String
       
       If Not Me.ParmOutOfRange Then 'no Errors or PIs reported if parms out of range
         If Me.UsePredInts And Me.Weight.WeightType = 0 Then
-          If PredInts(1, Index) > 0 Then
+          'If PredInts(1, Index) > 0 Then
             PredIntsText(Index) = SignificantDigits(PredInts(1, Index), 3)
-          End If
-          If PredInts(2, Index) > 0 Then
+          'End If
+          'If PredInts(2, Index) > 0 Then
             PredIntsText2(Index) = SignificantDigits(PredInts(2, Index), 3)
-          End If
+          'End If
         End If
         If StdError(Index) <= 0 And Not Me.ROI Then
           StdErrText(Index) = ""
@@ -1317,8 +1319,8 @@ Public Function EstimateString() As String
           txt = txt & vbCrLf & IntervalText(Index) & "" _
                              & FlowText(Index) & lUnitStr _
                              & PredIntsText(Index) _
-                             & PredIntsText2(Index) & Space(5) _
-                             & pZeroAdjusted(Index)
+                             & PredIntsText2(Index) '& Space(5) _
+'                             & pZeroAdjusted(Index)
         Else
           txt = txt & vbCrLf & IntervalText(Index) & "" _
                              & FlowText(Index) & lUnitStr _
@@ -1415,6 +1417,7 @@ Public Function Discharges() As Double()
   Dim CurReturn As nssDepVar
 '  Dim CurComponent As nssComponent
   Dim IntervalDischarge() As Double
+  Dim lIntvlDis() As Double
   Dim RegionVal As Double
   Dim curval As Double
   Dim ExpVal As Double
@@ -1437,7 +1440,31 @@ Public Function Discharges() As Double()
   On Error GoTo ErrHand
   
   If ROI Then
-    IntervalDischarge = ComputeROIdischarge(Me, pSaveEquivYears, pSaveStdError, pSaveStdErrorPlus, pSavePredInts, pZeroAdjusted)
+    Set FirstReturns = pUserRegions(1).Region.DepVars
+    
+    ReDim IntervalDischarge(1 To FirstReturns.Count)
+    ReDim lIntvlDis(1 To FirstReturns.Count)
+    StateMetric = pProject.State.Metric
+    
+    For RegionIndex = 1 To pUserRegions.Count
+      Set CurRegion = pUserRegions(RegionIndex)
+      'IntervalDischarge = ComputeROIdischarge(Me, pSaveEquivYears, pSaveStdError, pSaveStdErrorPlus, pSavePredInts, pZeroAdjusted)
+      lIntvlDis = ComputeROIdischarge(Me, RegionIndex, pSaveEquivYears, pSaveStdError, pSaveStdErrorPlus, pSavePredInts, pZeroAdjusted)
+      For ReturnIndex = 1 To FirstReturns.Count
+        IntervalDischarge(ReturnIndex) = IntervalDischarge(ReturnIndex) + lIntvlDis(ReturnIndex) * CurRegion.UserParms(1).GetValue(StateMetric) / Me.GetArea(StateMetric)
+        If StateMetric <> Me.Project.Metric Then
+          If Me.Project.Metric Then
+            IntervalDischarge(ReturnIndex) = IntervalDischarge(ReturnIndex) * 0.028317
+            pSavePredInts(1, ReturnIndex) = pSavePredInts(1, ReturnIndex) * 0.028317
+            pSavePredInts(2, ReturnIndex) = pSavePredInts(2, ReturnIndex) * 0.028317
+          Else
+            IntervalDischarge(ReturnIndex) = IntervalDischarge(ReturnIndex) / 0.028317
+            pSavePredInts(1, ReturnIndex) = pSavePredInts(1, ReturnIndex) / 0.028317
+            pSavePredInts(2, ReturnIndex) = pSavePredInts(2, ReturnIndex) / 0.028317
+          End If
+        End If
+      Next
+    Next
   Else
   
     If pUserRegions.Count = 0 Then
