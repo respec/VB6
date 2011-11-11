@@ -364,7 +364,7 @@ Begin VB.Form frmLowFlow
             AllowEditHeader =   0   'False
             AllowLoad       =   0   'False
             AllowSorting    =   0   'False
-            Rows            =   589
+            Rows            =   590
             Cols            =   2
             ColWidthMinimum =   300
             gridFontBold    =   0   'False
@@ -559,7 +559,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -618,7 +618,7 @@ Begin VB.Form frmLowFlow
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   0   'False
-         Rows            =   1
+         Rows            =   2
          Cols            =   6
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -1932,7 +1932,7 @@ Private Sub cboState_Click()
     regnCount = DB.State.Regions.Count
     i = 0
     For regnIndex = 1 To regnCount
-      If DB.State.Regions(regnIndex - i).ROIRegnID > 0 Or _
+      If DB.State.Regions(regnIndex - i).ROIRegnID <> 0 Or _
           rdoMainOpt(0) And Abs(DB.State.Regions(regnIndex - i).LowFlowRegnID) > 0 Or _
           rdoMainOpt(1) And DB.State.Regions(regnIndex - i).LowFlowRegnID <= 0 Or _
           rdoMainOpt(2) And DB.State.Regions(regnIndex - i).LowFlowRegnID >= 0 Then
