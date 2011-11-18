@@ -1,12 +1,12 @@
 VERSION 5.00
-Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "Comdlg32.ocx"
-Object = "{BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0"; "Tabctl32.ocx"
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
+Object = "{BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0"; "TABCTL32.OCX"
 Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
 Begin VB.Form frmStreamStatsDB 
    Caption         =   "Stream Stats DB"
    ClientHeight    =   8625
    ClientLeft      =   165
-   ClientTop       =   735
+   ClientTop       =   855
    ClientWidth     =   10800
    Icon            =   "frmStreamStatsDB.frx":0000
    LinkTopic       =   "Form1"
@@ -53,8 +53,8 @@ Begin VB.Form frmStreamStatsDB
       TabCaption(1)   =   "Stat&istic Management"
       TabPicture(1)   =   "frmStreamStatsDB.frx":0326
       Tab(1).ControlEnabled=   0   'False
-      Tab(1).Control(0)=   "fraStatType"
-      Tab(1).Control(1)=   "fraStatistics"
+      Tab(1).Control(0)=   "fraStatistics"
+      Tab(1).Control(1)=   "fraStatType"
       Tab(1).ControlCount=   2
       Begin VB.Frame fraStatType 
          Caption         =   "Statistic Type"
@@ -625,7 +625,7 @@ Begin VB.Form frmStreamStatsDB
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   -1  'True
-         Rows            =   1
+         Rows            =   2
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -1966,6 +1966,8 @@ End Sub
 Private Sub ResetGrid()
   Dim row&, col&
   Dim allStatIDs$, str$, mcdCode$, countyCode$, basinCode$
+  
+  On Error Resume Next
   
   If tabMain.Tab = 0 Then
     With grdGenInfo

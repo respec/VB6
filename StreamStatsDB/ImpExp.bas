@@ -917,10 +917,14 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
           value = Cells(staCnt, fldCnt)
           If fldCnt = firstCol Then 'station id field
             If Len(value) < 8 Or Len(value) > 15 Then
-              MsgBox "The site_no (Station ID) on row " & staCnt & _
-                  " must be 8-15 digits long." & vbCrLf & _
-                  "No data will be imported for this station."
-              Exit For
+              If Len(value) = 7 Then 'assume preceeding '0'
+                value = "0" & value
+              Else
+                MsgBox "The site_no (Station ID) on row " & staCnt & _
+                    " must be 8-15 digits long." & vbCrLf & _
+                    "No data will be imported for this station."
+                Exit For
+              End If
             End If
             stationValues(2, 1, 1) = value
             stationID = value
