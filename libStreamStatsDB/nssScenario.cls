@@ -1137,8 +1137,8 @@ Public Function EstimateString() As String
       If Me.LowFlow And Me.Project.State.code = "47" Then
 '        txt = "                Value,   Pred. Intervals   Adjusted for" & vbCrLf _
 '            & "Statistic    " & lUnitStr & "      Low     High   Prob. of Zero"
-        txt = "                Value,   Pred. Intervals" & vbCrLf _
-            & "Statistic    " & lUnitStr & "      Low     High"
+        txt = "                Value,   Pred. Intervals   Equivalent" & vbCrLf _
+            & "Statistic    " & lUnitStr & "      Low     High     Years"
       Else
         txt = "                Value,   Pred. Intervals   Standard Error    Equivalent" & vbCrLf _
             & "Statistic    " & lUnitStr & "      Low     High     (-%)    (+%)    Years"
