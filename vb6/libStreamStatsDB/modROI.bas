@@ -2,6 +2,7 @@ Attribute VB_Name = "modROI"
 Option Explicit
 
 Private UserRegressVars() As Single  'user-entered values, not including lat/long
+Private UserSimVars() As Single 'ungaged station values used in similarity calcs
 Private RegVars() As Single     'gaged station values used in regression analysis
 Private Flows() As Single       'Flow values for each station
 Private RegVarCnt As Long       'number of elements used in regression
@@ -64,7 +65,6 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, RegInd As Long, Equ
   Dim lArea As Double
   Dim StaName$                'ungaged station name
   Dim RegName$                'name of user-selected region
-  Dim UserSimVars() As Single 'ungaged station values used in similarity calcs
   Dim NumPeaks As Long        'number of return periods (NC=8, TX=6)
   Dim StaCnt As Long          'number of stations in state
   Dim SimVarCnt As Long       'number of parameters used in similarity calcs
@@ -461,7 +461,7 @@ Public Function ComputeROIdischarge(Incoming As nssScenario, RegInd As Long, Equ
     
     If lROIData.StateCode = "10047" Then
       'TN low flow ROI
-      TNLFFD Abs(roiRegion) - 1, jpeak, ZeroAdjusted(jpeak), retval(jpeak), PredInts(1, jpeak), PredInts(2, jpeak)
+      TNLFFD Abs(roiRegion) - 1, jpeak, ZeroAdjusted(jpeak), retval(jpeak), PredInts(1, jpeak), PredInts(2, jpeak), EquivYears(jpeak)
     Else
       'Reset station parameters in case of backward-step regression
       For i = 1 To Nsites
@@ -1541,7 +1541,7 @@ End Function
 
 Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
                    ByRef ZeroAdjust As Boolean, ByRef pred As Double, _
-                   ByRef cl90 As Double, ByRef cu90 As Double)
+                   ByRef cl90 As Double, ByRef cu90 As Double, ByRef ey As Double)
 
   Dim i As Long
   Dim k As Long
@@ -1575,7 +1575,7 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
   Dim xo(10, 1) As Single
   Dim xot(1, 10) As Single
   Dim hat(1, 1) As Single
-  Dim ey As Single
+  'Dim ey As Single
   Dim sums As Single
   Dim asig2 As Single
   Dim eybing As Single
@@ -1624,6 +1624,7 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
   lgf30 = Log10(10 ^ loggf - 30)
   logsf = UserRegressVars(4)
   lsf30 = Log10(10 ^ logsf - 30)
+  logcf = UserSimVars(3)
   
   'Compute zero-flow probabilities
   probz7 = Exp(-5.73545 + 1.52553 * logda + 3.4293 * loggf)
@@ -1723,60 +1724,166 @@ Private Sub TNLFFD(ByVal jreg As Long, ByVal jpeak As Long, _
   gf = 10 ^ loggf
   ZeroAdjust = False 'assume no zero flow adjustment
   If jpeak = 1 Then 'Zero-flow-7Q10 transition West region
-      If jreg = 1 And Area < 50 And gf < 40 Or _
-         jreg = 1 And Area < 2.5 And gf < 60 Then
-          If probz7 >= 0.1 Then
-            ZeroAdjust = True
-            cl90 = 0#
-            If Area >= 40 Then
-              pred = ((Area - 40) / 10) * pred
-            Else
-              pred = 0
-            End If
+    If jreg = 1 And Area < 50 And gf < 40 Or _
+       jreg = 1 And Area < 2.5 And gf < 60 Then
+        If probz7 >= 0.1 Then
+          ZeroAdjust = True
+          cl90 = 0#
+          If Area >= 40 Then
+            pred = ((Area - 40) / 10) * pred
+          Else
+            pred = 0
           End If
-      End If
-      'Zero-flow-7Q10 transition Central+East region
-      If jreg = 0 And Area < 100 And gf < 40 Or _
-         jreg = 0 And Area < 2.5 And gf < 60 Then
-          If probz7 >= 0.1 Then
-            ZeroAdjust = True
-            cl90 = 0#
-            If Area >= 80 Then
-              pred = ((Area - 80) / 20) * pred
-            Else
-              pred = 0
-            End If
+        End If
+    End If
+    'Zero-flow-7Q10 transition Central+East region
+    If jreg = 0 And Area < 100 And gf < 40 Or _
+       jreg = 0 And Area < 2.5 And gf < 60 Then
+        If probz7 >= 0.1 Then
+          ZeroAdjust = True
+          cl90 = 0#
+          If Area >= 80 Then
+            pred = ((Area - 80) / 20) * pred
+          Else
+            pred = 0
           End If
-      End If
-  End If
-
-  If (jpeak = 2) Then
-      'Zero-flow-30Q5 transition equation West region
-      If jreg = 1 And Area < 50 And gf < 40 Or _
-         jreg = 1 And Area < 2.5 And gf < 60 Then
-          If probz30 >= 0.2 Then
-            ZeroAdjust = True
-            cl90 = 0#
-            If Area >= 40 Then
-              pred = ((Area - 40) / 10) * pred
-            Else
-              pred = 0
-            End If
+        End If
+    End If
+    If jreg = 1 Then
+      asig2 = (1.08046 - 0.117 * loggf - 0.369 * logsf) ^ 2
+    Else
+      asig2 = (0.55367 - 0.163 * lgf30 - 0.054 * logsf) ^ 2
+    End If
+    ey = (asig2 * 1.8211) / (sep ^ 2)
+  ElseIf jpeak = 2 Then
+    'Zero-flow-30Q5 transition equation West region
+    If jreg = 1 And Area < 50 And gf < 40 Or _
+       jreg = 1 And Area < 2.5 And gf < 60 Then
+        If probz30 >= 0.2 Then
+          ZeroAdjust = True
+          cl90 = 0#
+          If Area >= 40 Then
+            pred = ((Area - 40) / 10) * pred
+          Else
+            pred = 0
           End If
-      End If
-      'Zero-flow-30Q5 transition Central+East region
-      If jreg = 0 And Area < 100 And gf < 40 Or _
-         jreg = 0 And Area < 2.5 And gf < 60 Then
-          If probz30 >= 0.2 Then
-            ZeroAdjust = True
-            cl90 = 0#
-            If Area >= 80 Then
-              pred = ((Area - 80) / 20) * pred
-            Else
-              pred = 0
-            End If
+        End If
+    End If
+    'Zero-flow-30Q5 transition Central+East region
+    If jreg = 0 And Area < 100 And gf < 40 Or _
+       jreg = 0 And Area < 2.5 And gf < 60 Then
+        If probz30 >= 0.2 Then
+          ZeroAdjust = True
+          cl90 = 0#
+          If Area >= 80 Then
+            pred = ((Area - 80) / 20) * pred
+          Else
+            pred = 0
           End If
+        End If
+    End If
+    If jreg = 1 Then
+      asig2 = (1.31677 - 0.151 * loggf - 0.445 * logsf) ^ 2
+    Else
+      asig2 = (0.63428 - 0.188 * lgf30 - 0.069 * logsf) ^ 2
+    End If
+    ey = (asig2 * 1.3542) / (sep ^ 2)
+  
+  ElseIf jpeak = 3 Then 'remaining elseifs for EY calculation
+    If jreg = 1 Then
+      asig2 = (1.0015 - 1.76 * logcf - 0.072 * loggf) ^ 2
+    Else
+      asig2 = (0.02202 - 0.0457 * loggf + 0.561 * logcf) ^ 2
+    End If
+    ey = asig2 / (sep ^ 2)
+  ElseIf jpeak = 4 Then
+    If jreg = 1 Then
+      asig2 = (1.5387 - 2.5 * logcf - 0.156 * loggf) ^ 2
+    Else
+      asig2 = (0.6005 - 0.272 * loggf + 0.53 * logcf - 0.0111 * logda) ^ 2
+    End If
+    ey = asig2 / (sep ^ 2)
+  ElseIf jpeak >= 5 Then
+    If jpeak = 5 Then
+      If jreg = 1 Then
+        asig2 = (0.703 - 0.056 * logda - 0.194 * loggf) ^ 2
+      Else
+        asig2 = (0.6154 - 0.0156 * logda - 0.211 * loggf) ^ 2
       End If
+    ElseIf (jpeak = 6) Then
+      If jreg = 1 Then
+        asig2 = (0.5983 - 0.206 * loggf) ^ 2
+      Else
+        asig2 = (0.558 - 0.201 * loggf) ^ 2
+      End If
+    ElseIf (jpeak = 7) Then
+      If jreg = 1 Then
+        asig2 = (0.5958 - 0.206 * loggf) ^ 2
+      Else
+        asig2 = (0.5502 - 0.198 * loggf) ^ 2
+      End If
+    ElseIf (jpeak = 8) Then
+      If jreg = 1 Then
+        asig2 = (0.5626 - 0.191 * loggf) ^ 2
+      Else
+        asig2 = (0.5619 - 0.205 * loggf) ^ 2
+      End If
+    ElseIf (jpeak = 9) Then
+      If jreg = 1 Then
+        asig2 = (0.536 - 0.179 * loggf) ^ 2
+      Else
+        asig2 = (0.576 - 0.21 * loggf) ^ 2
+      End If
+    ElseIf (jpeak = 10) Then
+      If jreg = 1 Then
+        asig2 = (0.4741 - 0.151 * loggf) ^ 2
+      Else
+        asig2 = (0.5891 - 0.213 * loggf) ^ 2
+      End If
+    ElseIf (jpeak = 11) Then
+      If jreg = 1 Then
+        asig2 = (0.441 - 0.134 * loggf) ^ 2
+      Else
+        asig2 = (0.5847 - 0.209 * loggf) ^ 2
+      End If
+    ElseIf (jpeak = 12) Then
+      If jreg = 1 Then
+        asig2 = (0.4352 - 0.128 * loggf) ^ 2
+      Else
+        asig2 = (0.4526 - 0.202 * loggf + 0.34 * logcf) ^ 2
+      End If
+    ElseIf (jpeak = 13) Then
+      If jreg = 1 Then
+        asig2 = (0.427 - 0.119 * loggf) ^ 2
+      Else
+        asig2 = (0.3248 - 0.1671 * loggf + 0.48 * logcf) ^ 2
+      End If
+    ElseIf (jpeak = 14) Then
+      If jreg = 1 Then
+        asig2 = (0.4173 - 0.11 * loggf) ^ 2
+      Else
+        asig2 = (0.1683 - 0.1131 * loggf + 0.58 * logcf) ^ 2
+      End If
+    ElseIf (jpeak = 15) Then
+      If jreg = 1 Then
+        asig2 = (0.3068 - 0.097 * loggf + 0.04 * logda) ^ 2
+      Else
+        asig2 = (0.03524 - 0.0818 * loggf + 0.75 * logcf) ^ 2
+      End If
+    ElseIf (jpeak = 16) Then
+      If jreg = 1 Then
+        asig2 = (1.3412 - 0.063 * loggf + 0.038 * logda - 2.9 * logcf) ^ 2
+      Else
+        asig2 = (-0.01776 - 0.061 * loggf + 0.77 * logcf) ^ 2
+      End If
+    ElseIf (jpeak = 17) Then
+      If jreg = 1 Then
+        asig2 = (2.061 - 4.8 * logcf) ^ 2
+      Else
+        asig2 = (-0.03997 - 0.0485 * loggf + 0.77 * logcf) ^ 2
+      End If
+    End If
+    ey = (1.57076 * asig2) / (sep ^ 2)
   End If
   'Zero-flow-duration transition equation for West region
   If jreg = 1 And Area < 50 And gf < 40 Or _
