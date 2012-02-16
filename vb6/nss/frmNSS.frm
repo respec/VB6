@@ -898,7 +898,7 @@ Private Sub Form_Resize()
     If fraNewEditDel(1).Left > 250 Then cboScenario(1).Width = fraNewEditDel(1).Left - 240
   End If
   If h > 2000 Then
-    fraManageEstimate(0).Height = h - 1500
+    fraManageEstimate(0).Height = h - 1600
     fraManageEstimate(1).Height = fraManageEstimate(0).Height
     fraSashLeftRight.Height = fraManageEstimate(0).Height
     If fraManageEstimate(0).Height > txtEstimate(0).Top + 120 Then
