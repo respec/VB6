@@ -614,7 +614,7 @@ Private Sub Form_Resize()
   If Height > 2400 Then
     'If rurfg Then
       agd.Height = Height - 2200 '1800
-      fraCribu.Top = agd.Top + agd.Height + comboRegion.Height / 2
+      fraCribu.Top = agd.Top + agd.Height + comboRegion.Height / 2 - 100
       cmdOk.Top = fraCribu.Top + fraCribu.Height + cmdOk.Height / 3
     'Else
     '  agd.Height = Height - 1655

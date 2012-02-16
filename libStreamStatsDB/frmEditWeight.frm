@@ -821,7 +821,7 @@ Private Sub PopulateIntervals()
     grdWgt.Height = 242 * (pFirstReturns.Count + 2)
     cmdApply(1).Top = grdWgt.Top + grdWgt.Height + 120
     cmdCancel.Top = cmdApply(1).Top
-    frmEditWeight.Height = cmdCancel.Top + cmdCancel.Height + 440
+    frmEditWeight.Height = cmdCancel.Top + cmdCancel.Height + 580
   End If
 End Sub
 
