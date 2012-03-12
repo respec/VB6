@@ -509,10 +509,15 @@ End Sub
 
 Private Sub Form_Resize()
   If Me.Width > 8000 Then
-    grdGenInfo.Width = Me.Width - 230
+    grdStaData.Width = Me.Width - 230
+    cmdExit.Left = Me.Width - cmdExit.Width - 200
   End If
-  If Me.height > 6000 Then
-
+  If Me.height > 3500 Then
+    grdStaData.height = Me.height - fraStatButtons.height - 700
+    fraStatButtons.Top = grdStaData.height + 20
+    fraFilter.Top = fraStatButtons.Top
+    fraGridButtons.Top = fraStatButtons.Top
+    cmdExit.Top = fraStatButtons.Top + 250
   End If
 End Sub
 
