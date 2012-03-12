@@ -6,9 +6,9 @@ Global ExePath As String
 Global SSDB As nssDatabase
 'StationFields contains items for the Station table
 'It is made up of 'StatisticLabelCode' values 1 - 14 and 24 ('DISTRICT') on the StatLabel table
-Global StationFields(1 To 15) As String
+Global StationFields(1 To 17) As String
 Global StatFields(1 To 6) As String
-Global DataFields(1 To 8) As String
+Global DataFields(1 To 17) As String
 Global ROIImportRegnIDs() As Long
 Global ROIImportRegnNames() As String
 Global UserInfoOK As Boolean
@@ -55,6 +55,11 @@ Private Sub Main()
   
   StepName = "GetDatabaseFilename"
   filename = GetDatabaseFilename
+  
+  If filename = "" Or Dir(filename) = "" Then
+    MsgBox ("Discontinue StreamStats due to missing database.")
+    Exit Sub
+  End If
   
   StepName = "SSDB.Filename = " & filename
   SSDB.filename = filename
@@ -203,4 +208,5 @@ Public Function GetLabelID(StatLabel As String, DB As nssDatabase) As Long
     If .NoMatch Then .FindFirst "StatisticLabel='" & StatLabel & "'"
     If Not .NoMatch Then GetLabelID = .Fields("StatisticLabelID")
   End With
+  myRec.Close
 End Function

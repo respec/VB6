@@ -1,7 +1,7 @@
 VERSION 5.00
 Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
 Object = "{BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0"; "TABCTL32.OCX"
-Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
+Object = "{8B6FC3CA-0323-4FCA-8A85-2668B1192E25}#1.0#0"; "ATCoCtl.ocx"
 Begin VB.Form frmStreamStatsDB 
    Caption         =   "Stream Stats DB"
    ClientHeight    =   8625
@@ -53,8 +53,8 @@ Begin VB.Form frmStreamStatsDB
       TabCaption(1)   =   "Stat&istic Management"
       TabPicture(1)   =   "frmStreamStatsDB.frx":0326
       Tab(1).ControlEnabled=   0   'False
-      Tab(1).Control(0)=   "fraStatistics"
-      Tab(1).Control(1)=   "fraStatType"
+      Tab(1).Control(0)=   "fraStatType"
+      Tab(1).Control(1)=   "fraStatistics"
       Tab(1).ControlCount=   2
       Begin VB.Frame fraStatType 
          Caption         =   "Statistic Type"
@@ -625,7 +625,7 @@ Begin VB.Form frmStreamStatsDB
          AllowEditHeader =   0   'False
          AllowLoad       =   0   'False
          AllowSorting    =   -1  'True
-         Rows            =   2
+         Rows            =   1
          Cols            =   2
          ColWidthMinimum =   300
          gridFontBold    =   0   'False
@@ -1126,13 +1126,13 @@ Private Function QACheck() As Boolean
       For col = 0 To grdGenInfo.Cols - 1
         With grdGenInfo
           Select Case col
-            Case 1:
+            Case 2: 'check Name
               If Len(Trim(.TextMatrix(row, col))) = 0 Then
                  MsgBox "Station " & .TextMatrix(row, 0) & " " & _
                     " must have a name.", vbCritical, "Bad Data Value"
                 GoTo QAproblem
               End If
-           Case 7 To 8:
+           Case 8 To 9:
               If Not IsNumeric(.TextMatrix(row, col)) Then
                 .TextMatrix(row, col) = ""
                 .Selected(row, col) = True
@@ -1156,7 +1156,7 @@ Private Function QACheck() As Boolean
 '                    vbCritical, "Bad Data Value"
 '                GoTo QAproblem
               End If
-              If col = 7 Then
+              If col = 8 Then
                 If CLng(.TextMatrix(row, col)) < 17.5 Then
                   response = myMsgBox.Show("The latitude for station " & .TextMatrix(row, 1) & _
                       " on row " & row & " is south of the Virgin Islands." & vbCrLf & _
@@ -1170,7 +1170,7 @@ Private Function QACheck() As Boolean
                       "an area in the U.S.", "Too far north for U.S.", "+&Change Now", "-&Continue")
                   If response = 1 Then GoTo QAproblem
                 End If
-              ElseIf col = 8 Then
+              ElseIf col = 9 Then
                 If Abs(CLng(.TextMatrix(row, col))) < 64# Then
                   response = myMsgBox.Show("The longitude for station " & .TextMatrix(row, 1) & _
                       " on row " & row & " is east of the Virgin Islands." & vbCrLf & _
@@ -1188,65 +1188,65 @@ Private Function QACheck() As Boolean
                 End If
               End If
             Case 14: 'State Basin
-              'Separate the code and name if they've been aggregated
-              i = InStr(1, .TextMatrix(row, col), "-")
-              str = Mid(.TextMatrix(row, col), i + 1)
-              If Len(Trim(str)) = 0 Then GoTo noEntry
-              If i > 0 Then
-                basinID = Left(.TextMatrix(row, col), i - 1)
-              Else
-                basinID = ""
-              End If
-              If IsNumeric(basinID) And SSDB.state.StateBasins.IndexFromKey(basinID) > 0 Then
-                'State Basin with this code already exists for this state
-                If Mid(.TextMatrix(row, col), i + 1) <> SSDB.state.StateBasins(basinID).Name Then
-                  response = myMsgBox.Show("You have edited the state basin for station " & _
-                      .TextMatrix(row, 0) & "." & vbCrLf & vbCrLf & _
-                      "Would you like to overwrite the previously existing entry " & _
-                      "(effectively renaming the state basin)," & vbCrLf & _
-                      "or Cancel this save operation and re-select one of the existing state basins?", _
-                      "User Action Verification", "-&Overwrite", "-&Cancel")
-                  If response = 1 Then
-                    Set myStateBasin = SSDB.state.StateBasins(basinID)
-                    myStateBasin.Edit str
-                    For j = row + 1 To .Rows
-                      'Change State Basin of other data in grid with same source
-                      If basinID = Left(.TextMatrix(j, col), i - 1) Then
-                        .TextMatrix(j, col) = .TextMatrix(row, col)
-                      End If
-                    Next j
-                    Set SSDB.state.StateBasins = Nothing
-                    SaidYes = True
-                  Else
-                    QACheck = False
-                    SaidYes = False
-                    Exit Function
-                  End If
-                End If
-              Else
-                'New State Basin
-                response = myMsgBox.Show("The state basin named " & _
-                    .TextMatrix(row, col) & " for station " & .TextMatrix(row, 0) & _
-                    " does not does not exist in the database." & _
-                    vbCrLf & vbCrLf & "Would you like to save this new State " & _
-                    "Basin to the database," & vbCrLf & "or cancel this save " & _
-                    "operation and select one of the existing state basins?", _
-                    "User Action Verification", "+&Save", "-&Cancel")
-                If response = 1 Then
-                  Set myStateBasin = New ssStateBasin
-                  Set myStateBasin.DB = SSDB
-                  myStateBasin.Add str
-                  Set SSDB.state.StateBasins = Nothing
-                  Set myStateBasin = _
-                      SSDB.state.StateBasins(SSDB.state.StateBasins.Count)
-                  .TextMatrix(row, col) = myStateBasin.code & "-" & .TextMatrix(row, col)
-                  SaidYes = True
-                Else
-                  QACheck = False
-                  SaidYes = False
-                  Exit Function
-                End If
-              End If
+'              'Separate the code and name if they've been aggregated
+'              i = InStr(1, .TextMatrix(row, col), "-")
+'              str = Mid(.TextMatrix(row, col), i + 1)
+'              If Len(Trim(str)) = 0 Then GoTo noEntry
+'              If i > 0 Then
+'                basinID = Left(.TextMatrix(row, col), i - 1)
+'              Else
+'                basinID = ""
+'              End If
+'              If IsNumeric(basinID) And SSDB.state.StateBasins.IndexFromKey(basinID) > 0 Then
+'                'State Basin with this code already exists for this state
+'                If Mid(.TextMatrix(row, col), i + 1) <> SSDB.state.StateBasins(basinID).Name Then
+'                  response = myMsgBox.Show("You have edited the state basin for station " & _
+'                      .TextMatrix(row, 0) & "." & vbCrLf & vbCrLf & _
+'                      "Would you like to overwrite the previously existing entry " & _
+'                      "(effectively renaming the state basin)," & vbCrLf & _
+'                      "or Cancel this save operation and re-select one of the existing state basins?", _
+'                      "User Action Verification", "-&Overwrite", "-&Cancel")
+'                  If response = 1 Then
+'                    Set myStateBasin = SSDB.state.StateBasins(basinID)
+'                    myStateBasin.Edit str
+'                    For j = row + 1 To .Rows
+'                      'Change State Basin of other data in grid with same source
+'                      If basinID = Left(.TextMatrix(j, col), i - 1) Then
+'                        .TextMatrix(j, col) = .TextMatrix(row, col)
+'                      End If
+'                    Next j
+'                    Set SSDB.state.StateBasins = Nothing
+'                    SaidYes = True
+'                  Else
+'                    QACheck = False
+'                    SaidYes = False
+'                    Exit Function
+'                  End If
+'                End If
+'              Else
+'                'New State Basin
+'                response = myMsgBox.Show("The state basin named " & _
+'                    .TextMatrix(row, col) & " for station " & .TextMatrix(row, 0) & _
+'                    " does not does not exist in the database." & _
+'                    vbCrLf & vbCrLf & "Would you like to save this new State " & _
+'                    "Basin to the database," & vbCrLf & "or cancel this save " & _
+'                    "operation and select one of the existing state basins?", _
+'                    "User Action Verification", "+&Save", "-&Cancel")
+'                If response = 1 Then
+'                  Set myStateBasin = New ssStateBasin
+'                  Set myStateBasin.DB = SSDB
+'                  myStateBasin.Add str
+'                  Set SSDB.state.StateBasins = Nothing
+'                  Set myStateBasin = _
+'                      SSDB.state.StateBasins(SSDB.state.StateBasins.Count)
+'                  .TextMatrix(row, col) = myStateBasin.code & "-" & .TextMatrix(row, col)
+'                  SaidYes = True
+'                Else
+'                  QACheck = False
+'                  SaidYes = False
+'                  Exit Function
+'                End If
+'              End If
 noEntry:
           End Select
         End With
@@ -1367,15 +1367,16 @@ Private Sub grdGenInfo_RowColChange()
         .ColEditable(0) = True
       Else
         .ColEditable(0) = False
+        .ColEditable(16) = False
       End If
       If .ColWidth(5) > 4000 Then .ColWidth(5) = 4000 'limit size of Remarks columns
       Select Case .col
-        Case 2:   .addValue ""
+        Case 3:   .addValue ""
                   For i = 1 To SSDB.StationTypes.Count
                     .addValue SSDB.StationTypes(i).Name
                   Next i
                   .ComboCheckValidValues = True
-        Case 3:   .addValue "Undefined"
+        Case 4:   .addValue "Undefined"
                   .addValue "No"
                   .addValue "Yes"
                   .ComboCheckValidValues = True
@@ -1385,30 +1386,34 @@ Private Sub grdGenInfo_RowColChange()
                   Next i
                   .ComboCheckValidValues = True
                   .ColWidth(.col) = 1000
-        Case 14:  .addValue ""
-                  For i = 1 To SSDB.state.StateBasins.Count
-                    .addValue SSDB.state.StateBasins(i).code & "-" & SSDB.state.StateBasins(i).Name
-                  Next i
-                  .ComboCheckValidValues = False
-        Case 11:  .addValue ""
+'        Case 14:  .addValue ""
+'                  For i = 1 To SSDB.state.StateBasins.Count
+'                    .addValue SSDB.state.StateBasins(i).code & "-" & SSDB.state.StateBasins(i).Name
+'                  Next i
+'                  .ComboCheckValidValues = False
+        Case 12:  .addValue ""
                   For i = 1 To SSDB.state.Counties.Count
                     .addValue SSDB.state.Counties(i).code & "-" & SSDB.state.Counties(i).Name
                   Next i
                   .ComboCheckValidValues = True
-        Case 12:  .addValue ""
-                  For i = 1 To SSDB.state.MCDs.Count
-                    .addValue SSDB.state.MCDs(i).code & "-" & SSDB.state.MCDs(i).Name
-                  Next i
-                  .ComboCheckValidValues = True
-        Case 9, 10: .addValue ""
+'        Case 12:  .addValue ""
+'                  For i = 1 To SSDB.state.MCDs.Count
+'                    .addValue SSDB.state.MCDs(i).code & "-" & SSDB.state.MCDs(i).Name
+'                  Next i
+'                  .ComboCheckValidValues = True
+        Case 10, 11: .addValue ""
                   For i = 1 To SSDB.States.Count
                     .addValue SSDB.States(i).Abbrev
                   Next i
                   .ComboCheckValidValues = True
+        Case 15:  .addValue ""
+                  .addValue "N"
+                  .addValue "Y"
+                  .ComboCheckValidValues = False
       End Select
-      .ColWidth(11) = 2500
-      .ColWidth(12) = 2000
-      .ColWidth(14) = 2500
+'      .ColWidth(11) = 2500
+'      .ColWidth(12) = 2000
+'      .ColWidth(14) = 2500
     End With
   ElseIf tabMain.Tab = 1 Then
     With grdGenInfo
@@ -1548,9 +1553,9 @@ Private Sub cboState_Click()
     cboCategory.Visible = False
     lblCategory.Visible = False
     cboFilter.Clear
-    cboFilter.AddItem "Basin"
+    'cboFilter.AddItem "Basin"
     cboFilter.AddItem "County"
-    cboFilter.AddItem "MCD"
+    'cboFilter.AddItem "MCD"
     cboFilter.AddItem "HUC"
     cboFilter.AddItem "State"
     filterIndex = GetSetting("StreamStatsDB", "Defaults", SSDB.state.code & "Filter", -1)
@@ -1601,30 +1606,30 @@ Private Sub cboFilter_Click()
     With cboFilter
       Select Case .List(.ListIndex)
         Case "Basin":
-          lblCategory.Caption = "Basin: "
-          IsBasin = True
-          IsCounty = False
-          IsMCD = False
-          IsHUC = False
-          IsState = False
-          catChoice = GetSetting("StreamStatsDB", "Defaults", SSDB.state.code & "ssBasin")
-          For catChoiceIndex = 1 To SSDB.state.StateBasins.Count
-            cboCategory.List(catChoiceIndex - 1) = _
-                SSDB.state.StateBasins(catChoiceIndex).Name
-            cboCategory.ItemData(catChoiceIndex - 1) = _
-                SSDB.state.StateBasins(catChoiceIndex).code
-            If SSDB.state.StateBasins(catChoiceIndex).Name = catChoice Then _
-                selCatChoice = catChoiceIndex
-          Next catChoiceIndex
-          If selCatChoice > 0 Then 'select previously chosen Basin
-            cboCategory.ListIndex = selCatChoice - 1
-            Set SSDB.state.Statebasin = _
-                SSDB.state.StateBasins(CStr(cboCategory.ItemData(cboCategory.ListIndex)))
-            selCatChoice = 0
-          Else
-            Set SSDB.state.SelStations = Nothing
-            Set SSDB.state.SelStation = Nothing
-          End If
+'          lblCategory.Caption = "Basin: "
+'          IsBasin = True
+'          IsCounty = False
+'          IsMCD = False
+'          IsHUC = False
+'          IsState = False
+'          catChoice = GetSetting("StreamStatsDB", "Defaults", SSDB.state.code & "ssBasin")
+'          For catChoiceIndex = 1 To SSDB.state.StateBasins.Count
+'            cboCategory.List(catChoiceIndex - 1) = _
+'                SSDB.state.StateBasins(catChoiceIndex).Name
+'            cboCategory.ItemData(catChoiceIndex - 1) = _
+'                SSDB.state.StateBasins(catChoiceIndex).code
+'            If SSDB.state.StateBasins(catChoiceIndex).Name = catChoice Then _
+'                selCatChoice = catChoiceIndex
+'          Next catChoiceIndex
+'          If selCatChoice > 0 Then 'select previously chosen Basin
+'            cboCategory.ListIndex = selCatChoice - 1
+'            Set SSDB.state.Statebasin = _
+'                SSDB.state.StateBasins(CStr(cboCategory.ItemData(cboCategory.ListIndex)))
+'            selCatChoice = 0
+'          Else
+'            Set SSDB.state.SelStations = Nothing
+'            Set SSDB.state.SelStation = Nothing
+'          End If
         Case "County":
           lblCategory.Caption = "County: "
           IsCounty = True
@@ -1654,33 +1659,33 @@ Private Sub cboFilter_Click()
             Set SSDB.state.SelStation = Nothing
           End If
         Case "MCD":
-          lblCategory.Caption = "MCD: "
-          IsMCD = True
-          IsBasin = False
-          IsCounty = False
-          IsHUC = False
-          IsState = False
-          catChoice = GetSetting("StreamStatsDB", "Defaults", SSDB.state.code & "ssMCD")
-          For catChoiceIndex = 1 To SSDB.state.MCDs.Count
-            cboCategory.List(catChoiceIndex - 1) = _
-                SSDB.state.MCDs(catChoiceIndex).Name
-            cboCategory.ItemData(catChoiceIndex - 1) = _
-                SSDB.state.MCDs(catChoiceIndex).code
-            If SSDB.state.MCDs(catChoiceIndex).Name = catChoice Then _
-                selCatChoice = catChoiceIndex
-          Next
-          If selCatChoice > 0 Then 'select previously chosen MCD
-            cboCategory.ListIndex = selCatChoice - 1
-            catChoice = CStr(cboCategory.ItemData(cboCategory.ListIndex))
-            While Len(catChoice) < 5
-              catChoice = "0" & catChoice
-            Wend
-            Set SSDB.state.MCD = SSDB.state.MCDs(catChoice)
-            selCatChoice = 0
-          Else
-            Set SSDB.state.SelStations = Nothing
-            Set SSDB.state.SelStation = Nothing
-          End If
+'          lblCategory.Caption = "MCD: "
+'          IsMCD = True
+'          IsBasin = False
+'          IsCounty = False
+'          IsHUC = False
+'          IsState = False
+'          catChoice = GetSetting("StreamStatsDB", "Defaults", SSDB.state.code & "ssMCD")
+'          For catChoiceIndex = 1 To SSDB.state.MCDs.Count
+'            cboCategory.List(catChoiceIndex - 1) = _
+'                SSDB.state.MCDs(catChoiceIndex).Name
+'            cboCategory.ItemData(catChoiceIndex - 1) = _
+'                SSDB.state.MCDs(catChoiceIndex).code
+'            If SSDB.state.MCDs(catChoiceIndex).Name = catChoice Then _
+'                selCatChoice = catChoiceIndex
+'          Next
+'          If selCatChoice > 0 Then 'select previously chosen MCD
+'            cboCategory.ListIndex = selCatChoice - 1
+'            catChoice = CStr(cboCategory.ItemData(cboCategory.ListIndex))
+'            While Len(catChoice) < 5
+'              catChoice = "0" & catChoice
+'            Wend
+'            Set SSDB.state.MCD = SSDB.state.MCDs(catChoice)
+'            selCatChoice = 0
+'          Else
+'            Set SSDB.state.SelStations = Nothing
+'            Set SSDB.state.SelStation = Nothing
+'          End If
         Case "HUC":
           lblCategory.Caption = "HUC: "
           IsHUC = True
@@ -1782,20 +1787,20 @@ Private Sub cboCategory_Click()
       Next
       SaveSetting "StreamStatsDB", "Defaults", SSDB.state.code & "SSCounty", SSDB.state.County.Name
     ElseIf IsMCD Then
-      Set SSDB.state.MCDs = Nothing
-      catCode = SSDB.state.MCDs(cboCategory.ListIndex + 1).code
-      Set SSDB.state.MCD = SSDB.state.MCDs(catCode)
-      stationCnt = SSDB.state.MCD.Stations.Count
-      ReDim ListedStations(stationCnt)
-      For stationIndex = 1 To stationCnt
-'        If SSDB.state.MCD.Stations(stationIndex).HasData Then
-          lstStations.List(stationIndex - 1) = SSDB.state.MCD.Stations(stationIndex).label
-'        Else
-'          lstStations.List(stationIndex - 1) = "*" & SSDB.state.MCD.Stations(stationIndex).label
-'        End If
-        Set ListedStations(stationIndex) = SSDB.state.MCD.Stations(stationIndex)
-      Next
-      SaveSetting "StreamStatsDB", "Defaults", SSDB.state.code & "SSMCD", SSDB.state.MCD.Name
+'      Set SSDB.state.MCDs = Nothing
+'      catCode = SSDB.state.MCDs(cboCategory.ListIndex + 1).code
+'      Set SSDB.state.MCD = SSDB.state.MCDs(catCode)
+'      stationCnt = SSDB.state.MCD.Stations.Count
+'      ReDim ListedStations(stationCnt)
+'      For stationIndex = 1 To stationCnt
+''        If SSDB.state.MCD.Stations(stationIndex).HasData Then
+'          lstStations.List(stationIndex - 1) = SSDB.state.MCD.Stations(stationIndex).label
+''        Else
+''          lstStations.List(stationIndex - 1) = "*" & SSDB.state.MCD.Stations(stationIndex).label
+''        End If
+'        Set ListedStations(stationIndex) = SSDB.state.MCD.Stations(stationIndex)
+'      Next
+'      SaveSetting "StreamStatsDB", "Defaults", SSDB.state.code & "SSMCD", SSDB.state.MCD.Name
     ElseIf IsHUC Then
       Set SSDB.state.HUCs = Nothing
       catCode = SSDB.state.HUCs(cboCategory.ListIndex + 1).code
@@ -1840,28 +1845,35 @@ Private Sub ChangesMade(madeChanges As Boolean)
       If Not SSDB.state.SelStations(row).IsNew Then
         Set myStation = SSDB.state.SelStations(row)
         OldVals(row, 1) = myStation.id
-        OldVals(row, 2) = myStation.Name
-        If Not myStation.StationType Is Nothing Then OldVals(row, 3) = myStation.StationType.Name
-        OldVals(row, 4) = myStation.IsRegulated
-        OldVals(row, 5) = myStation.Period
-        OldVals(row, 6) = myStation.Directions
-        OldVals(row, 7) = myStation.Remarks
-        OldVals(row, 8) = myStation.Latitude
-        OldVals(row, 9) = myStation.Longitude
-        OldVals(row, 10) = SSDB.States.ItemByKey(myStation.DistrictCode).Abbrev
-        OldVals(row, 11) = SSDB.States.ItemByKey(myStation.StateCode).Abbrev
+        OldVals(row, 2) = myStation.AgencyCode
+        OldVals(row, 3) = myStation.Name
+        If Not myStation.StationType Is Nothing Then OldVals(row, 4) = myStation.StationType.Name
+        OldVals(row, 5) = myStation.IsRegulated
+        OldVals(row, 6) = myStation.Period
+        OldVals(row, 7) = myStation.Directions
+        OldVals(row, 8) = myStation.Remarks
+        OldVals(row, 9) = myStation.Latitude
+        OldVals(row, 10) = myStation.Longitude
+        OldVals(row, 11) = SSDB.States.ItemByKey(myStation.DistrictCode).Abbrev
+        OldVals(row, 12) = SSDB.States.ItemByKey(myStation.StateCode).Abbrev
         If myStation.countyCode <> "" Then
-          OldVals(row, 12) = SSDB.state.Counties(myStation.countyCode).code & _
+          OldVals(row, 13) = SSDB.state.Counties(myStation.countyCode).code & _
               "-" & SSDB.state.Counties(myStation.countyCode).Name
         End If
-        If myStation.mcdCode <> "" Then
-          OldVals(row, 13) = SSDB.state.MCDs(myStation.mcdCode).code & _
-              "-" & SSDB.state.MCDs(myStation.mcdCode).Name
-        End If
-        OldVals(row, 14) = myStation.HUCCode
+'        If myStation.mcdCode <> "" Then
+'          OldVals(row, 13) = SSDB.state.MCDs(myStation.mcdCode).code & _
+'              "-" & SSDB.state.MCDs(myStation.mcdCode).Name
+'        End If
+        OldVals(row, 14) = myStation.HUCCode 'originally column 14
         If myStation.StatebasinCode <> "" Then
           OldVals(row, 15) = SSDB.state.StateBasins(myStation.StatebasinCode).code & _
               "-" & SSDB.state.StateBasins(myStation.StatebasinCode).Name
+        End If
+        If myStation.HCDN <> "" Then
+          OldVals(row, 16) = myStation.HCDN
+        End If
+        If myStation.StationMd <> "" Then
+          OldVals(row, 17) = myStation.StationMd
         End If
         Set myStation = Nothing
       End If
@@ -1893,13 +1905,13 @@ Private Sub RecordChanges(OldVals() As String, madeChanges As Boolean)
       If grdGenInfo.TextMatrix(row, col - 1) <> OldVals(row, col) Then
         If Changes(0, row, col) <> "2" Then Changes(0, row, col) = "1"
         Changes(1, row, col) = OldVals(row, col)
-        If col = 12 Or col = 13 Or col = 15 Then  'extract code from full identifier
+        If col = 12 Then 'Or col = 13 Or col = 15 Then  'extract code from full identifier; 13 15 gone
           Changes(1, row, col) = StrSplit(OldVals(row, col), "-", "")
         End If
         madeChanges = True
       End If
       Changes(2, row, col) = grdGenInfo.TextMatrix(row, col - 1)
-      If col = 12 Or col = 13 Or col = 15 Then  'extract code from full identifier
+      If col = 12 Then 'Or col = 13 Or col = 15 Then  'extract code from full identifier; 13 15 gone
         Changes(2, row, col) = StrSplit(Changes(2, row, col), "-", "")
       End If
     Next col
@@ -1916,7 +1928,7 @@ Private Sub ResetClass(ClassName As String)
     ElseIf IsCounty Then
       Set SSDB.state.County.Stations = Nothing
     ElseIf IsMCD Then
-      Set SSDB.state.MCD.Stations = Nothing
+      'Set SSDB.state.MCD.Stations = Nothing
     ElseIf IsHUC Then
       Set SSDB.state.HUC.Stations = Nothing
     End If
@@ -1965,7 +1977,8 @@ End Sub
 
 Private Sub ResetGrid()
   Dim row&, col&
-  Dim allStatIDs$, str$, mcdCode$, countyCode$, basinCode$
+  'Dim allStatIDs$, str$, mcdCode$, countyCode$, basinCode$
+  Dim allStatIDs$, str$, countyCode$
   
   On Error Resume Next
   
@@ -1977,46 +1990,51 @@ Private Sub ResetGrid()
         If Not SSDB.state.SelStations(row).IsNew Then
           allStatIDs = allStatIDs & " " & SSDB.state.SelStations(row).id
           .TextMatrix(row, 0) = SSDB.state.SelStations(row).id
-          .TextMatrix(row, 1) = SSDB.state.SelStations(row).Name
+          .TextMatrix(row, 1) = SSDB.state.SelStations(row).AgencyCode
+          .TextMatrix(row, 2) = SSDB.state.SelStations(row).Name
           If Not SSDB.state.SelStations(row).StationType Is Nothing Then _
-              .TextMatrix(row, 2) = SSDB.state.SelStations(row).StationType.Name
-          .TextMatrix(row, 3) = SSDB.state.SelStations(row).IsRegulated
-          .TextMatrix(row, 4) = SSDB.state.SelStations(row).Period
-          .TextMatrix(row, 5) = SSDB.state.SelStations(row).Directions
-          .TextMatrix(row, 6) = SSDB.state.SelStations(row).Remarks
+              .TextMatrix(row, 3) = SSDB.state.SelStations(row).StationType.Name
+          .TextMatrix(row, 4) = SSDB.state.SelStations(row).IsRegulated
+          .TextMatrix(row, 5) = SSDB.state.SelStations(row).Period
+          .TextMatrix(row, 6) = SSDB.state.SelStations(row).Directions
+          .TextMatrix(row, 7) = SSDB.state.SelStations(row).Remarks
           If SSDB.state.SelStations(row).Latitude > 72# Then
-            .TextMatrix(row, 7) = DMS2Decimal(CStr(SSDB.state.SelStations(row).Latitude))
+            .TextMatrix(row, 8) = DMS2Decimal(CStr(SSDB.state.SelStations(row).Latitude))
           Else
-            .TextMatrix(row, 7) = CStr(SSDB.state.SelStations(row).Latitude)
+            .TextMatrix(row, 8) = CStr(SSDB.state.SelStations(row).Latitude)
           End If
           If SSDB.state.SelStations(row).Longitude > 172# Then
-            .TextMatrix(row, 8) = DMS2Decimal(CStr(SSDB.state.SelStations(row).Longitude))
+            .TextMatrix(row, 9) = DMS2Decimal(CStr(SSDB.state.SelStations(row).Longitude))
           Else
-            .TextMatrix(row, 8) = CStr(SSDB.state.SelStations(row).Longitude)
+            .TextMatrix(row, 9) = CStr(SSDB.state.SelStations(row).Longitude)
           End If
-          .TextMatrix(row, 9) = SSDB.States.ItemByKey(SSDB.state.SelStations(row).DistrictCode).Abbrev
-          .TextMatrix(row, 10) = SSDB.States.ItemByKey(SSDB.state.SelStations(row).StateCode).Abbrev
+          .TextMatrix(row, 10) = SSDB.States.ItemByKey(SSDB.state.SelStations(row).DistrictCode).Abbrev
+          .TextMatrix(row, 11) = SSDB.States.ItemByKey(SSDB.state.SelStations(row).StateCode).Abbrev
           countyCode = SSDB.state.SelStations(row).countyCode
           If SSDB.state.Counties.IndexFromKey(countyCode) > 0 Then
-            .TextMatrix(row, 11) = SSDB.state.Counties(countyCode).code _
+            .TextMatrix(row, 12) = SSDB.state.Counties(countyCode).code _
                         & "-" & SSDB.state.Counties(countyCode).Name
           End If
-          mcdCode = SSDB.state.SelStations(row).mcdCode
-          If SSDB.state.MCDs.IndexFromKey(mcdCode) > 0 Then
-            .TextMatrix(row, 12) = SSDB.state.MCDs(mcdCode).code _
-                        & "-" & SSDB.state.MCDs(mcdCode).Name
-          End If
+'          mcdCode = SSDB.state.SelStations(row).mcdCode
+'          If SSDB.state.MCDs.IndexFromKey(mcdCode) > 0 Then
+'            .TextMatrix(row, 12) = SSDB.state.MCDs(mcdCode).code _
+'                        & "-" & SSDB.state.MCDs(mcdCode).Name
+'          End If
           .TextMatrix(row, 13) = SSDB.state.SelStations(row).HUCCode
-          basinCode = SSDB.state.SelStations(row).StatebasinCode
-          If SSDB.state.StateBasins.IndexFromKey(basinCode) > 0 Then
-            .TextMatrix(row, 14) = SSDB.state.StateBasins(basinCode).code _
-                & "-" & SSDB.state.StateBasins(basinCode).Name
-          End If
+'          basinCode = SSDB.state.SelStations(row).StatebasinCode
+'          If SSDB.state.StateBasins.IndexFromKey(basinCode) > 0 Then
+'            .TextMatrix(row, 14) = SSDB.state.StateBasins(basinCode).code _
+'                & "-" & SSDB.state.StateBasins(basinCode).Name
+'          End If
+          .TextMatrix(row, 15) = SSDB.state.SelStations(row).HCDN
+          .TextMatrix(row, 16) = SSDB.state.SelStations(row).StationMd
         End If
       Next row
       .Rows = SSDB.state.SelStations.Count
       For col = 0 To .Cols - 1
-        .ColEditable(col) = True
+        If col < .Cols - 1 Then
+          .ColEditable(col) = True
+        End If
       Next col
       If .Rows > 0 Then
         cmdDelete.Enabled = True
@@ -2087,24 +2105,29 @@ Private Sub Initialize(TabIndex As Long)
   
   If TabIndex = 0 Then
     StationFields(1) = "ID"
-    StationFields(2) = "Name"
-    StationFields(3) = "Type"
-    StationFields(4) = "Regulated"
-    StationFields(5) = "Period of Record"
-    StationFields(6) = "Directions"
-    StationFields(7) = "Remarks"
-    StationFields(8) = "Latitude"
-    StationFields(9) = "Longitude"
-    StationFields(10) = "District"
-    StationFields(11) = "State"
-    StationFields(12) = "County"
-    StationFields(13) = "MCD"
+    StationFields(2) = "Agency_cd"
+    StationFields(3) = "Name"
+    StationFields(4) = "Type"
+    StationFields(5) = "Regulated"
+    StationFields(6) = "Period of Record"
+    StationFields(7) = "Directions"
+    StationFields(8) = "Remarks"
+    StationFields(9) = "Latitude"
+    StationFields(10) = "Longitude"
+    StationFields(11) = "District"
+    StationFields(12) = "State"
+    StationFields(13) = "County"
+    'StationFields(13) = "MCD"
     StationFields(14) = "HUC"
     StationFields(15) = "Basin"
+    StationFields(16) = "HCDN"
+    StationFields(17) = "Station_md"
+    
     With grdGenInfo
       .FixedRows = 2
       .Rows = lstStations.SelCount
       .ColEditable(0) = False
+      .ColEditable(16) = False
       .Cols = UBound(StationFields)
       For fldCnt = 1 To UBound(StationFields)
         header = StrRetRem(StationFields(fldCnt))
@@ -2117,12 +2140,12 @@ Private Sub Initialize(TabIndex As Long)
         End If
         If .Rows = 0 Then .ColWidth(fldCnt - 1) = Len(.TextMatrix(0, fldCnt - 1)) * 200
       Next fldCnt
-      .ColType(7) = ATCoSng
-      .ColMin(7) = 17.5
-      .ColMax(7) = 72#
       .ColType(8) = ATCoSng
-      .ColMin(8) = -172#
-      .ColMax(8) = -64#
+      .ColMin(8) = 17.5
+      .ColMax(8) = 72#
+      .ColType(9) = ATCoSng
+      .ColMin(9) = -172#
+      .ColMax(9) = -64#
     End With
   ElseIf TabIndex = 1 Then
     StatFields(1) = "Type"

@@ -67,7 +67,7 @@ Sub NWISImport(ImpFileName As String)
         ReDim stationValues(2 To 2, 1 To 1, 1 To UBound(StationFields))
         ReDim dataValues(2 To 2, 1 To 4, 1 To UBound(DataFields))
         'Loop thru column fields in spreadsheet
-        For fldCnt = firstCol To firstCol + 10
+        For fldCnt = firstCol To firstCol + 11
           value = .Cells(staCnt, fldCnt)
           Select Case fldCnt - firstCol + 1
             Case 1:
@@ -80,7 +80,7 @@ Sub NWISImport(ImpFileName As String)
               stationValues(2, 1, 1) = value
               stationID = value
             Case 2:
-              stationValues(2, 1, 2) = value
+              stationValues(2, 1, 3) = value
               staName = value
             Case 3:
               If value <> "" Then
@@ -95,9 +95,9 @@ Sub NWISImport(ImpFileName As String)
                 End If
                 'Convert degrees, minutes, seconds to decimal degrees if necessary
                 If value > 360 Then
-                  stationValues(2, 1, 8) = DMS2Decimal(value)
+                  stationValues(2, 1, 9) = DMS2Decimal(value)
                 Else
-                  stationValues(2, 1, 8) = value
+                  stationValues(2, 1, 9) = value
                 End If
               End If
             Case 4:
@@ -114,23 +114,23 @@ Sub NWISImport(ImpFileName As String)
                 'Convert degrees, minutes, seconds to decimal degrees if necessary
                 'always store longitude as negative (prh from kries, 5/2005)
                 If Abs(value) > 360 Then
-                  stationValues(2, 1, 9) = -Abs(DMS2Decimal(value))
+                  stationValues(2, 1, 10) = -Abs(DMS2Decimal(value))
                 Else
-                  stationValues(2, 1, 9) = -Abs(value)
+                  stationValues(2, 1, 10) = -Abs(value)
                 End If
               End If
             Case 5:
               dataValues(2, 1, 3) = "DATUM"
               dataValues(2, 1, 4) = value
-              dataValues(2, 1, 7) = "Imported from NWIS file"
-              dataValues(2, 1, 8) = "http://waterdata.usgs.gov/nwis/si"
+              dataValues(2, 1, 8) = "Imported from NWIS file" 'Citation
+              dataValues(2, 1, 9) = "http://waterdata.usgs.gov/nwis/si" 'URL
             Case 6: 'district code
               If Len(value) = 1 Then value = "0" & value
-              stationValues(2, 1, 10) = value
+              stationValues(2, 1, 11) = value
             Case 7:  'state code
 '              dataValues(2, 2, 3) = "DISTRICT"
               If Len(value) = 1 Then value = "0" & value
-              stationValues(2, 1, 11) = value
+              stationValues(2, 1, 12) = value
 '              dataValues(2, 2, 4) = value
 '              dataValues(2, 2, 7) = "Imported from NWIS file"
 '              dataValues(2, 1, 8) = "http://waterdata.usgs.gov/nwis/si"
@@ -148,7 +148,7 @@ Sub NWISImport(ImpFileName As String)
               While Len(value) < 3
                 value = "0" & value
               Wend
-              stationValues(2, 1, 12) = value
+              stationValues(2, 1, 13) = value
             Case 9:  'HUC code
               stationValues(2, 1, 14) = value
             Case 10:
@@ -163,8 +163,8 @@ Sub NWISImport(ImpFileName As String)
               End If
               dataValues(2, 3, 3) = "DRNAREA"
               dataValues(2, 3, 4) = value
-              dataValues(2, 3, 7) = "Imported from NWIS file"
-              dataValues(2, 1, 8) = "http://waterdata.usgs.gov/nwis/si"
+              dataValues(2, 3, 8) = "Imported from NWIS file"
+              dataValues(2, 1, 9) = "http://waterdata.usgs.gov/nwis/si"
             Case 11:
               If Not IsNumeric(value) Then
                 If value <> "" Then bumFields = bumFields & vbCrLf & stationID & _
@@ -178,8 +178,14 @@ Sub NWISImport(ImpFileName As String)
               End If
               dataValues(2, 4, 3) = "CONTDA"
               dataValues(2, 4, 4) = value
-              dataValues(2, 4, 7) = "Imported from NWIS file"
-              dataValues(2, 1, 8) = "http://waterdata.usgs.gov/nwis/si"
+              dataValues(2, 4, 8) = "Imported from NWIS file" 'Citation
+              dataValues(2, 1, 9) = "http://waterdata.usgs.gov/nwis/si" 'URL
+            Case 12: 'Agency_cd
+              If value = "" Then
+                stationValues(2, 1, 2) = "Unknown"
+              Else
+                stationValues(2, 1, 2) = value
+              End If
           End Select
         Next fldCnt
         If SSDB.States.IndexFromKey(stateFIPS) > 0 Then
@@ -192,7 +198,7 @@ Sub NWISImport(ImpFileName As String)
           bumFields = bumFields & vbCrLf & "Skipped importing station " & stationID & _
                       " as it already exists on the database."
           If iskip = 0 Then
-            MsgBox "Some stations on the import file already exist." & vbCrLf & _
+            MsgBox "Station (" & stationID & ") in the import file already exist." & vbCrLf & _
               "No data will be imported for these stations." & vbCrLf & _
               "See the file " & CurDir & "\NWIS_Import.txt for details.", , _
               "NWIS Import"
@@ -264,8 +270,14 @@ Sub BCFImport(ImpFileName As String)
   Dim stationValues() As String, dataValues() As String
   Dim myStation As ssStation
   Dim myStatistic As ssStatistic
+  Dim lOverWriteAllResponse As Integer
+  Dim lKey As String
   
   On Error GoTo errTrap
+  
+  lOverWriteAllResponse = myMsgBox.Show("Data in import file, " & ImpFileName & ", are: ", _
+                                        "BCF Import - Preferrance", _
+                                        "&Preferred", "&Not Preferred", "-Not &Sure")
   
   IPC.SendMonitorMessage "(OPEN StreamStatsDB)"
   IPC.SendMonitorMessage "(BUTTOFF DETAILS)"
@@ -306,16 +318,16 @@ Sub BCFImport(ImpFileName As String)
       ReDim stationValues(2 To 2, 1 To 1, 1 To UBound(StationFields))
       ReDim dataValues(2 To 2, 1 To 166, 1 To UBound(DataFields))
       stationValues(2, 1, 1) = Trim(Mid(textLine, 2, 15)) 'StationID
-      stationValues(2, 1, 2) = Trim(Mid(textLine, 21))    'Station Name
+      stationValues(2, 1, 3) = Trim(Mid(textLine, 21))    'Station Name
       'Read in "District_Code"
       attCnt = 1
-      dataValues(2, 1, 2) = "24"
+      dataValues(2, 1, 2) = "24" 'dummy StatisticLabelID code (district code)
       If Mid(textLine, 17, 1) = " " Then  'add leading 0 to code
         dataValues(2, 1, 4) = "0" & Mid(textLine, 18, 1)
       Else
         dataValues(2, 1, 4) = Mid(textLine, 17, 2)
       End If
-      dataValues(2, 1, 7) = "Imported from Basin Characteristics file"
+      dataValues(2, 1, 8) = "Imported from Basin Characteristics file" 'citation
       Line Input #inFile, textLine
       'Loop thru Statistic data cards
       While Left(textLine, 1) = 2 And Not EOF(inFile)
@@ -331,7 +343,7 @@ Sub BCFImport(ImpFileName As String)
                         " for station " & stationValues(2, 1, 1) & "."
           Else  'have match for BCF stat ID
             dataValues(2, attCnt, 4) = Trim(Mid(textLine, 4, 7))
-            dataValues(2, attCnt, 7) = "Imported from Basin Characteristics file"
+            dataValues(2, attCnt, 8) = "Imported from Basin Characteristics file"
           End If
           textLine = Mid(textLine, 11)
         Wend
@@ -343,10 +355,21 @@ Sub BCFImport(ImpFileName As String)
     staIndex = SSDB.state.Stations.IndexFromKey(stationValues(2, 1, 1))
     If staIndex = -1 Then 'Station does not exist - add it and its statistics
       Set myStation = New ssStation
-      Set myStation.DB = SSDB
-      Set myStation.state = SSDB.state
-      myStation.Add stationValues(), 1, 1
-      myStation.id = stationValues(2, 1, 1)
+      With myStation
+        Set .DB = SSDB
+        Set .state = SSDB.state
+        .Add stationValues(), 1, 1
+        .id = stationValues(2, 1, 1)
+        Select Case lOverWriteAllResponse
+          Case 1
+            .UpdateAction = 2 ' replace all
+          Case 2
+            .UpdateAction = 4 'keep all
+          Case 3 ' if not sure, don't set the flag
+          Case Else 'if not known, don't set the flg
+        End Select
+      End With
+
       For i = 1 To attCnt
         'Retrieve the StatLabel based upon the BCF stat code
         Set myStatistic = New ssStatistic
@@ -362,8 +385,22 @@ Sub BCFImport(ImpFileName As String)
       Next i
     ElseIf staIndex > 0 Then 'Station exists - check whether its stats also exist
       Set myStation = SSDB.state.Stations(staIndex)
+      With myStation
+        Select Case lOverWriteAllResponse
+          Case 1
+            .UpdateAction = 2 ' replace all
+          Case 2
+            .UpdateAction = 4 'keep all
+          Case 3 ' if not sure, don't set the flag
+          Case Else 'if not known, don't set the flg
+        End Select
+      End With
       For i = 1 To attCnt
-        attIndex = myStation.Statistics.IndexFromKey(dataValues(2, i, 2))
+        'attIndex = myStation.Statistics.IndexFromKey(dataValues(2, i, 2))
+        If myStation.Statistics.Count > 0 Then
+          lKey = LCase(dataValues(2, i, 2) & "_" & dataValues(2, i, 4) & "_" & myStation.Statistics.ItemByIndex(1).GetSourceID(dataValues(2, i, 8)))
+        End If
+        attIndex = myStation.Statistics.IndexFromKey(lKey)
         If attIndex = -1 Then 'Statistic does not exist
           Set myStatistic = New ssStatistic
           With myStatistic
@@ -372,6 +409,7 @@ Sub BCFImport(ImpFileName As String)
             .Add dataValues(), i, 1
           End With
         ElseIf attIndex > 0 Then 'Statistic already exists - write to text file
+          response = myStation.UpdateAction
           If response <> 2 And response <> 4 Then 'user hasn't chosen to replace or keep all
             response = myMsgBox.Show("For station " & myStation.Name & " the statistic " & myStation.Statistics(attIndex).Name & _
                                      " already exists." & vbCrLf & "Existing value: " & myStation.Statistics(attIndex).value & _
@@ -829,8 +867,15 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
   Dim YrsRecCol As Long
   Dim YearsOfRecord As Double
   Dim StaResp As Integer
+  Dim lStatCntVsLblid() As Integer
+  Dim lOverWriteAllResponse As Integer
+  Dim lKey As String
   
   On Error GoTo errTrapXLS
+  
+  lOverWriteAllResponse = myMsgBox.Show("Data in import file, " & ImpFileName & ", are: ", _
+                                        "Excel Import - Preferrance", _
+                                        "&Preferred", "&Not Preferred", "-Not &Sure")
   
   IPC.SendMonitorMessage "(OPEN StreamStatsDB)"
   IPC.SendMonitorMessage "(BUTTOFF DETAILS)"
@@ -876,15 +921,34 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
       YrsRecCol = 0
       ReDim ImportCol(lastCol)
       Set myStatistic = New ssStatistic
+      Set myStatistic.DB = SSDB
       For fldCnt = firstCol + 1 To lastCol
-        Set myStatistic.DB = SSDB
         ImportCol(fldCnt) = GetLabelID(Cells(header, fldCnt), SSDB)
         If ImportCol(fldCnt) > 0 Then
           nAtts = nAtts + 1
-        ElseIf UCase(Cells(header, fldCnt)) = "YEARS" Or _
-               UCase(Cells(header, fldCnt)) = "YEARSREC" Then
+        ElseIf InStr(UCase(Cells(header, fldCnt)), "YEARS") > 0 Or _
+               InStr(UCase(Cells(header, fldCnt)), "YEARSREC") > 0 Then
           'apply years of record value from this column to all other stats
           YrsRecCol = fldCnt
+          ImportCol(fldCnt) = 5007 '5000 + array index for YearsRec
+        ElseIf InStr(UCase(Cells(header, fldCnt)), "ISPREFERRED") > 0 Then
+          ImportCol(fldCnt) = 5005 '5000 + array index for IsPreferred
+        ElseIf InStr(UCase(Cells(header, fldCnt)), "STDERROR") > 0 Then
+          ImportCol(fldCnt) = 5010 '5000 + array index for StdError
+        ElseIf InStr(UCase(Cells(header, fldCnt)), "VARIANCE") > 0 Then
+          ImportCol(fldCnt) = 5011 '5000 + array index for Variance
+        ElseIf InStr(UCase(Cells(header, fldCnt)), "LOWERCI") > 0 Then
+          ImportCol(fldCnt) = 5012 '5000 + array index for LowerCI
+        ElseIf InStr(UCase(Cells(header, fldCnt)), "UPPERCI") > 0 Then
+          ImportCol(fldCnt) = 5013 '5000 + array index for UpperCI
+        ElseIf InStr(UCase(Cells(header, fldCnt)), "STATSTARTDATE") > 0 Then
+          ImportCol(fldCnt) = 5014 '5000 + array index for StatStartDate
+        ElseIf InStr(UCase(Cells(header, fldCnt)), "STATENDDATE") > 0 Then
+          ImportCol(fldCnt) = 5015 '5000 + array index for StatEndDate
+        ElseIf InStr(UCase(Cells(header, fldCnt)), "STATISTICREMARKS") > 0 Then
+          ImportCol(fldCnt) = 5016 '5000 + array index for StatisticRemarks
+        ElseIf InStr(UCase(Cells(header, fldCnt)), "STATISTIC_MD") > 0 Then
+          ImportCol(fldCnt) = 5017 '5000 + array index for Statistic_md
         Else 'note fields that can't be imported
           badFields = badFields & Cells(header, fldCnt) & vbCrLf
         End If
@@ -929,35 +993,46 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
             stationValues(2, 1, 1) = value
             stationID = value
           ElseIf ImportCol(fldCnt) > 0 And Len(value) > 0 Then
-            If ImportCol(fldCnt) <= 14 Or ImportCol(fldCnt) = 24 Then 'station data
+            If ImportCol(fldCnt) <= 14 Or ImportCol(fldCnt) = 24 Or ImportCol(fldCnt) = 2318 Or ImportCol(fldCnt) = 2319 Then 'station data
               StaAttCnt = StaAttCnt + 1
               Select Case ImportCol(fldCnt)
                 Case 24  'map DistrictCode to 15th element in array
-                  stationValues(2, 1, 10) = value
-                Case 14 'State code
                   stationValues(2, 1, 11) = value
+                Case 14 'State code
+                  stationValues(2, 1, 12) = value
                 Case 13  'directions
-                  stationValues(2, 1, 6) = value
+                  stationValues(2, 1, 7) = value
                 Case 11, 12 'county or MCD code
-                  stationValues(2, 1, ImportCol(fldCnt) + 1) = value
+                  stationValues(2, 1, ImportCol(fldCnt) + 2) = value
                 Case 10 'state basin
                   stationValues(2, 1, 15) = value
                 Case 9  'HUC
                   stationValues(2, 1, 14) = value
-                Case Is < 6 '1st 5 StatLabelIDs match field numbers 1 - 5
+                Case 1 'ID
                   stationValues(2, 1, ImportCol(fldCnt)) = value
-                Case Else 'remaining StatLabelIDs (6 - 8) are 1 less than field number
+                Case 2318 'Agency_cd
+                  stationValues(2, 1, 2) = value
+                Case 2319 'HCDN
+                  stationValues(2, 1, 16) = value
+                Case Is < 6 '1st 5 StatLabelIDs match field numbers 3 - 5 in old system, now needs to add 1
                   stationValues(2, 1, ImportCol(fldCnt) + 1) = value
+                Case Else 'remaining StatLabelIDs (6 - 8) are 1 less than field number in old system, now it is 2 less
+                  stationValues(2, 1, ImportCol(fldCnt) + 2) = value
               End Select
             Else 'statistic data
-              attCnt = attCnt + 1
-              dataValues(2, attCnt, 2) = CStr(ImportCol(fldCnt))
-              dataValues(2, attCnt, 4) = value
-              If YearsOfRecord > 0 Then
-                dataValues(2, attCnt, 6) = YearsOfRecord
+              If ImportCol(fldCnt) > 5000 Then
+                dataValues(2, attCnt, ImportCol(fldCnt) - 5000) = value
+              Else
+                attCnt = attCnt + 1 'only increase counter when it has a real stat
+                dataValues(2, attCnt, 2) = Cells(header, fldCnt)
+                dataValues(2, attCnt, 3) = CStr(ImportCol(fldCnt))
+                dataValues(2, attCnt, 4) = value
               End If
-              dataValues(2, attCnt, 7) = DataSource
-              dataValues(2, attCnt, 8) = SourceURL
+              If YearsOfRecord > 0 Then
+                dataValues(2, attCnt, 7) = YearsOfRecord
+              End If
+              dataValues(2, attCnt, 8) = DataSource
+              dataValues(2, attCnt, 9) = SourceURL
             End If
           End If
         Next fldCnt
@@ -965,10 +1040,21 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
         staIndex = SSDB.state.Stations.IndexFromKey(stationValues(2, 1, 1))
         If staIndex = -1 Then 'Station does not exist - add it and its statistics
           Set myStation = New ssStation
-          Set myStation.DB = SSDB
-          Set myStation.state = SSDB.state
-          myStation.Add stationValues(), 1, 1
-          myStation.id = stationValues(2, 1, 1)
+          With myStation
+            Set .DB = SSDB
+            Set .state = SSDB.state
+            Select Case lOverWriteAllResponse
+              Case 1
+               .UpdateAction = 2 ' replace all
+              Case 2
+               .UpdateAction = 4 'keep all
+              Case 3 ' if not sure, don't set the flag
+              Case Else 'if not known, don't set the flg
+            End Select
+            .Add stationValues(), 1, 1
+            .id = stationValues(2, 1, 1)
+          End With
+          
           For i = 1 To attCnt
             'Retrieve the StatLabel based upon the BCF stat code
             Set myStatistic = New ssStatistic
@@ -980,6 +1066,16 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
           Next i
         ElseIf staIndex > 0 Then 'Station exists - check whether its stats also exist
           Set myStation = SSDB.state.Stations(staIndex)
+          With myStation
+            Select Case lOverWriteAllResponse
+              Case 1
+               .UpdateAction = 2 ' replace all
+              Case 2
+               .UpdateAction = 4 'keep all
+              Case 3 ' if not sure, don't set the flag
+              Case Else 'if not known, don't set the flg
+            End Select
+          End With
           If StaAttCnt > 0 Then 'station data to update
             If StaResp <> 2 And StaResp <> 4 Then
               StaResp = myMsgBox.Show("For station " & myStation.Name & ", " & StaAttCnt & _
@@ -996,7 +1092,11 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
             End If
           End If
           For i = 1 To attCnt
-            attIndex = myStation.Statistics.IndexFromKey(dataValues(2, i, 2))
+            'attIndex = myStation.Statistics.IndexFromKey(dataValues(2, i, 2))
+            If myStation.Statistics.Count > 0 Then
+              lKey = LCase(dataValues(2, i, 2) & "_" & dataValues(2, i, 4) & "_" & myStation.Statistics.ItemByIndex(1).GetSourceID(dataValues(2, i, 8)))
+            End If
+            attIndex = myStation.Statistics.IndexFromKey(lKey)
             If attIndex = -1 Then 'Statistic does not exist
               Set myStatistic = New ssStatistic
               With myStatistic
@@ -1005,27 +1105,30 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
                 .Add dataValues(), i, 1
               End With
             ElseIf attIndex > 0 Then 'Statistic already exists - write to text file
-              If response <> 2 And response <> 4 Then 'user hasn't chosen to replace or keep all
-                response = myMsgBox.Show("For station " & myStation.Name & " the statistic " & myStation.Statistics(attIndex).Name & _
-                                         " already exists." & vbCrLf & "Existing value: " & myStation.Statistics(attIndex).value & _
-                                         "  New value: " & dataValues(2, i, 4) & vbCrLf & "What do you want to do?", "Excel Import - Data Exists", _
-                                         "&Replace", "Replace &All", "+&Keep", "K&eep All", "-&Cancel")
-              End If
-              If response = 5 Then Err.Raise 999
-              If response > 2 Then 'keeping existing, note it to file
-                badStats = badStats & vbCrLf & vbTab & _
-                           Left(myStation.id & "       ", 15) & vbTab & _
-                           StrPad(dataValues(2, i, 2), 7) & vbTab & _
-                           StrPad(myStation.Statistics(attIndex).value, 10) & _
-                           vbTab & StrPad(dataValues(2, i, 4), 8)
-              Else 'overwrite value
-                OverWriteInfo = OverWriteInfo & vbCrLf & vbTab & _
-                                Left(myStation.id & "       ", 15) & vbTab & _
-                                StrPad(dataValues(2, i, 2), 7) & vbTab & _
-                                StrPad(myStation.Statistics(attIndex).value, 10) & _
-                                vbTab & StrPad(dataValues(2, i, 4), 8)
-                myStation.Statistics(attIndex).Edit dataValues(), i
-              End If
+'              If response <> 2 And response <> 4 Then 'user hasn't chosen to replace or keep all
+'                response = myMsgBox.Show("For station " & myStation.Name & " the statistic " & myStation.Statistics(attIndex).Name & _
+'                                         " already exists." & vbCrLf & "Existing value: " & myStation.Statistics(attIndex).value & _
+'                                         "  New value: " & dataValues(2, i, 4) & vbCrLf & "What do you want to do?", "Excel Import - Data Exists", _
+'                                         "&Replace", "Replace &All", "+&Keep", "K&eep All", "-&Cancel")
+'              End If
+'              If response = 5 Then Err.Raise 999
+'              If response > 2 Then 'keeping existing, note it to file
+'                badStats = badStats & vbCrLf & vbTab & _
+'                           Left(myStation.id & "       ", 15) & vbTab & _
+'                           StrPad(dataValues(2, i, 2), 7) & vbTab & _
+'                           StrPad(myStation.Statistics(attIndex).value, 10) & _
+'                           vbTab & StrPad(dataValues(2, i, 4), 8)
+'              Else 'overwrite value
+'                OverWriteInfo = OverWriteInfo & vbCrLf & vbTab & _
+'                                Left(myStation.id & "       ", 15) & vbTab & _
+'                                StrPad(dataValues(2, i, 2), 7) & vbTab & _
+'                                StrPad(myStation.Statistics(attIndex).value, 10) & _
+'                                vbTab & StrPad(dataValues(2, i, 4), 8)
+'                myStation.Statistics(attIndex).Edit dataValues(), i
+'              End If
+
+              'Simply add a new one regardless of what
+               myStation.Statistics(attIndex).Add dataValues(), i, 1
             End If
           Next i
         End If

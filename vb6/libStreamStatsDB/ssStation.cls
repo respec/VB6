@@ -15,6 +15,7 @@ Option Explicit
 
 Private pDB As nssDatabase
 Private pID As String
+Private pAgencyCode As String
 Private pName As String
 Private pLabel As String
 Private pStationType As ssStationType
@@ -43,6 +44,10 @@ Private pDistrictCode As String
 Private pState As nssState
 Private pStatistics As FastCollection 'of ssStatistics kept by this station
 Private pSelStats As FastCollection 'of ssStatistics selected for this station
+Private pHCDN As String 'whether part of the HC network, Y for true
+Private pStationMd As String 'Station record 'modified' datetime, short date, e.g. 1/10/2012
+
+Private pUpdateAction As Integer
 
 Public Property Get DB() As nssDatabase
   Set DB = pDB
@@ -56,6 +61,13 @@ Public Property Get Id() As String
 End Property
 Public Property Let Id(ByVal newValue As String)
   pID = newValue
+End Property
+
+Public Property Get AgencyCode() As String
+  AgencyCode = pAgencyCode
+End Property
+Public Property Let AgencyCode(ByVal newValue As String)
+  pAgencyCode = newValue
 End Property
 
 Public Property Get Name() As String
@@ -240,6 +252,28 @@ Public Property Let DistrictCode(ByVal newValue As String)
   pDistrictCode = newValue
 End Property
 
+Public Property Get HCDN() As String
+  HCDN = pHCDN
+End Property
+Public Property Let HCDN(ByVal newValue As String)
+  pHCDN = newValue
+End Property
+
+Public Property Get StationMd() As String
+  StationMd = pStationMd
+End Property
+Public Property Let StationMd(ByVal newValue As String)
+  pStationMd = newValue
+End Property
+'1 Replace, 2 Replace all, 3 Keep, 4 Keep All
+Public Property Get UpdateAction() As Integer
+  UpdateAction = pUpdateAction
+End Property
+Public Property Let UpdateAction(ByVal newValue As Integer)
+  pUpdateAction = newValue
+End Property
+
+
 Public Sub Add(ByRef NewValues() As String, ByVal StaIndex As Long, _
                Optional ImportFlg As Long, Optional ROIRegionID As Long = 0)
   Dim myRec As Recordset
@@ -282,7 +316,7 @@ Public Sub Add(ByRef NewValues() As String, ByVal StaIndex As Long, _
         Me.Name = "bad"
         GoTo AddStateStationReference
       End If
-      .FindFirst "StationName='" & NewValues(2, StaIndex, 2) & "'"
+      .FindFirst "StationName='" & NewValues(2, StaIndex, 2) & "'" 'ToDo: StationName should correspond to 3 ??!??
       If Not .NoMatch Then  'Station with this name already exists for this state
         If ImportFlg <> 1 Then
           ssMessageBox "There is already a station in " & pDB.State.Name & " with the name " & _
@@ -299,29 +333,30 @@ Public Sub Add(ByRef NewValues() As String, ByVal StaIndex As Long, _
       If Len(lVal) > 0 Then
         Select Case fld
           Case 1: .Fields("StaID") = lVal
-          Case 2: .Fields("StationName") = lVal
-          Case 3:  lVal = GetStationTypeCode(lVal)
+          Case 2: .Fields("Agency_cd") = lVal
+          Case 3: .Fields("StationName") = lVal
+          Case 4:  lVal = GetStationTypeCode(lVal)
                   .Fields("StationTypeCode") = lVal
-          Case 4: .Fields("IsRegulated") = lVal
-          Case 5: .Fields("PeriodOfRecord") = lVal
-          Case 6: .Fields("Directions") = lVal
-          Case 7: .Fields("StationRemarks") = lVal
-          Case 8: .Fields("Latitude") = lVal
-          Case 9: .Fields("Longitude") = lVal
-          Case 10:
+          Case 5: .Fields("IsRegulated") = lVal
+          Case 6: .Fields("PeriodOfRecord") = lVal
+          Case 7: .Fields("Directions") = lVal
+          Case 8: .Fields("StationRemarks") = lVal
+          Case 9: .Fields("Latitude") = lVal
+          Case 10: .Fields("Longitude") = lVal
+          Case 11:
                   If IsNumeric(lVal) Then
                     .Fields("DistrictCode") = lVal
                   Else
                     .Fields("DistrictCode") = GetStateCode(lVal)
                   End If
-          Case 11:
+          Case 12:
                   If IsNumeric(lVal) Then
                     .Fields("StateCode") = lVal
                   Else
                     .Fields("StateCode") = GetStateCode(lVal)
                   End If
-          Case 12: .Fields("CountyCode") = lVal
-          Case 13: .Fields("MCDCode") = lVal
+          Case 13: .Fields("CountyCode") = lVal
+          'Case 13: .Fields("MCDCode") = lVal
           Case 14: .Fields("HUC") = lVal
           Case 15:
                   If IsNumeric(lVal) Then
@@ -329,6 +364,8 @@ Public Sub Add(ByRef NewValues() As String, ByVal StaIndex As Long, _
                   Else
                     .Fields("StateBasinCode") = GetBasinCode(lVal)
                   End If
+          Case 16: .Fields("HCDN") = lVal
+          Case 17: .Fields("Station_md") = DateTime.Now()
         End Select
       End If
     Next fld
@@ -423,6 +460,7 @@ Public Sub Edit(ByRef NewValues() As String, StaIndex As Long)
   Dim lVal As String
   
 '  sql = "SELECT * FROM STATION WHERE StateCode='" & pDB.State.code & "'"
+  'select all stations from that state
   sql = "SELECT STATION.* " & _
         "FROM [StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
         "WHERE [StationState].[StateCode]='" & pDB.State.code & "';"
@@ -434,16 +472,23 @@ Public Sub Edit(ByRef NewValues() As String, StaIndex As Long)
       For fld = 2 To UBound(NewValues, 3)
         lVal = Trim(NewValues(2, StaIndex, fld))
         If Len(lVal) > 0 Then 'only update if array element contains something
-          If fld = 3 Then 'convert station type to code
+          If fld = 4 Then 'convert station type to code
             lVal = GetStationTypeCode(lVal)
           End If
           If fld = 15 And Not IsNumeric(lVal) Then 'convert basin name to code
-            lVal = GetBasinCode(lVal)
+            'lVal = GetBasinCode(lVal)
           End If
-          If (fld = 10 Or fld = 11) And Not IsNumeric(lVal) Then 'convert State or District to codes
+          If (fld = 11 Or fld = 12) And Not IsNumeric(lVal) Then 'convert State or District to codes
             lVal = GetStateCode(lVal)
           End If
-          .Fields(fld - 1) = lVal
+          If fld = 13 Then
+            lVal = Mid(lVal, 1, 3)
+          End If
+          If fld = 17 Then 'get the latest date
+            .Fields(fld - 1) = DateTime.Now
+          Else
+            .Fields(fld - 1) = lVal
+          End If
         End If
       Next fld
       .Update
@@ -476,13 +521,18 @@ Public Sub PopulateStatistics()
   Dim newStatistic As ssStatistic
   Dim statRec As Recordset
   Dim sql$
+  Dim lKey As String
   
   Set pStatistics = New FastCollection
   If pDB Is Nothing Then
     ssMessageBox "Cannot read Statistics" & vbCr & "DB not set."
   Else
     'sql = "SELECT STATISTIC.StatisticValue, STATISTIC.Date, STATLABEL.StatLabel, " &
-    sql = "SELECT STATISTIC.StatisticValue, STATISTIC.YearsRec, STATLABEL.StatLabel, " & _
+    sql = "SELECT Statistic.IsPreferred, STATISTIC.StatisticValue, STATISTIC.YearsRec, " & _
+          "Statistic.StdError, STATISTIC.Variance, STATISTIC.LowerCI, " & _
+          "Statistic.UpperCI, STATISTIC.StatStartDate, STATISTIC.StatEndDate, " & _
+          "Statistic.StatisticRemarks, STATISTIC.Statistic_md, " & _
+          "STATLABEL.StatLabel, " & _
         "STATLABEL.StatisticLabelID, STATLABEL.StatisticLabel, STATLABEL.Unitid, " & _
         "STATTYPE.StatisticTypeCode, STATTYPE.StatisticTypeID, STATTYPE.StatisticType, " & _
         "DATASOURCE.DataSourceID, DATASOURCE.Citation, DATASOURCE.CitationURL " & _
@@ -503,6 +553,13 @@ Public Sub PopulateStatistics()
         .Name = statRec.Fields("StatisticLabel")
         If Not IsNull(statRec.Fields("StatisticValue")) Then _
             .Value = statRec.Fields("StatisticValue")
+        If Not IsNull(statRec.Fields("IsPreferred")) Then
+            If UCase(statRec.Fields("IsPreferred")) = "YES" Or UCase(statRec.Fields("IsPreferred")) = "Y" Then
+                .IsPreferred = True
+            Else
+                .IsPreferred = False
+            End If
+        End If
         If Not IsNull(statRec("UnitID")) Then _
             Set .Units = pDB.Units(CStr(statRec("UnitID")))
 '        If Not IsNull(statRec.Fields("Date")) Then _
@@ -518,8 +575,33 @@ Public Sub PopulateStatistics()
             .Source = statRec.Fields("Citation")
         If Not IsNull(statRec.Fields("CitationURL")) Then _
             .SourceURL = statRec.Fields("CitationURL")
+        
+        If Not IsNull(statRec.Fields("StdError")) Then _
+          .StdError = statRec.Fields("StdError")
+        If Not IsNull(statRec.Fields("Variance")) Then _
+          .Variance = statRec.Fields("Variance")
+        If Not IsNull(statRec.Fields("LowerCI")) Then _
+          .LowerCI = statRec.Fields("LowerCI")
+        If Not IsNull(statRec.Fields("UpperCI")) Then _
+          .UpperCI = statRec.Fields("UpperCI")
+        If Not IsNull(statRec.Fields("StatStartDate")) Then _
+          .StatStartDate = statRec.Fields("StatStartDate")
+        If Not IsNull(statRec.Fields("StatEndDate")) Then _
+          .StatEndDate = statRec.Fields("StatEndDate")
+        If Not IsNull(statRec.Fields("StatisticRemarks")) Then _
+          .StatisticRemarks = statRec.Fields("StatisticRemarks")
+        If Not IsNull(statRec.Fields("Statistic_md")) Then _
+          .Statistic_md = statRec.Fields("Statistic_md")
       End With
-      pStatistics.Add newStatistic, CStr(newStatistic.code)
+      'TODO: need to figure out a better key, perhaps code, value, and datasource_id
+      
+      With newStatistic
+        lKey = LCase(CStr(.code) & "_" & CStr(.Value) & "_" & .SourceID)
+        If Not pStatistics.KeyExists(lKey) Then
+           pStatistics.Add newStatistic, lKey
+        End If
+      End With
+
       Set newStatistic = Nothing
       statRec.MoveNext
     Wend
