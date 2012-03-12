@@ -507,6 +507,15 @@ Private Sub Form_Load()
   SetGrid
 End Sub
 
+Private Sub Form_Resize()
+  If Me.Width > 8000 Then
+    grdGenInfo.Width = Me.Width - 230
+  End If
+  If Me.height > 6000 Then
+
+  End If
+End Sub
+
 Private Sub grdStaData_RowColChange()
   Dim i&
   Dim statTypeCode$
