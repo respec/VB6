@@ -27,10 +27,10 @@ Public Property Let Name(ByVal newValue As String)
   pName = newValue
 End Property
 
-Public Property Get Code() As String
-  Code = pCode
+Public Property Get code() As String
+  code = pCode
 End Property
-Public Property Let Code(ByVal newValue As String)
+Public Property Let code(ByVal newValue As String)
   pCode = newValue
 End Property
 
@@ -78,7 +78,7 @@ Public Sub PopulateStations()
 '          "' ORDER BY StaID;"
     sql = "SELECT STATION.* FROM " & _
           "[StationState] INNER JOIN STATION ON [StationState].[StaID]=[STATION].[StaID] " & _
-          "WHERE CountyCode='" & pCode & "' AND [StationState].[StateCode]='" & pDB.State.Code & _
+          "WHERE CountyCode='" & pCode & "' AND [StationState].[StateCode]='" & pDB.State.code & _
           "' ORDER BY STATION.StaID;"
     Set stationRec = pDB.DB.OpenRecordset(sql, dbOpenForwardOnly)
     While Not stationRec.EOF
@@ -86,9 +86,10 @@ Public Sub PopulateStations()
       With newStation
         Set .DB = pDB
         Set .County = Me
-        .ID = stationRec("StaID")
+        .Id = stationRec("StaID")
         If Not IsNull(stationRec("StationName")) Then .Name = stationRec("StationName")
         If Not IsNull(stationRec("StationName")) Then .Label = stationRec("StationName")
+        If Not IsNull(stationRec("Agency_cd")) Then .AgencyCode = stationRec("Agency_cd")
         If Not IsNull(stationRec("StationTypeCode")) Then Set .StationType = GetStationType(stationRec("StationTypeCode"))
         If Not IsNull(stationRec("IsRegulated")) Then .IsRegulated = stationRec("IsRegulated")
         If Not IsNull(stationRec("PeriodOfRecord")) Then .Period = stationRec("PeriodOfRecord")
@@ -96,17 +97,19 @@ Public Sub PopulateStations()
         If Not IsNull(stationRec("Latitude")) Then .Latitude = stationRec("Latitude")
         If Not IsNull(stationRec("Longitude")) Then .Longitude = stationRec("Longitude")
         If Not IsNull(stationRec("HUC")) Then .HUCCode = stationRec("HUC")
-        If Not IsNull(stationRec("StatebasinCode")) Then .StatebasinCode = (stationRec("StatebasinCode"))
+        If Not IsNull(stationRec("Statebasin")) Then .StatebasinCode = (stationRec("Statebasin"))
         If Not IsNull(stationRec("CountyCode")) Then .CountyCode = stationRec("CountyCode")
-        If Not IsNull(stationRec("MCDCode")) Then .MCDCode = stationRec("MCDCode")
+        'If Not IsNull(stationRec("MCDCode")) Then .MCDCode = stationRec("MCDCode")
         If Not IsNull(stationRec("Directions")) Then .Directions = stationRec("Directions")
         'If Not IsNull(stationRec("HasData")) Then .HasData = stationRec("HasData")
         If Not IsNull(stationRec("StateCode")) Then .StateCode = stationRec("StateCode")
         If Not IsNull(stationRec("DistrictCode")) Then .DistrictCode = stationRec("DistrictCode")
+        If Not IsNull(stationRec("HCDN")) Then .HCDN = stationRec("HCDN")
+        If Not IsNull(stationRec("Station_md")) Then .StationMd = Split(stationRec("Station_md").Value)(0)
         Set .State = Me.State
         .IsNew = False
       End With
-      pStations.Add newStation, newStation.ID
+      pStations.Add newStation, newStation.Id
       Set newStation = Nothing
       stationRec.MoveNext
     Wend
@@ -123,7 +126,7 @@ Private Function GetStationType(TypeCode As String) As ssStationType
     .FindFirst "StationTypeCode='" & TypeCode & "'"
     If Not .NoMatch Then
       Set GetStationType.DB = pDB
-      GetStationType.Code = .Fields("StationTypeCode")
+      GetStationType.code = .Fields("StationTypeCode")
       GetStationType.Name = .Fields("StationType")
     End If
   End With

@@ -192,7 +192,7 @@ Public Sub PopulateStateBasins()
   Dim newStateBasin As ssStateBasin
   Dim basinRec As Recordset
   Dim sql$
-  
+
   Set pStateBasins = New FastCollection
   If pDB Is Nothing Then
     ssMessageBox "Cannot read State Basins" & vbCr & "DB not set."
@@ -281,7 +281,7 @@ Public Sub PopulateMCDs()
   Dim newMCD As ssMCD
   Dim MCDRec As Recordset
   Dim sql$
-  
+
   Set pMCDs = Nothing
   Set pMCDs = New FastCollection
   If pDB Is Nothing Then
@@ -343,6 +343,7 @@ Private Sub PopulateStations()
         ElseIf Not IsNull(stationRec("StaID")) Then
           .Label = stationRec("StaID")
         End If
+        If Not IsNull(stationRec("Agency_cd")) Then .AgencyCode = stationRec("Agency_cd")
         If Not IsNull(stationRec("StationTypeCode")) Then Set .StationType = GetStationType(stationRec("StationTypeCode"))
         If Not IsNull(stationRec("IsRegulated")) Then .IsRegulated = stationRec("IsRegulated")
         If Not IsNull(stationRec("PeriodOfRecord")) Then .Period = stationRec("PeriodOfRecord")
@@ -350,13 +351,16 @@ Private Sub PopulateStations()
         If Not IsNull(stationRec("Latitude")) Then .Latitude = stationRec("Latitude")
         If Not IsNull(stationRec("Longitude")) Then .Longitude = stationRec("Longitude")
         If Not IsNull(stationRec("HUC")) Then .HUCCode = stationRec("HUC")
-        If Not IsNull(stationRec("StatebasinCode")) Then .StatebasinCode = (stationRec("StatebasinCode"))
+        If Not IsNull(stationRec("Statebasin")) Then .StatebasinCode = stationRec("Statebasin")
         If Not IsNull(stationRec("CountyCode")) Then .CountyCode = stationRec("CountyCode")
-        If Not IsNull(stationRec("MCDCode")) Then .MCDCode = stationRec("MCDCode")
+        'If Not IsNull(stationRec("MCDCode")) Then .MCDCode = stationRec("MCDCode")
         If Not IsNull(stationRec("Directions")) Then .Directions = stationRec("Directions")
         'If Not IsNull(stationRec("HasData")) Then .HasData = stationRec("HasData")
         If Not IsNull(stationRec("StateCode")) Then .StateCode = stationRec("StateCode")
         If Not IsNull(stationRec("DistrictCode")) Then .DistrictCode = stationRec("DistrictCode")
+        If Not IsNull(stationRec("HCDN")) Then .HCDN = stationRec("HCDN")
+        If Not IsNull(stationRec("Station_md")) Then .StationMd = Split(stationRec("Station_md").Value)(0)
+        
         If Not IsNull(stationRec("ROI")) Then
           .ROIIndex = stationRec("ROI")
           .IsROI = .ROIIndex
@@ -517,7 +521,7 @@ Public Sub PopulateRegions()
   Dim newRegion As nssRegion
   Dim rgnRec As Recordset
   Dim sql$
-  Dim regnID As Integer
+  Dim RegnID As Integer
   
   Set pRegions = New FastCollection
   If pDB Is Nothing Then
@@ -527,12 +531,12 @@ Public Sub PopulateRegions()
           "' ORDER BY RegionName;"
     Set rgnRec = pDB.DB.OpenRecordset(sql)
     While Not rgnRec.EOF
-      regnID = rgnRec.Fields("RegionID")
+      RegnID = rgnRec.Fields("RegionID")
       Set newRegion = New nssRegion
       With newRegion
         Set .DB = pDB
         Set .State = Me
-        .Id = regnID
+        .Id = RegnID
         .Name = rgnRec.Fields("RegionName")
         .Urban = rgnRec.Fields("Urban")
         .UrbanNeedsRural = rgnRec.Fields("UrbanNeedsRural")

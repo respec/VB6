@@ -1,5 +1,5 @@
 VERSION 5.00
-Object = "*\A..\ATCoCtl\ATCoCtl.vbp"
+Object = "{8B6FC3CA-0323-4FCA-8A85-2668B1192E25}#1.0#0"; "ATCoCtl.ocx"
 Begin VB.Form frmStaData 
    Caption         =   "Station Data"
    ClientHeight    =   4455
@@ -223,15 +223,21 @@ Private Sub cboFilter_Click()
   Set station.SelStats = Nothing
   Set station.Statistics = Nothing
   For i = 1 To station.Statistics.Count
-    If cboFilter.List(ListItem) = "All" Then
-      station.SelStats.Add _
-          station.Statistics(i), CStr(station.Statistics(i).code)
-    Else
-      If station.Statistics(i).StatTypeID = ListItem + 1 Then
-        station.SelStats.Add _
-            station.Statistics(i), CStr(station.Statistics(i).code)
-      End If
-    End If
+    With station.Statistics(i)
+        If cboFilter.List(ListItem) = "All" Then
+'          station.SelStats.Add _
+'              station.Statistics(i), CStr(.code) & "_" & CStr(.value)
+          station.SelStats.Add _
+              station.Statistics(i), CStr(.code) & "_" & CStr(.value) & "_" & .SourceID
+        Else
+          If .StatTypeID = ListItem + 1 Then
+'            station.SelStats.Add _
+'                station.Statistics(i), CStr(.code) & "_" & CStr(.value)
+            station.SelStats.Add _
+                station.Statistics(i), CStr(.code) & "_" & CStr(.value) & "_" & .SourceID
+          End If
+        End If
+    End With
   Next i
   StatType = cboFilter.List(ListItem)
   SetGrid
@@ -241,7 +247,7 @@ Private Sub cmdAdd_Click()
   Dim i&
   With grdStaData
     For i = 0 To .Cols - 1
-      If i = 4 Then
+      If i = 5 Or i = 16 Then
         .ColEditable(i) = False
       Else
         .ColEditable(i) = True
@@ -296,8 +302,8 @@ Private Sub cmdDelete_Click()
         ReDim Preserve SelStats(1 To UBound(SelStats) - 1)
         ReDim Preserve newStat(1 To UBound(newStat) - 1)
       Else
-        ReDim SelStats(0)
-        ReDim newStat(0)
+        ReDim SelStats(1)
+        ReDim newStat(1)
       End If
     End With
   End If
@@ -313,6 +319,7 @@ Private Sub cmdSave_Click()
   Dim lOldVal As String
   Dim lNewVal As String
   Dim lRecIDStr As String
+  Dim lRowNeedsUpdate&
   
   'Perform QA check on values selected/entered in grid
   If Not QACheck Then GoTo NoChanges
@@ -333,37 +340,52 @@ Private Sub cmdSave_Click()
     If Not UserInfoOK Then GoTo NoChanges
     Me.MousePointer = vbHourglass
     For row = 1 To grdStaData.Rows
+      lRowNeedsUpdate = 0
       If newStat(row) Then
         Set SelStats(row) = New ssStatistic
         Set SelStats(row).DB = SSDB
         Set SelStats(row).station = station
+        SelStats(row).code = Changes(2, row, 2)
+        lRowNeedsUpdate = 1
         SelStats(row).Add Changes(), row
       Else
-        SelStats(row).Edit Changes(), row
-      End If
-      'Write changes to DetailedLog table
-      For col = 1 To UBound(Changes, 3)
-        If col = 2 Or col = 4 Or col = 6 Or col = 7 Then
-          If Changes(0, row, col) = "1" Or Changes(0, row, col) = "2" Then
-            Select Case col
-              Case 2: fldID = 1 '3
-              Case 4: fldID = 3 '4
-              Case 6: fldID = 4 '5
-              Case 7: fldID = 2
-            End Select
-            If col = 7 Then 'record change in source ID (source can be too long for field)
-              lOldVal = SelStats(row).GetSourceID(Changes(1, row, col))
-              lNewVal = SelStats(row).GetSourceID(Changes(2, row, col))
-            Else
-              lOldVal = Changes(1, row, col)
-              lNewVal = Changes(2, row, col)
-            End If
-            lRecIDStr = station.id & " - " & SelStats(row).code
-            'SSDB.RecordChanges TransID, "STATISTIC", fldID, CStr(station.id), lOldVal, lNewVal
-            SSDB.RecordChanges TransID, "STATISTIC", fldID, lRecIDStr, lOldVal, lNewVal
+        For col = 1 To UBound(Changes, 3)
+          If Changes(1, row, col) = "" Then
+          Else
+            lRowNeedsUpdate = 1
+            Exit For
           End If
+        Next
+        If lRowNeedsUpdate = 1 Then
+          SelStats(row).Edit Changes(), row
         End If
-      Next col
+      End If
+      
+      If lRowNeedsUpdate = 1 Then
+        'Write to DetailedLog table if this row has been changed
+        For col = 1 To UBound(Changes, 3)
+          If col = 2 Or col = 5 Or col = 7 Or col = 8 Then
+            If Changes(0, row, col) = "1" Or Changes(0, row, col) = "2" Then
+              Select Case col
+                Case 2: fldID = 1 '3
+                Case 5: fldID = 3 '4
+                Case 7: fldID = 4 '5
+                Case 8: fldID = 2
+              End Select
+              If col = 7 Then 'record change in source ID (source can be too long for field)
+                lOldVal = SelStats(row).GetSourceID(Changes(1, row, col))
+                lNewVal = SelStats(row).GetSourceID(Changes(2, row, col))
+              Else
+                lOldVal = Changes(1, row, col)
+                lNewVal = Changes(2, row, col)
+              End If
+              lRecIDStr = station.id & " - " & SelStats(row).code
+              'SSDB.RecordChanges TransID, "STATISTIC", fldID, CStr(station.id), lOldVal, lNewVal
+              SSDB.RecordChanges TransID, "STATISTIC", fldID, lRecIDStr, lOldVal, lNewVal
+            End If
+          End If
+        Next col
+      End If
     Next row
     cboFilter_Click
     lblStatSel(1).Caption = grdStaData.TextMatrix(grdStaData.row, 1)
@@ -401,7 +423,7 @@ Private Function QACheck() As Boolean
 '            QACheck = False
 '            Exit Function
 '          End If
-        ElseIf col = 6 Then 'Check whether Citation exists. Add to DB if not?
+        ElseIf col = 7 Then 'Check whether Citation exists. Add to DB if not?
           With grdStaData
             If Trim(.TextMatrix(row, col)) = "" Then
               .TextMatrix(row, col) = "none"
@@ -474,8 +496,13 @@ Private Sub Form_Load()
   'Set SelStats collection = entire Statistics collection of station
   Set station.SelStats = Nothing
   For i = 1 To station.Statistics.Count
-    station.SelStats.Add _
-        station.Statistics(i), CStr(station.Statistics(i).code)
+'    station.SelStats.Add _
+'        station.Statistics(i), CStr(station.Statistics(i).code) & "_" & CStr(station.Statistics(i).value)
+    With station.Statistics(i)
+      station.SelStats.Add _
+          station.Statistics(i), CStr(.code) & "_" & CStr(.value) & "_" & .SourceID
+    End With
+
   Next i
   SetGrid
 End Sub
@@ -523,14 +550,20 @@ Private Sub grdStaData_RowColChange()
 '              Next i
 '              .ComboCheckValidValues = True
       'Fill list of Citations in seventh column
-      Case 6:
+      Case 4: 'IsPreferred
+        If Len(Trim(.TextMatrix(.row, 0))) > 0 Then
+          .addValue "No"
+          .addValue "Yes"
+          .ComboCheckValidValues = True
+        End If
+      Case 7:
         If Len(Trim(.TextMatrix(.row, 0))) > 0 Then
           For i = 1 To SSDB.Sources.Count
             .addValue SSDB.Sources(i).Name
           Next i
           .ComboCheckValidValues = False
         End If
-      Case 7:
+      Case 8:
         If Len(Trim(.TextMatrix(.row, 0))) > 0 Then
           For i = 1 To SSDB.Sources.Count
             If Len(SSDB.Sources(i).URL) > 0 Then .addValue SSDB.Sources(i).URL
@@ -546,6 +579,7 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
   Dim i&, response&
   Dim statTypeCode$, str$
   Dim CitationCode$
+  Dim lmsg$, lResponse$
   
   'Adjust appropriate columns in row when a field is edited
   Select Case ChangeFromCol
@@ -557,7 +591,7 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
             If .TextMatrix(ChangeFromRow, 0) <> SelStats(ChangeFromRow).StatType Then
               .TextMatrix(ChangeFromRow, 1) = ""
               .TextMatrix(ChangeFromRow, 2) = ""
-              .TextMatrix(ChangeFromRow, 4) = ""
+              .TextMatrix(ChangeFromRow, 5) = ""
               Exit Sub
             End If
           End If
@@ -565,13 +599,26 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
       Next i
     Case 1:
       'Make sure this Statistic does not already exist for this station
+      'Make sure this Statistic has only one that is labelled as IsPreferred = Y
       With grdStaData
         For i = 1 To .Rows
           If i <> ChangeFromRow Then
             If .TextMatrix(ChangeFromRow, 1) = .TextMatrix(i, 1) Then
-              MsgBox "This statistic already exists for this station."
-              .TextMatrix(ChangeFromRow, 1) = SelStats(ChangeFromRow).Name
-              Exit Sub
+              If .TextMatrix(ChangeFromRow, 4) = .TextMatrix(i, 4) And .TextMatrix(i, 4) = "Yes" Then
+                lmsg = "For each statistic, there can be only one preferred for a station." & vbCrLf
+                lmsg = lmsg & "Keep the original preferred value?"
+                
+                lResponse = myMsgBox.Show(lmsg, "User Action Verification", "+&Yes", "-&No", "-&Cancel")
+                If lResponse = 1 Then
+                  .TextMatrix(ChangeFromRow, 4) = "No"
+                ElseIf lResponse = 2 Then
+                  .TextMatrix(ChangeFromRow, 4) = "No"
+                  .TextMatrix(i, 4) = "No"
+                Else
+                  .TextMatrix(ChangeFromRow, 1) = SelStats(ChangeFromRow).Name
+                  Exit Sub
+                End If
+              End If
             End If
           End If
         Next i
@@ -581,7 +628,7 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
           For i = 1 To SSDB.StatisticTypes(statTypeCode).StatLabels.Count
             If .TextMatrix(ChangeFromRow, 1) = SSDB.StatisticTypes(statTypeCode).StatLabels(i).Name Then
               .TextMatrix(ChangeFromRow, 2) = SSDB.StatisticTypes(statTypeCode).StatLabels(i).code
-              .TextMatrix(ChangeFromRow, 4) = SSDB.StatisticTypes(statTypeCode).StatLabels(i).Units
+              .TextMatrix(ChangeFromRow, 5) = SSDB.StatisticTypes(statTypeCode).StatLabels(i).Units
               Exit Sub
             End If
           Next i
@@ -593,9 +640,21 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
         For i = 1 To .Rows
           If i <> ChangeFromRow Then
             If .TextMatrix(ChangeFromRow, 2) = .TextMatrix(i, 2) Then
-              MsgBox "This statistic already exists for this station."
-              .TextMatrix(ChangeFromRow, 2) = SelStats(ChangeFromRow).Abbrev
-              Exit Sub
+              If .TextMatrix(ChangeFromRow, 4) = .TextMatrix(i, 4) And .TextMatrix(i, 4) = "Yes" Then
+                lmsg = "For each statistic, there can be only one preferred for a station." & vbCrLf
+                lmsg = lmsg & "Keep the original preferred value?"
+                
+                lResponse = myMsgBox.Show(lmsg, "User Action Verification", "+&Yes", "-&No", "-&Cancel")
+                If lResponse = 1 Then
+                  .TextMatrix(ChangeFromRow, 4) = "No"
+                ElseIf lResponse = 2 Then
+                  .TextMatrix(ChangeFromRow, 4) = "No"
+                  .TextMatrix(i, 4) = "No"
+                Else
+                  .TextMatrix(ChangeFromRow, 2) = SelStats(ChangeFromRow).Abbrev
+                  Exit Sub
+                End If
+              End If
             End If
           End If
         Next i
@@ -606,11 +665,42 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
         For i = 1 To SSDB.StatisticTypes(statTypeCode).StatLabels.Count
           If .TextMatrix(ChangeFromRow, 2) = SSDB.StatisticTypes(statTypeCode).StatLabels(i).code Then
             .TextMatrix(ChangeFromRow, 1) = SSDB.StatisticTypes(statTypeCode).StatLabels(i).Name
-            .TextMatrix(ChangeFromRow, 4) = SSDB.StatisticTypes(statTypeCode).StatLabels(i).Units
+            .TextMatrix(ChangeFromRow, 5) = SSDB.StatisticTypes(statTypeCode).StatLabels(i).Units
             Exit Sub
           End If
         Next i
       End With
+    Case 4: 'IsPreferred
+      With grdStaData
+        If .TextMatrix(ChangeFromRow, ChangeFromCol) = "Yes" Then
+          For i = 1 To .Rows
+            If i <> ChangeFromRow Then
+              If .TextMatrix(ChangeFromRow, 1) = .TextMatrix(i, 1) Or .TextMatrix(ChangeFromRow, 2) = .TextMatrix(i, 2) Then
+                If .TextMatrix(i, ChangeFromCol) = "Yes" Then
+                  lmsg = "For each statistic, there can be only one preferred for a station." & vbCrLf
+                  lmsg = lmsg & "Keep the original preferred value?"
+                
+                  lResponse = myMsgBox.Show(lmsg, "User Action Verification", "+&Yes", "-&No", "-&Cancel")
+                  If lResponse = 1 Then
+                    .TextMatrix(ChangeFromRow, 4) = "No"
+                  ElseIf lResponse = 2 Then
+                    .TextMatrix(ChangeFromRow, 4) = "No"
+                    .TextMatrix(i, 4) = "No"
+                  Else
+                    If SelStats(ChangeFromRow).IsPreferred Then
+                      .TextMatrix(ChangeFromRow, 2) = "Yes"
+                    Else
+                      .TextMatrix(ChangeFromRow, 2) = "No"
+                    End If
+                    Exit Sub
+                  End If
+                End If
+              End If
+            End If
+          Next i
+        End If
+      End With
+
 '    Case 5:
 '      With grdStaData
 '        If Len(.TextMatrix(ChangeFromRow, ChangeFromCol)) > 20 Then
@@ -619,7 +709,26 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
 '              "has been truncated to 20 characters, its maximum allowable length."
 '        End If
 '      End With
-    Case 6:
+    Case 7: 'Citation
+    
+      With grdStaData
+        For i = 1 To .Rows
+          If i <> ChangeFromRow Then
+            If .TextMatrix(ChangeFromRow, ChangeFromCol) = .TextMatrix(i, ChangeFromCol) Then
+              If .TextMatrix(ChangeFromRow, 1) = .TextMatrix(i, 1) And .TextMatrix(ChangeFromRow, 2) = .TextMatrix(i, 2) Then
+                
+                MsgBox ("Statistic's Name, Code, and Citation have to be unique for a station.")
+                .TextMatrix(ChangeFromRow, ChangeFromCol) = SelStats(ChangeFromRow).Source
+                If .TextMatrix(ChangeFromRow, ChangeFromCol) = "" Then
+                   .TextMatrix(ChangeFromRow, ChangeFromCol + 1) = ""
+                End If
+                Exit Sub
+              End If
+            End If
+          End If
+        Next i
+      End With
+      
       'updated Citation, update Citation URL also
       For i = 1 To SSDB.Sources.Count
         If grdStaData.TextMatrix(ChangeFromRow, ChangeFromCol) = SSDB.Sources(i).Name Then
@@ -627,7 +736,24 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
           Exit For
         End If
       Next i
-    Case 7:
+    Case 8:
+      With grdStaData
+        For i = 1 To .Rows
+          If i <> ChangeFromRow Then
+            If .TextMatrix(ChangeFromRow, ChangeFromCol) = .TextMatrix(i, ChangeFromCol) Then
+              If .TextMatrix(ChangeFromRow, 1) = .TextMatrix(i, 1) And .TextMatrix(ChangeFromRow, 2) = .TextMatrix(i, 2) Then
+                
+                MsgBox ("Statistic's Name, Code, and Citation have to be unique for a station.")
+                .TextMatrix(ChangeFromRow, ChangeFromCol) = SelStats(ChangeFromRow).SourceURL
+                If .TextMatrix(ChangeFromRow, ChangeFromCol) = "" Then
+                   .TextMatrix(ChangeFromRow, ChangeFromCol - 1) = ""
+                End If
+                Exit Sub
+              End If
+            End If
+          End If
+        Next i
+      End With
       'updated Citation URL, update Citation also
       For i = 1 To SSDB.Sources.Count
         If grdStaData.TextMatrix(ChangeFromRow, ChangeFromCol) = SSDB.Sources(i).URL Then
@@ -649,10 +775,25 @@ Private Sub ChangesMade(madeChanges As Boolean)
       OldVals(row, 2) = SelStats(row).Name
       OldVals(row, 3) = SelStats(row).Abbrev
       OldVals(row, 4) = SelStats(row).value
-      OldVals(row, 5) = SelStats(row).Units.id
-      OldVals(row, 6) = SelStats(row).YearsRec
-      OldVals(row, 7) = SelStats(row).Source
-      OldVals(row, 8) = SelStats(row).SourceURL
+      If SelStats(row).IsPreferred Then
+        OldVals(row, 5) = "Yes"
+      Else
+        OldVals(row, 5) = "No"
+      End If
+      OldVals(row, 6) = SelStats(row).Units.id
+      OldVals(row, 7) = SelStats(row).YearsRec
+      OldVals(row, 8) = SelStats(row).Source
+      OldVals(row, 9) = SelStats(row).SourceURL
+      
+      OldVals(row, 10) = SelStats(row).StdError
+      OldVals(row, 11) = SelStats(row).Variance
+      OldVals(row, 12) = SelStats(row).LowerCI
+      OldVals(row, 13) = SelStats(row).UpperCI
+      OldVals(row, 14) = SelStats(row).StatStartDate
+      OldVals(row, 15) = SelStats(row).StatEndDate
+      OldVals(row, 16) = SelStats(row).StatisticRemarks
+      OldVals(row, 17) = SelStats(row).Statistic_md
+      
     End If
   Next row
   RecordChanges OldVals(), madeChanges
@@ -700,17 +841,35 @@ Private Sub SetGrid()
       .TextMatrix(statNumber, 1) = SelStats(statNumber).Name
       .TextMatrix(statNumber, 2) = SelStats(statNumber).Abbrev
       .TextMatrix(statNumber, 3) = SelStats(statNumber).value
-      .TextMatrix(statNumber, 4) = SelStats(statNumber).Units.id
-      .TextMatrix(statNumber, 5) = SelStats(statNumber).YearsRec
-      .TextMatrix(statNumber, 6) = SelStats(statNumber).Source
-      .TextMatrix(statNumber, 7) = SelStats(statNumber).SourceURL
+      If SelStats(statNumber).IsPreferred Then
+        .TextMatrix(statNumber, 4) = "Yes"
+      ElseIf Not SelStats(statNumber).IsPreferred Then
+        .TextMatrix(statNumber, 4) = "No"
+      Else
+        .TextMatrix(statNumber, 4) = "No"
+      End If
+      .TextMatrix(statNumber, 5) = SelStats(statNumber).Units.id
+      .TextMatrix(statNumber, 6) = SelStats(statNumber).YearsRec
+      .TextMatrix(statNumber, 7) = SelStats(statNumber).Source
+      .TextMatrix(statNumber, 8) = SelStats(statNumber).SourceURL
+      
+      .TextMatrix(statNumber, 9) = SelStats(statNumber).StdError
+      .TextMatrix(statNumber, 10) = SelStats(statNumber).Variance
+      .TextMatrix(statNumber, 11) = SelStats(statNumber).LowerCI
+      .TextMatrix(statNumber, 12) = SelStats(statNumber).UpperCI
+      .TextMatrix(statNumber, 13) = SelStats(statNumber).StatStartDate
+      .TextMatrix(statNumber, 14) = SelStats(statNumber).StatEndDate
+      .TextMatrix(statNumber, 15) = SelStats(statNumber).StatisticRemarks
+      .TextMatrix(statNumber, 16) = SelStats(statNumber).Statistic_md
+      
       newStat(statNumber) = False
     Next statNumber
     For col = 0 To .Cols - 1
       .ColEditable(col) = True
     Next col
-    .ColEditable(4) = False
-    '.ColEditable(7) = False
+    .ColEditable(5) = False
+    '.ColEditable(8) = False
+    .ColEditable(16) = False
     If .Rows > 0 Then
       lblStatSel(1).Caption = .TextMatrix(1, 1)
     End If
@@ -727,13 +886,32 @@ Private Sub SizeGrid()
     .ColWidth(2) = 1000
     .TextMatrix(0, 3) = "Value"
     .ColWidth(3) = 600
-    .TextMatrix(0, 4) = "Conv Flg"
-    .ColWidth(4) = 740
-    .TextMatrix(0, 5) = "YearsRec"
-    .ColWidth(5) = 750
-    .TextMatrix(0, 6) = "Citation"
-    .ColWidth(6) = 3000
-    .TextMatrix(0, 7) = "Citation URl"
+    .TextMatrix(0, 4) = "IsPreferred"
+    .ColWidth(4) = 600
+    .TextMatrix(0, 5) = "Conv Flg"
+    .ColWidth(5) = 740
+    .TextMatrix(0, 6) = "YearsRec"
+    .ColWidth(6) = 750
+    .TextMatrix(0, 7) = "Citation"
     .ColWidth(7) = 3000
+    .TextMatrix(0, 8) = "Citation URl"
+    .ColWidth(8) = 3000
+    
+    .TextMatrix(0, 9) = "StdErr"
+    .ColWidth(9) = 600
+    .TextMatrix(0, 10) = "Variance"
+    .ColWidth(10) = 600
+    .TextMatrix(0, 11) = "LowerCI"
+    .ColWidth(11) = 600
+    .TextMatrix(0, 12) = "UpperCI"
+    .ColWidth(12) = 600
+    .TextMatrix(0, 13) = "StatStartDate"
+    .ColWidth(13) = 800
+    .TextMatrix(0, 14) = "StatEndDate"
+    .ColWidth(14) = 800
+    .TextMatrix(0, 15) = "Remarks"
+    .ColWidth(15) = 1500
+    .TextMatrix(0, 16) = "LastModified"
+    .ColWidth(16) = 1750
   End With
 End Sub

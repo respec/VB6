@@ -65,10 +65,10 @@ Public Property Get LastEdited() As String
   End If
 End Property
 
-Public Property Get filename() As String
-  filename = pFileName
+Public Property Get Filename() As String
+  Filename = pFileName
 End Property
-Public Property Let filename(ByVal newValue As String)
+Public Property Let Filename(ByVal newValue As String)
   pFileName = newValue
   Set pnssDB = OpenDatabase(pFileName, False, False, "MS Access; pwd=" & DatabasePassword)
 End Property
@@ -102,7 +102,7 @@ Private Sub PopulateStates()
   sql = "SELECT STATES.* FROM [STATES] " & _
         "WHERE StateCode <> '00' " & _
         "ORDER BY Len(StateCode), StateCode;"
-  Set myRec = pnssDB.OpenRecordset(sql, dbOpenForwardOnly)
+  Set myRec = pnssDB.OpenRecordset(sql, dao.RecordsetTypeEnum.dbOpenForwardOnly)
   While Not myRec.EOF
     Set newState = New nssState
     Set lROIData = New nssROI
