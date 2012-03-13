@@ -482,7 +482,7 @@ Public Sub Edit(ByRef NewValues() As String, StatIndex As Long)
       End If
       '!Date = NewValues(2, StatIndex, 6)
       !YearsRec = NewValues(2, StatIndex, 7)
-      If IsNumeric(NewValues(2, StatIndex, 7)) Then
+      If IsNumeric(NewValues(2, StatIndex, 10)) Then
         !StdError = NewValues(2, StatIndex, 10)
       Else
         'lMsgErr = "StdErr is NAN." & vbCrLf
