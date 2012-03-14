@@ -630,6 +630,7 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
                   .TextMatrix(i, 4) = "No"
                 Else
                   .TextMatrix(ChangeFromRow, 1) = SelStats(ChangeFromRow).Name
+                  .TextMatrix(ChangeFromRow, 4) = "No"
                   Exit Sub
                 End If
               End If
