@@ -109,7 +109,13 @@ Public Sub PopulateStations()
         Set .State = Me.State
         .IsNew = False
       End With
-      pStations.Add newStation, newStation.Id
+      
+      If Not pStations.KeyExists(newStation.Id) Then
+        'handles the case of multiple stations on StationState table for ROI
+        pStations.Add newStation, newStation.Id
+      End If
+      
+      
       Set newStation = Nothing
       stationRec.MoveNext
     Wend
