@@ -1221,60 +1221,62 @@ Public Function EstimateString() As String
     ReDim YearsText(nIntervals)
     YearsOn = False 'assume no equivalent years to display
     For Index = 1 To nIntervals
-      If Me.ROI Then
-        If Me.LowFlow Then
-          IntervalText(Index) = Me.UserRegions(1).Region.State.ROILowData.FlowStats(Index).code
-        Else
-          IntervalText(Index) = Me.UserRegions(1).Region.State.ROIPeakData.FlowStats(Index).code
-        End If
-      Else 'get name from DepVars collection populated from database query
-        If Me.Project.Alias Then
-          IntervalText(Index) = Me.UserRegions(1).Region.DepVars(Index).Alias
-        Else
-          IntervalText(Index) = Me.UserRegions(1).Region.DepVars(Index).Name
-        End If
-      End If
-      If IsNumeric(IntervalText(Index)) Then
-        IntervalText(Index) = SignificantDigits(IntervalText(Index), 3)
-      ElseIf Len(IntervalText(Index)) < 11 Then
-        IntervalText(Index) = IntervalText(Index) & Space(11 - Len(IntervalText(Index)))
-      End If
-      If Not IsNumeric(IntervalText(Index)) Then AllNumeric = False
-              
-      FlowText(Index) = SignificantDigits(Flows(Index), 3)
-      
-      If Not Me.ParmOutOfRange Then 'no Errors or PIs reported if parms out of range
-        If Me.UsePredInts And Me.Weight.WeightType = 0 Then
-          'If PredInts(1, Index) > 0 Then
-            PredIntsText(Index) = SignificantDigits(PredInts(1, Index), 3)
-          'End If
-          'If PredInts(2, Index) > 0 Then
-            PredIntsText2(Index) = SignificantDigits(PredInts(2, Index), 3)
-          'End If
-        End If
-        If StdError(Index) <= 0 And Not Me.ROI Then
-          StdErrText(Index) = ""
-          'If Me.Weight.WeightType = 0 Then StdErrText = Space(8) Else StdErrText = ""
-        Else
-          If StdError(Index) < 5 And Not (Me.ROI Or Me.ProbEqtn) Then
-            StdErrText(Index) = SignificantDigits(StdError(Index), 3) 'Log units to 3 sig digits
-            txt = ReplaceString(txt, "Error, %", "Err, log")
+      If Flows(Index) > -1 Then 'check for no urban estimate due to no rural at this interval
+        If Me.ROI Then
+          If Me.LowFlow Then
+            IntervalText(Index) = Me.UserRegions(1).Region.State.ROILowData.FlowStats(Index).code
           Else
-            StdErrText(Index) = SignificantDigits(StdError(Index), 2) 'Percent to two sig digits
-            If Me.ROI Then
-              If StdErrorPlus(Index) > 0 Then 'include both neg and pos Std Err
-                StdErrText(Index) = "  " & StdErrText(Index) & "      " & SignificantDigits(StdErrorPlus(Index), 2)
+            IntervalText(Index) = Me.UserRegions(1).Region.State.ROIPeakData.FlowStats(Index).code
+          End If
+        Else 'get name from DepVars collection populated from database query
+          If Me.Project.Alias Then
+            IntervalText(Index) = Me.UserRegions(1).Region.DepVars(Index).Alias
+          Else
+            IntervalText(Index) = Me.UserRegions(1).Region.DepVars(Index).Name
+          End If
+        End If
+        If IsNumeric(IntervalText(Index)) Then
+          IntervalText(Index) = SignificantDigits(IntervalText(Index), 3)
+        ElseIf Len(IntervalText(Index)) < 11 Then
+          IntervalText(Index) = IntervalText(Index) & Space(11 - Len(IntervalText(Index)))
+        End If
+        If Not IsNumeric(IntervalText(Index)) Then AllNumeric = False
+                
+        FlowText(Index) = SignificantDigits(Flows(Index), 3)
+        
+        If Not Me.ParmOutOfRange Then 'no Errors or PIs reported if parms out of range
+          If Me.UsePredInts And Me.Weight.WeightType = 0 Then
+            'If PredInts(1, Index) > 0 Then
+              PredIntsText(Index) = SignificantDigits(PredInts(1, Index), 3)
+            'End If
+            'If PredInts(2, Index) > 0 Then
+              PredIntsText2(Index) = SignificantDigits(PredInts(2, Index), 3)
+            'End If
+          End If
+          If StdError(Index) <= 0 And Not Me.ROI Then
+            StdErrText(Index) = ""
+            'If Me.Weight.WeightType = 0 Then StdErrText = Space(8) Else StdErrText = ""
+          Else
+            If StdError(Index) < 5 And Not (Me.ROI Or Me.ProbEqtn) Then
+              StdErrText(Index) = SignificantDigits(StdError(Index), 3) 'Log units to 3 sig digits
+              txt = ReplaceString(txt, "Error, %", "Err, log")
+            Else
+              StdErrText(Index) = SignificantDigits(StdError(Index), 2) 'Percent to two sig digits
+              If Me.ROI Then
+                If StdErrorPlus(Index) > 0 Then 'include both neg and pos Std Err
+                  StdErrText(Index) = "  " & StdErrText(Index) & "      " & SignificantDigits(StdErrorPlus(Index), 2)
+                End If
               End If
             End If
+            'StdErrText = StrPad(StdErrText, 8)
           End If
-          'StdErrText = StrPad(StdErrText, 8)
-        End If
-        
-        If Years(Index) = 0 Or Me.Weight.WeightType = 2 Then 'no Eq Years for weight by variance
-          YearsText(Index) = "" 'Space(10)
-        Else
-          YearsText(Index) = SignificantDigits(Years(Index), 2)
-          YearsOn = True
+          
+          If Years(Index) = 0 Or Me.Weight.WeightType = 2 Then 'no Eq Years for weight by variance
+            YearsText(Index) = "" 'Space(10)
+          Else
+            YearsText(Index) = SignificantDigits(Years(Index), 2)
+            YearsOn = True
+          End If
         End If
       End If
     Next
@@ -1303,37 +1305,39 @@ Public Function EstimateString() As String
       DecimalAlign StdErrText, True, True, 8
     End If
     For Index = 1 To nIntervals
-      If Me.LowFlow And Not Me.ROI Then
-        lUnitStr = Me.UserRegions(1).Region.DepVars(Index).Units.Abbrev(useMetric)
-        lLen = Len(lUnitStr)
-        If lLen > 9 Then 'too long, need to truncate
-          lUnitStr = Left(lUnitStr, 9)
-        ElseIf lLen < 9 Then
-          lUnitStr = " " & lUnitStr & Space(8 - lLen)
+      If Len(IntervalText(Index)) > 0 Then
+        If Me.LowFlow And Not Me.ROI Then
+          lUnitStr = Me.UserRegions(1).Region.DepVars(Index).Units.Abbrev(useMetric)
+          lLen = Len(lUnitStr)
+          If lLen > 9 Then 'too long, need to truncate
+            lUnitStr = Left(lUnitStr, 9)
+          ElseIf lLen < 9 Then
+            lUnitStr = " " & lUnitStr & Space(8 - lLen)
+          End If
+        Else
+          lUnitStr = ""
         End If
-      Else
-        lUnitStr = ""
-      End If
-      If Me.UsePredInts And Me.Weight.WeightType = 0 Then
-        If Me.LowFlow And Me.Project.State.code = "47" Then
-          txt = txt & vbCrLf & IntervalText(Index) & "" _
-                             & FlowText(Index) & lUnitStr _
-                             & PredIntsText(Index) _
-                             & PredIntsText2(Index) '& Space(5) _
-'                             & pZeroAdjusted(Index)
+        If Me.UsePredInts And Me.Weight.WeightType = 0 Then
+          If Me.LowFlow And Me.Project.State.code = "47" Then
+            txt = txt & vbCrLf & IntervalText(Index) & "" _
+                               & FlowText(Index) & lUnitStr _
+                               & PredIntsText(Index) _
+                               & PredIntsText2(Index) '& Space(5) _
+  '                             & pZeroAdjusted(Index)
+          Else
+            txt = txt & vbCrLf & IntervalText(Index) & "" _
+                               & FlowText(Index) & lUnitStr _
+                               & PredIntsText(Index) _
+                               & PredIntsText2(Index) & Space(2) _
+                               & StdErrText(Index)
+          End If
         Else
           txt = txt & vbCrLf & IntervalText(Index) & "" _
                              & FlowText(Index) & lUnitStr _
-                             & PredIntsText(Index) _
-                             & PredIntsText2(Index) & Space(2) _
                              & StdErrText(Index)
         End If
-      Else
-        txt = txt & vbCrLf & IntervalText(Index) & "" _
-                           & FlowText(Index) & lUnitStr _
-                           & StdErrText(Index)
+        If YearsOn Then txt = txt & YearsText(Index)
       End If
-      If YearsOn Then txt = txt & YearsText(Index)
     Next
     If pExtrapolated Then txt = txt & vbCrLf & vbCrLf & "  *Extrapolated value"
     If Me.RegCrippenBue > 0 Then
