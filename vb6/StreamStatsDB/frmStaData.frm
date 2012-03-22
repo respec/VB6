@@ -322,7 +322,12 @@ Private Sub cmdSave_Click()
   Dim lRowNeedsUpdate&
   
   'Perform QA check on values selected/entered in grid
-  If Not QACheck Then GoTo NoChanges
+  Dim lmsg As String
+  lmsg = ""
+  If Not QACheck(lmsg) Then
+    If Len(lmsg) > 0 Then MsgBox (lmsg)
+    GoTo NoChanges
+  End If
   
   'Record the changes made to statistic values
   ChangesMade madeChanges
@@ -395,10 +400,11 @@ NoChanges:
   SaidYes = False
 End Sub
 
-Private Function QACheck() As Boolean
+Private Function QACheck(Optional aMsg As String = "") As Boolean
   Dim row&, col&, i&, response&
   Dim Val$
   Dim mySource As ssSource
+  Dim rowListing As String
   
   QACheck = True
   With grdStaData
@@ -427,7 +433,7 @@ Private Function QACheck() As Boolean
           With grdStaData
             If Trim(.TextMatrix(row, col)) = "" Then
               .TextMatrix(row, col) = "none"
-              Exit Function
+              'Exit Function
             End If
             For i = 1 To SSDB.Sources.Count
               If .TextMatrix(row, col) = SSDB.Sources(i).Name Then Exit For
@@ -478,6 +484,35 @@ Private Function QACheck() As Boolean
           End With
         End If
       Next col
+    Next row
+    
+    'A new check on duplicate stats
+    Dim lRowFurther As Integer
+    For row = 1 To .Rows
+      For lRowFurther = 1 To .Rows
+        If lRowFurther <> row Then
+          If .TextMatrix(row, 1) = .TextMatrix(lRowFurther, 1) And .TextMatrix(row, 7) = .TextMatrix(lRowFurther, 7) Then
+            'found a duplicate stat with same name and same source, Not allowed
+            aMsg = aMsg & .TextMatrix(row, 1) & " has duplicate version from same source. On rows " & row & ", " & lRowFurther
+            QACheck = False
+          End If
+        End If
+      Next lRowFurther
+    Next row
+    
+    'A new check on duplicate IsPreferred
+    For row = 1 To .Rows
+      For lRowFurther = 1 To .Rows
+        If lRowFurther <> row Then
+          If .TextMatrix(row, 1) = .TextMatrix(lRowFurther, 1) And _
+            .TextMatrix(row, 4) = .TextMatrix(lRowFurther, 4) And _
+            LCase(.TextMatrix(row, 4)) = "yes" Then
+            'found a stat with two IsPreferred values, Not Allowed
+            aMsg = aMsg & .TextMatrix(row, 1) & " has more than one IsPreferred values. On rows " & row & ", " & lRowFurther
+            QACheck = False
+          End If
+        End If
+      Next lRowFurther
     Next row
   End With
 End Function
@@ -594,6 +629,7 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
   Dim statTypeCode$, str$
   Dim CitationCode$
   Dim lmsg$, lResponse$
+  Dim lOriginalIsPreferred As Integer
   
   'Adjust appropriate columns in row when a field is edited
   Select Case ChangeFromCol
@@ -617,20 +653,37 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
       With grdStaData
         For i = 1 To .Rows
           If i <> ChangeFromRow Then
-            If .TextMatrix(ChangeFromRow, 1) = .TextMatrix(i, 1) Then
+            If .TextMatrix(ChangeFromRow, 1) = .TextMatrix(i, 1) Then 'Compare Stat name
+              If .TextMatrix(ChangeFromRow, 7) = .TextMatrix(i, 7) Then 'Compare data source, if yes, then problem
+                lmsg = "An existing version of " & .TextMatrix(ChangeFromRow, 1) & " came from a same source." & vbCrLf & _
+                       "Pick/enter another source."
+                MsgBox (lmsg)
+                .TextMatrix(ChangeFromRow, 7) = "Needs a different source"
+              End If
               If .TextMatrix(ChangeFromRow, 4) = .TextMatrix(i, 4) And .TextMatrix(i, 4) = "Yes" Then
                 lmsg = "For each statistic, there can be only one preferred for a station." & vbCrLf
-                lmsg = lmsg & "Keep the original preferred value?"
+                lmsg = lmsg & "Please specify which is preferred?"
                 
-                lResponse = myMsgBox.Show(lmsg, "User Action Verification", "+&Yes", "-&No", "-&Cancel")
+                lResponse = myMsgBox.Show(lmsg, "User Action Verification", "+&Original", "-&Current", "-&None", "-&Cancel")
+                lOriginalIsPreferred = OriginalIsPreferredRow(.TextMatrix(i, 1))
                 If lResponse = 1 Then
-                  .TextMatrix(ChangeFromRow, 4) = "No"
+                    If lOriginalIsPreferred <> 0 Then .TextMatrix(lOriginalIsPreferred, 4) = "Yes"
+                    If ChangeFromRow <> lOriginalIsPreferred Then .TextMatrix(ChangeFromRow, 4) = "No"
+                    If i <> lOriginalIsPreferred Then .TextMatrix(i, 4) = "No"
                 ElseIf lResponse = 2 Then
-                  .TextMatrix(ChangeFromRow, 4) = "No"
-                  .TextMatrix(i, 4) = "No"
+                    .TextMatrix(ChangeFromRow, 4) = "Yes"
+                    .TextMatrix(i, 4) = "No"
+                    If lOriginalIsPreferred <> ChangeFromRow Then .TextMatrix(lOriginalIsPreferred, 4) = "No"
+                ElseIf lResponse = 3 Then
+                    .TextMatrix(lOriginalIsPreferred, 4) = "No"
+                    .TextMatrix(i, 4) = "No"
+                    .TextMatrix(ChangeFromRow, 4) = "No"
                 Else
-                  .TextMatrix(ChangeFromRow, 1) = SelStats(ChangeFromRow).Name
-                  .TextMatrix(ChangeFromRow, 4) = "No"
+                  '.TextMatrix(ChangeFromRow, 1) = SelStats(ChangeFromRow).Name
+                  .TextMatrix(ChangeFromRow, 1) = ""
+                  .TextMatrix(lOriginalIsPreferred, 4) = "Yes"
+                  If ChangeFromRow <> lOriginalIsPreferred Then .TextMatrix(ChangeFromRow, 4) = "No"
+                  If i <> lOriginalIsPreferred Then .TextMatrix(i, 4) = "No"
                   Exit Sub
                 End If
               End If
@@ -657,16 +710,27 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
             If .TextMatrix(ChangeFromRow, 2) = .TextMatrix(i, 2) Then
               If .TextMatrix(ChangeFromRow, 4) = .TextMatrix(i, 4) And .TextMatrix(i, 4) = "Yes" Then
                 lmsg = "For each statistic, there can be only one preferred for a station." & vbCrLf
-                lmsg = lmsg & "Keep the original preferred value?"
+                lmsg = lmsg & "Please specify which is preferred?"
                 
-                lResponse = myMsgBox.Show(lmsg, "User Action Verification", "+&Yes", "-&No", "-&Cancel")
+                lResponse = myMsgBox.Show(lmsg, "User Action Verification", "+&Original", "-&Current", "-&None", "-&Cancel")
+                lOriginalIsPreferred = OriginalIsPreferredRow(.TextMatrix(i, 1))
                 If lResponse = 1 Then
-                  .TextMatrix(ChangeFromRow, 4) = "No"
+                    If lOriginalIsPreferred <> 0 Then .TextMatrix(lOriginalIsPreferred, 4) = "Yes"
+                    If ChangeFromRow <> lOriginalIsPreferred Then .TextMatrix(ChangeFromRow, 4) = "No"
+                    If i <> lOriginalIsPreferred Then .TextMatrix(i, 4) = "No"
                 ElseIf lResponse = 2 Then
-                  .TextMatrix(ChangeFromRow, 4) = "No"
-                  .TextMatrix(i, 4) = "No"
+                    .TextMatrix(ChangeFromRow, 4) = "Yes"
+                    .TextMatrix(i, 4) = "No"
+                    If lOriginalIsPreferred <> ChangeFromRow Then .TextMatrix(lOriginalIsPreferred, 4) = "No"
+                ElseIf lResponse = 3 Then
+                    .TextMatrix(lOriginalIsPreferred, 4) = "No"
+                    .TextMatrix(i, 4) = "No"
+                    .TextMatrix(ChangeFromRow, 4) = "No"
                 Else
                   .TextMatrix(ChangeFromRow, 2) = SelStats(ChangeFromRow).Abbrev
+                  .TextMatrix(lOriginalIsPreferred, 4) = "Yes"
+                  If ChangeFromRow <> lOriginalIsPreferred Then .TextMatrix(ChangeFromRow, 4) = "No"
+                  If i <> lOriginalIsPreferred Then .TextMatrix(i, 4) = "No"
                   Exit Sub
                 End If
               End If
@@ -677,6 +741,7 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
       'Change the Name and Unit fields to match the selected Code field
       With grdStaData
         statTypeCode = GetStatTypeCode(.TextMatrix(ChangeFromRow, 0))
+        If statTypeCode = "" Then Exit Sub
         For i = 1 To SSDB.StatisticTypes(statTypeCode).StatLabels.Count
           If .TextMatrix(ChangeFromRow, 2) = SSDB.StatisticTypes(statTypeCode).StatLabels(i).code Then
             .TextMatrix(ChangeFromRow, 1) = SSDB.StatisticTypes(statTypeCode).StatLabels(i).Name
@@ -692,21 +757,27 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
             If i <> ChangeFromRow Then
               If .TextMatrix(ChangeFromRow, 1) = .TextMatrix(i, 1) Or .TextMatrix(ChangeFromRow, 2) = .TextMatrix(i, 2) Then
                 If .TextMatrix(i, ChangeFromCol) = "Yes" Then
-                  lmsg = "For each statistic, there can be only one preferred for a station." & vbCrLf
-                  lmsg = lmsg & "Keep the original preferred value?"
+                lmsg = "For each statistic, there can be only one preferred for a station." & vbCrLf
+                lmsg = lmsg & "Please specify which is preferred?"
                 
-                  lResponse = myMsgBox.Show(lmsg, "User Action Verification", "+&Yes", "-&No", "-&Cancel")
+                lResponse = myMsgBox.Show(lmsg, "User Action Verification", "+&Original", "-&Current", "-&None", "-&Cancel")
+                lOriginalIsPreferred = OriginalIsPreferredRow(.TextMatrix(i, 1))
                   If lResponse = 1 Then
-                    .TextMatrix(ChangeFromRow, 4) = "No"
+                    If lOriginalIsPreferred <> 0 Then .TextMatrix(lOriginalIsPreferred, 4) = "Yes"
+                    If ChangeFromRow <> lOriginalIsPreferred Then .TextMatrix(ChangeFromRow, 4) = "No"
+                    If i <> lOriginalIsPreferred Then .TextMatrix(i, 4) = "No"
                   ElseIf lResponse = 2 Then
-                    .TextMatrix(ChangeFromRow, 4) = "No"
+                    .TextMatrix(ChangeFromRow, 4) = "Yes"
                     .TextMatrix(i, 4) = "No"
+                    If lOriginalIsPreferred <> ChangeFromRow Then .TextMatrix(lOriginalIsPreferred, 4) = "No"
+                  ElseIf lResponse = 3 Then
+                    .TextMatrix(lOriginalIsPreferred, 4) = "No"
+                    .TextMatrix(i, 4) = "No"
+                    .TextMatrix(ChangeFromRow, 4) = "No"
                   Else
-                    If SelStats(ChangeFromRow).IsPreferred Then
-                      .TextMatrix(ChangeFromRow, 2) = "Yes"
-                    Else
-                      .TextMatrix(ChangeFromRow, 2) = "No"
-                    End If
+                    .TextMatrix(lOriginalIsPreferred, 4) = "Yes"
+                    If ChangeFromRow <> lOriginalIsPreferred Then .TextMatrix(ChangeFromRow, 4) = "No"
+                    If i <> lOriginalIsPreferred Then .TextMatrix(i, 4) = "No"
                     Exit Sub
                   End If
                 End If
@@ -729,14 +800,15 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
       With grdStaData
         For i = 1 To .Rows
           If i <> ChangeFromRow Then
-            If .TextMatrix(ChangeFromRow, ChangeFromCol) = .TextMatrix(i, ChangeFromCol) Then
-              If .TextMatrix(ChangeFromRow, 1) = .TextMatrix(i, 1) And .TextMatrix(ChangeFromRow, 2) = .TextMatrix(i, 2) Then
+            If .TextMatrix(ChangeFromRow, ChangeFromCol) = .TextMatrix(i, ChangeFromCol) Or _
+               (.TextMatrix(ChangeFromRow, ChangeFromCol) = "" And LCase(.TextMatrix(i, ChangeFromCol)) = "none") Or _
+               (LCase(.TextMatrix(ChangeFromRow, ChangeFromCol)) = "none" And .TextMatrix(i, ChangeFromCol) = "") Then 'same source
+              If .TextMatrix(ChangeFromRow, 1) = .TextMatrix(i, 1) Then 'same name
                 
-                MsgBox ("Statistic's Name, Code, and Citation have to be unique for a station.")
-                .TextMatrix(ChangeFromRow, ChangeFromCol) = SelStats(ChangeFromRow).Source
-                If .TextMatrix(ChangeFromRow, ChangeFromCol) = "" Then
-                   .TextMatrix(ChangeFromRow, ChangeFromCol + 1) = ""
-                End If
+                MsgBox ("An existing version of " & .TextMatrix(ChangeFromRow, 1) & " came from a same source." & vbCrLf & "Pick/enter another source.")
+                '.TextMatrix(ChangeFromRow, ChangeFromCol) = SelStats(ChangeFromRow).Source
+                .TextMatrix(ChangeFromRow, ChangeFromCol) = ""
+                If .TextMatrix(ChangeFromRow, ChangeFromCol) = "" Then .TextMatrix(ChangeFromRow, ChangeFromCol + 1) = ""
                 Exit Sub
               End If
             End If
@@ -755,14 +827,12 @@ Private Sub grdStaData_CommitChange(ChangeFromRow As Long, ChangeToRow As Long, 
       With grdStaData
         For i = 1 To .Rows
           If i <> ChangeFromRow Then
-            If .TextMatrix(ChangeFromRow, ChangeFromCol) = .TextMatrix(i, ChangeFromCol) Then
-              If .TextMatrix(ChangeFromRow, 1) = .TextMatrix(i, 1) And .TextMatrix(ChangeFromRow, 2) = .TextMatrix(i, 2) Then
-                
-                MsgBox ("Statistic's Name, Code, and Citation have to be unique for a station.")
-                .TextMatrix(ChangeFromRow, ChangeFromCol) = SelStats(ChangeFromRow).SourceURL
-                If .TextMatrix(ChangeFromRow, ChangeFromCol) = "" Then
-                   .TextMatrix(ChangeFromRow, ChangeFromCol - 1) = ""
-                End If
+            If .TextMatrix(ChangeFromRow, ChangeFromCol) = .TextMatrix(i, ChangeFromCol) And .TextMatrix(ChangeFromRow, ChangeFromCol) <> "" Then 'same URL
+              If .TextMatrix(ChangeFromRow, 1) = .TextMatrix(i, 1) Then
+                MsgBox ("An existing version of " & .TextMatrix(ChangeFromRow, 1) & " came from a same source." & vbCrLf & "Pick/enter another source.")
+                '.TextMatrix(ChangeFromRow, ChangeFromCol) = SelStats(ChangeFromRow).SourceURL
+                .TextMatrix(ChangeFromRow, ChangeFromCol) = ""
+                'If .TextMatrix(ChangeFromRow, ChangeFromCol) = "" Then .TextMatrix(ChangeFromRow, ChangeFromCol - 1) = ""
                 Exit Sub
               End If
             End If
@@ -891,6 +961,18 @@ Private Sub SetGrid()
   End With
 End Sub
 
+Private Function OriginalIsPreferredRow(aStatName As String) As Integer
+    Dim lInd As Integer
+    For lInd = 1 To UBound(SelStats, 1)
+      If LCase(aStatName) = LCase(SelStats(lInd).Name) Then
+        If SelStats(lInd).IsPreferred Then
+          OriginalIsPreferredRow = lInd
+          Exit For
+        End If
+      End If
+    Next
+End Function
+
 Private Sub SizeGrid()
   With grdStaData
     .TextMatrix(0, 0) = "Statistic Type"
@@ -929,4 +1011,5 @@ Private Sub SizeGrid()
     .TextMatrix(0, 16) = "LastModified"
     .ColWidth(16) = 1750
   End With
+  
 End Sub
