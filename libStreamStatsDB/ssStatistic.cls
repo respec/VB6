@@ -351,7 +351,8 @@ Public Sub Add(ByRef NewValues() As String, StatIndex As Long, Optional NoWarnFl
                                 " already exist." & _
                                 "What do you want to do?", "Excel Import - Data Exists", _
                                 "&Replace", "Replace &All", "+&Keep", "K&eep All", "-&Cancel")
-            If lAskUser = 2 Or lAskUser = 4 Then Me.Station.UpdateAction = lAskUser
+            'If lAskUser = 2 Or lAskUser = 4 Then Me.Station.UpdateAction = lAskUser
+            If lAskUser <> Me.Station.UpdateAction Then Me.Station.UpdateAction = lAskUser
           End If
           If Me.Station.UpdateAction = 1 Or Me.Station.UpdateAction = 2 Then
             If lAddNew Then
