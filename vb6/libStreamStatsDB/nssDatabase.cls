@@ -414,7 +414,7 @@ Public Function RecordChanges(ByVal Id As Long, ByVal TableName As String, _
   Dim fldName$
   
   Set myRec = pnssDB.OpenRecordset(TableName, dbOpenSnapshot)
-  fldName = myRec.Fields(fldID).Name
+  fldName = myRec.Fields(fldID - 1).Name
   myRec.Close
   Set myRec = pnssDB.OpenRecordset("DetailedLog", dbOpenDynaset)
   With myRec
