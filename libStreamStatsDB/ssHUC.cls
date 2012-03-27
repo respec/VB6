@@ -103,10 +103,58 @@ Public Sub PopulateStations()
         If Not IsNull(stationRec("Directions")) Then .Directions = stationRec("Directions")
         'If Not IsNull(stationRec("HasData")) Then .HasData = stationRec("HasData")
         If Not IsNull(stationRec("StateCode")) Then .StateCode = stationRec("StateCode")
+        
         If Not IsNull(stationRec("DistrictCode")) Then .DistrictCode = stationRec("DistrictCode")
         If Not IsNull(stationRec("HCDN")) Then .HCDN = stationRec("HCDN")
         If Not IsNull(stationRec("Station_md")) Then .StationMd = Split(stationRec("Station_md").Value)(0)
+        
         Set .State = Me.State
+        
+        'Now set the true State this new station is actually in
+        If .StateCode = .State.code Then
+          Set .StateLoc = Me.State
+        Else
+          Set .StateLoc = New nssState
+          
+          Dim myRec As Recordset
+          Dim sql2 As String
+          sql2 = "SELECT * FROM States WHERE StateCode='" & .StateCode & "';"
+          Set myRec = pDB.DB.OpenRecordset(sql2, dbOpenForwardOnly)
+          Dim lROIData As nssROI
+          Set lROIData = New nssROI
+          With .StateLoc
+            Set .DB = pDB
+            .Name = myRec.Fields("State")
+            .Abbrev = myRec.Fields("ST")
+            .code = myRec.Fields("StateCode")
+            .Metric = myRec.Fields("Metric")
+            Set lROIData.DB = pDB
+            lROIData.StateCode = .code
+            lROIData.ClimateFactor = myRec.Fields("ROIClimateFactor")
+            lROIData.Distance = myRec.Fields("ROIDistance")
+            lROIData.Regress = myRec.Fields("ROIBackStepRegression")
+            lROIData.UseRegions = myRec.Fields("ROIRegions")
+            lROIData.SimStations = myRec.Fields("ROISimStations")
+    '       lCode = Right(.code, 2)
+    '       If States.KeyExists(lCode) Then
+    '         'just add other ROI data from this 2nd occurrence
+    '         If CInt(.code) > 10000 Then
+    '           Set States(lCode).ROILowData = lROIData
+    '         Else
+    '           Set States(lCode).ROIPeakData = lROIData
+    '         End If
+    '       Else 'add state (and this ROI data) to collection
+    '         If CInt(.code) > 10000 Then 'low flow ROI data
+    '           .code = lCode
+    '           Set .ROILowData = lROIData
+    '         Else
+    '           Set .ROIPeakData = lROIData
+    '         End If
+    '       End If
+          End With
+          myRec.Close
+        End If
+                
         .IsNew = False
       End With
       If Not pStations.KeyExists(newStation.Id) Then

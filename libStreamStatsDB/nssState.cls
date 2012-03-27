@@ -730,6 +730,47 @@ End Sub
 '  End If
 'End Sub
 
+Public Function GetCode(aStateAbbrev As String) As Integer
+  aStateAbbrev = Mid(aStateAbbrev, 1, 2)
+  Dim myRec As Recordset
+  Dim lSQL As String
+  
+  lSQL = "SELECT StateCode FROM States WHERE ST='" & aStateAbbrev & "';"
+  Set myRec = pDB.DB.OpenRecordset(lSQL, dbOpenDynaset)
+  If Not myRec Is Nothing Then
+    With myRec
+      .MoveLast
+      .MoveFirst
+      If .RecordCount > 0 Then
+        GetCode = .Fields("StateCode")
+      Else
+        GetCode = -99
+      End If
+      .Close
+    End With 'myRec
+  End If
+End Function
+
+Public Function GetAbbrev(aStateCode As Integer) As String
+  Dim myRec As Recordset
+  Dim lSQL As String
+  
+  lSQL = "SELECT ST FROM States WHERE StateCode=" & aStateCode & ";"
+  Set myRec = pDB.DB.OpenRecordset(lSQL, dbOpenDynaset)
+  If Not myRec Is Nothing Then
+    With myRec
+      .MoveLast
+      .MoveFirst
+      If .RecordCount > 0 Then
+        GetAbbrev = .Fields("ST")
+      Else
+        GetAbbrev = ""
+      End If
+      .Close
+    End With 'myRec
+  End If
+End Function
+
 Private Sub Class_Initialize()
   pAbbrev = "XX"
   pName = "Not Assigned"

@@ -1,6 +1,6 @@
 VERSION 5.00
-Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "COMDLG32.OCX"
-Object = "{BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0"; "TABCTL32.OCX"
+Object = "{F9043C88-F6F2-101A-A3C9-08002B2F49FB}#1.2#0"; "Comdlg32.ocx"
+Object = "{BDC217C8-ED16-11CD-956C-0000C04E4C0A}#1.1#0"; "Tabctl32.ocx"
 Object = "{8B6FC3CA-0323-4FCA-8A85-2668B1192E25}#1.0#0"; "ATCoCtl.ocx"
 Begin VB.Form frmStreamStatsDB 
    Caption         =   "Stream Stats DB"
@@ -1356,7 +1356,7 @@ Private Sub grdGenInfo_RowColChange()
     End If
     With grdGenInfo
       If .row > 0 Then
-        lblStaSel(0).Caption = .TextMatrix(grdGenInfo.row, 0)
+        lblStaSel(0).Caption = .TextMatrix(.row, 0)
         fraGenInfo.Caption = "Station Information - " & .TextMatrix(.row, 1)
       Else
         lblStaSel(0).Caption = ""
@@ -1392,9 +1392,29 @@ Private Sub grdGenInfo_RowColChange()
 '                  Next i
 '                  .ComboCheckValidValues = False
         Case 12:  .addValue ""
-                  For i = 1 To SSDB.state.Counties.Count
-                    .addValue SSDB.state.Counties(i).code & "-" & SSDB.state.Counties(i).Name
-                  Next i
+                  Dim lStateAbbrev As String
+                  lStateAbbrev = ""
+                  If .TextMatrix(.row, 10) <> "" Then
+                    lStateAbbrev = .TextMatrix(.row, 10)
+                  ElseIf .TextMatrix(.row, 11) <> "" Then
+                    lStateAbbrev = .TextMatrix(.row, 11)
+                  End If
+                  If lStateAbbrev <> "" Then
+                    Dim lStateObj As nssState
+                    Set lStateObj = New nssState
+                    Set lStateObj.DB = SSDB.state.DB
+                    lStateObj.code = lStateObj.GetCode(lStateAbbrev)
+                    
+                    For i = 1 To lStateObj.Counties.Count
+                      .addValue lStateObj.Counties(i).code & "-" & lStateObj.Counties(i).Name
+                    Next i
+                    lStateObj.Counties.Clear
+                    Set lStateObj = Nothing
+                  Else
+                    For i = 1 To SSDB.state.Counties.Count
+                      .addValue SSDB.state.Counties(i).code & "-" & SSDB.state.Counties(i).Name
+                    Next i
+                  End If
                   .ComboCheckValidValues = True
 '        Case 12:  .addValue ""
 '                  For i = 1 To SSDB.state.MCDs.Count
@@ -1540,8 +1560,8 @@ Private Sub cboState_Click()
     Me.MousePointer = vbHourglass
     Initialize 0
     If Not SSDB.state Is Nothing Then
-      SSDB.state.SelStations.Clear
-      SSDB.state.Stations.Clear
+      If Not SSDB.state.SelStations Is Nothing Then SSDB.state.SelStations.Clear
+      If Not SSDB.state.Stations Is Nothing Then SSDB.state.Stations.Clear
     End If
    'Set state; populate StateBasins, County, and MCD combo boxes;
     ' and populate Stations listbox
@@ -1595,7 +1615,13 @@ Private Sub cboFilter_Click()
     Me.MousePointer = vbHourglass
     'Clear previous selections
     Set SSDB.state.Stations = Nothing
+    If Not SSDB.state.Stations Is Nothing Then
+      SSDB.state.Stations.Clear
+    End If
     Set SSDB.state.SelStations = Nothing
+    If Not SSDB.state.SelStations Is Nothing Then
+      SSDB.state.SelStations.Clear
+    End If
     lstStations.Clear
     cboCategory.Clear
     grdGenInfo.ClearData
@@ -1699,8 +1725,9 @@ Private Sub cboFilter_Click()
                 SSDB.state.HUCs(catChoiceIndex).code
             cboCategory.ItemData(catChoiceIndex - 1) = _
                 SSDB.state.HUCs(catChoiceIndex).code
-            If SSDB.state.HUCs(catChoiceIndex).code = catChoice Then _
+            If SSDB.state.HUCs(catChoiceIndex).code = catChoice Then
                 selCatChoice = catChoiceIndex
+            End If
           Next
           If selCatChoice > 0 Then 'select previously chosen MCD
             cboCategory.ListIndex = selCatChoice - 1
@@ -1857,8 +1884,16 @@ Private Sub ChangesMade(madeChanges As Boolean)
         OldVals(row, 11) = SSDB.States.ItemByKey(myStation.DistrictCode).Abbrev
         OldVals(row, 12) = SSDB.States.ItemByKey(myStation.StateCode).Abbrev
         If myStation.countyCode <> "" Then
-          OldVals(row, 13) = SSDB.state.Counties(myStation.countyCode).code & _
-              "-" & SSDB.state.Counties(myStation.countyCode).Name
+          Dim lOldValCounty As String
+          lOldValCounty = myStation.countyCode
+          If Not myStation.stateloc Is Nothing And myStation.state.Name <> myStation.stateloc.Name Then
+            lOldValCounty = lOldValCounty & "-" & myStation.stateloc.Counties(myStation.countyCode).Name
+          Else
+            lOldValCounty = lOldValCounty & "-" & SSDB.state.Counties(myStation.countyCode).Name
+          End If
+'          OldVals(row, 13) = SSDB.state.Counties(myStation.countyCode).code & _
+'              "-" & SSDB.state.Counties(myStation.countyCode).Name
+          OldVals(row, 13) = lOldValCounty
         End If
 '        If myStation.mcdCode <> "" Then
 '          OldVals(row, 13) = SSDB.state.MCDs(myStation.mcdCode).code & _
@@ -1979,6 +2014,7 @@ Private Sub ResetGrid()
   Dim row&, col&
   'Dim allStatIDs$, str$, mcdCode$, countyCode$, basinCode$
   Dim allStatIDs$, str$, countyCode$
+  Dim lStation As ssStation
   
   On Error Resume Next
   
@@ -1987,47 +2023,55 @@ Private Sub ResetGrid()
       If SSDB.state Is Nothing Then Exit Sub
       .ClearData
       For row = 1 To SSDB.state.SelStations.Count
-        If Not SSDB.state.SelStations(row).IsNew Then
-          allStatIDs = allStatIDs & " " & SSDB.state.SelStations(row).id
-          .TextMatrix(row, 0) = SSDB.state.SelStations(row).id
-          .TextMatrix(row, 1) = SSDB.state.SelStations(row).AgencyCode
-          .TextMatrix(row, 2) = SSDB.state.SelStations(row).Name
-          If Not SSDB.state.SelStations(row).StationType Is Nothing Then _
-              .TextMatrix(row, 3) = SSDB.state.SelStations(row).StationType.Name
-          .TextMatrix(row, 4) = SSDB.state.SelStations(row).IsRegulated
-          .TextMatrix(row, 5) = SSDB.state.SelStations(row).Period
-          .TextMatrix(row, 6) = SSDB.state.SelStations(row).Directions
-          .TextMatrix(row, 7) = SSDB.state.SelStations(row).Remarks
-          If SSDB.state.SelStations(row).Latitude > 72# Then
-            .TextMatrix(row, 8) = DMS2Decimal(CStr(SSDB.state.SelStations(row).Latitude))
+        Set lStation = SSDB.state.SelStations(row)
+        If Not lStation.IsNew Then
+          allStatIDs = allStatIDs & " " & lStation.id
+          .TextMatrix(row, 0) = lStation.id
+          .TextMatrix(row, 1) = lStation.AgencyCode
+          .TextMatrix(row, 2) = lStation.Name
+          If Not lStation.StationType Is Nothing Then _
+              .TextMatrix(row, 3) = lStation.StationType.Name
+          .TextMatrix(row, 4) = lStation.IsRegulated
+          .TextMatrix(row, 5) = lStation.Period
+          .TextMatrix(row, 6) = lStation.Directions
+          .TextMatrix(row, 7) = lStation.Remarks
+          If lStation.Latitude > 72# Then
+            .TextMatrix(row, 8) = DMS2Decimal(CStr(lStation.Latitude))
           Else
-            .TextMatrix(row, 8) = CStr(SSDB.state.SelStations(row).Latitude)
+            .TextMatrix(row, 8) = CStr(lStation.Latitude)
           End If
-          If SSDB.state.SelStations(row).Longitude > 172# Then
-            .TextMatrix(row, 9) = DMS2Decimal(CStr(SSDB.state.SelStations(row).Longitude))
+          If lStation.Longitude > 172# Then
+            .TextMatrix(row, 9) = DMS2Decimal(CStr(lStation.Longitude))
           Else
-            .TextMatrix(row, 9) = CStr(SSDB.state.SelStations(row).Longitude)
+            .TextMatrix(row, 9) = CStr(lStation.Longitude)
           End If
-          .TextMatrix(row, 10) = SSDB.States.ItemByKey(SSDB.state.SelStations(row).DistrictCode).Abbrev
-          .TextMatrix(row, 11) = SSDB.States.ItemByKey(SSDB.state.SelStations(row).StateCode).Abbrev
-          countyCode = SSDB.state.SelStations(row).countyCode
-          If SSDB.state.Counties.IndexFromKey(countyCode) > 0 Then
-            .TextMatrix(row, 12) = SSDB.state.Counties(countyCode).code _
-                        & "-" & SSDB.state.Counties(countyCode).Name
+          .TextMatrix(row, 10) = SSDB.States.ItemByKey(lStation.DistrictCode).Abbrev
+          .TextMatrix(row, 11) = SSDB.States.ItemByKey(lStation.StateCode).Abbrev
+          
+          countyCode = lStation.countyCode
+          If UCase(cboFilter.List(cboFilter.ListIndex)) = "HUC" Then
+            If lStation.stateloc.Counties.IndexFromKey(countyCode) > 0 Then _
+              .TextMatrix(row, 12) = lStation.stateloc.Counties(countyCode).code & "-" & _
+                                     lStation.stateloc.Counties(countyCode).Name
+          Else
+            If SSDB.state.Counties.IndexFromKey(countyCode) > 0 Then _
+              .TextMatrix(row, 12) = SSDB.state.Counties(countyCode).code & "-" & _
+                                     SSDB.state.Counties(countyCode).Name
           End If
+          
 '          mcdCode = SSDB.state.SelStations(row).mcdCode
 '          If SSDB.state.MCDs.IndexFromKey(mcdCode) > 0 Then
 '            .TextMatrix(row, 12) = SSDB.state.MCDs(mcdCode).code _
 '                        & "-" & SSDB.state.MCDs(mcdCode).Name
 '          End If
-          .TextMatrix(row, 13) = SSDB.state.SelStations(row).HUCCode
+          .TextMatrix(row, 13) = lStation.HUCCode
 '          basinCode = SSDB.state.SelStations(row).StatebasinCode
 '          If SSDB.state.StateBasins.IndexFromKey(basinCode) > 0 Then
 '            .TextMatrix(row, 14) = SSDB.state.StateBasins(basinCode).code _
 '                & "-" & SSDB.state.StateBasins(basinCode).Name
 '          End If
-          .TextMatrix(row, 15) = SSDB.state.SelStations(row).HCDN
-          .TextMatrix(row, 16) = SSDB.state.SelStations(row).StationMd
+          .TextMatrix(row, 15) = lStation.HCDN
+          .TextMatrix(row, 16) = lStation.StationMd
         End If
       Next row
       .Rows = SSDB.state.SelStations.Count

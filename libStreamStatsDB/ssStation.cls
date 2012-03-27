@@ -48,6 +48,7 @@ Private pHCDN As String 'whether part of the HC network, Y for true
 Private pStationMd As String 'Station record 'modified' datetime, short date, e.g. 1/10/2012
 
 Private pUpdateAction As Integer
+Private pStateLoc As nssState 'This is the the state it reside in, whereas pState is associcated state
 
 Public Property Get DB() As nssDatabase
   Set DB = pDB
@@ -273,6 +274,12 @@ Public Property Let UpdateAction(ByVal newValue As Integer)
   pUpdateAction = newValue
 End Property
 
+Public Property Get StateLoc() As nssState
+  Set StateLoc = pStateLoc
+End Property
+Public Property Set StateLoc(ByVal newValue As nssState)
+  Set pStateLoc = newValue
+End Property
 
 Public Sub Add(ByRef NewValues() As String, ByVal StaIndex As Long, _
                Optional ImportFlg As Long, Optional ROIRegionID As Long = 0)
@@ -428,13 +435,16 @@ Public Sub Delete()
     'delete any statistics for this station
     sql = "SELECT * FROM [Statistic] WHERE StaID='" & Me.Id & "'"
     Set myRec = pDB.DB.OpenRecordset(sql, dbOpenDynaset)
-    With myRec
-      .MoveFirst
-      While Not .EOF
-        .Delete
-        .MoveNext
-      Wend
-    End With
+    If Not myRec Is Nothing And myRec.RecordCount > 0 Then
+      With myRec
+        .MoveFirst
+        While Not .EOF
+          .Delete
+          .MoveNext
+        Wend
+      End With
+      myRec.Close
+    End If
   
     sql = "SELECT * FROM STATION WHERE StaID='" & Me.Id & "'"
 '    sql = "SELECT STATION.* " & _
