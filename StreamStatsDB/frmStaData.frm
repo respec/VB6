@@ -285,10 +285,37 @@ Private Sub cmdDelete_Click()
         "User Action Verification", "+&Cancel", "-&Yes")
   End If
   If response = 2 Then
-    If Not newStat(grdStaData.row) Then
-      Set myStatistic = station.Statistics(grdStaData.row)
-      myStatistic.Delete
-    End If
+  
+'    If Not newStat(grdStaData.row) Then
+'      Set myStatistic = station.Statistics(grdStaData.row)
+'      myStatistic.Delete
+'    End If
+    Dim lArr() As String
+    lArr = Split(lblStatSel(1).Caption, "-")
+    Dim i As Integer
+    Dim lIsPreferredMatch As Boolean
+    For i = 1 To station.Statistics.Count
+      With station.Statistics(i)
+        If .GetStatLabel(.code) = lArr(0) Then 'matching statlabel
+          If .value = lArr(1) Then 'matching value
+            lIsPreferredMatch = False 'see if matching ispreferred
+            If .IsPreferred And lArr(2) = "Yes" Then
+              lIsPreferredMatch = True
+            ElseIf Not .IsPreferred And lArr(2) = "No" Then
+              lIsPreferredMatch = True
+            End If
+            If lIsPreferredMatch Then
+              If CStr(.SourceID) = lArr(3) Then 'matching data source
+                Set myStatistic = station.Statistics(i)
+                myStatistic.Delete
+                Exit For
+              End If
+            End If
+          End If
+        End If
+      End With 'Statistic
+    Next i
+    
     With grdStaData
       For row = .row To .Rows - 1
         Set SelStats(row) = SelStats(row + 1)
@@ -563,7 +590,12 @@ Private Sub grdStaData_RowColChange()
   'Fill in combo box entries
   With grdStaData
     If .row = 0 Then Exit Sub
-    lblStatSel(1).Caption = .TextMatrix(.row, 2)
+    Dim lSourceId As String
+    lSourceId = "Unknown Source"
+    For i = 1 To SSDB.Sources.Count
+       If .TextMatrix(.row, 7) = SSDB.Sources(i).Name Then lSourceId = SSDB.Sources(i).id
+    Next i
+    lblStatSel(1).Caption = .TextMatrix(.row, 2) & "-" & .TextMatrix(.row, 3) & "-" & .TextMatrix(.row, 4) & "-" & lSourceId
     .ClearValues
     SizeGrid
     Select Case .col
