@@ -541,3 +541,17 @@ Public Function GetSourceID(Citation As String) As String
   End With
 End Function
 
+Public Function GetStatLabel(aCode As Long) As String
+  Dim myRec As Recordset
+  Dim lSQL As String
+  lSQL = "SELECT StatLabel FROM StatLabel WHERE StatisticLabelID=" & aCode
+  Set myRec = pDB.DB.OpenRecordset(lSQL, dbOpenDynaset)
+  If Not myRec Is Nothing And myRec.RecordCount > 0 Then
+    With myRec
+      GetStatLabel = .Fields("StatLabel")
+      .Close
+    End With 'myRec
+  Else
+    GetStatLabel = ""
+  End If
+End Function
