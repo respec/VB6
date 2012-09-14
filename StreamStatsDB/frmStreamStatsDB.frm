@@ -6,7 +6,7 @@ Begin VB.Form frmStreamStatsDB
    Caption         =   "Stream Stats DB"
    ClientHeight    =   8625
    ClientLeft      =   165
-   ClientTop       =   855
+   ClientTop       =   735
    ClientWidth     =   10800
    Icon            =   "frmStreamStatsDB.frx":0000
    LinkTopic       =   "Form1"
@@ -1886,8 +1886,10 @@ Private Sub ChangesMade(madeChanges As Boolean)
         If myStation.countyCode <> "" Then
           Dim lOldValCounty As String
           lOldValCounty = myStation.countyCode
-          If Not myStation.stateloc Is Nothing And myStation.state.Name <> myStation.stateloc.Name Then
-            lOldValCounty = lOldValCounty & "-" & myStation.stateloc.Counties(myStation.countyCode).Name
+          If Not myStation.StateLoc Is Nothing Then
+            If myStation.state.Name <> myStation.StateLoc.Name Then
+              lOldValCounty = lOldValCounty & "-" & myStation.StateLoc.Counties(myStation.countyCode).Name
+            End If
           Else
             lOldValCounty = lOldValCounty & "-" & SSDB.state.Counties(myStation.countyCode).Name
           End If
@@ -2050,9 +2052,9 @@ Private Sub ResetGrid()
           
           countyCode = lStation.countyCode
           If UCase(cboFilter.List(cboFilter.ListIndex)) = "HUC" Then
-            If lStation.stateloc.Counties.IndexFromKey(countyCode) > 0 Then _
-              .TextMatrix(row, 12) = lStation.stateloc.Counties(countyCode).code & "-" & _
-                                     lStation.stateloc.Counties(countyCode).Name
+            If lStation.StateLoc.Counties.IndexFromKey(countyCode) > 0 Then _
+              .TextMatrix(row, 12) = lStation.StateLoc.Counties(countyCode).code & "-" & _
+                                     lStation.StateLoc.Counties(countyCode).Name
           Else
             If SSDB.state.Counties.IndexFromKey(countyCode) > 0 Then _
               .TextMatrix(row, 12) = SSDB.state.Counties(countyCode).code & "-" & _

@@ -972,7 +972,9 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
         ReDim dataValues(2 To 2, 1 To nAtts, 1 To UBound(DataFields))
         YearsOfRecord = 0
         If YrsRecCol > 0 Then 'read years of record for this station
-          YearsOfRecord = Cells(staCnt, YrsRecCol)
+          If Cells(staCnt, YrsRecCol) <> "" Then
+            YearsOfRecord = Cells(staCnt, YrsRecCol)
+          End If
         End If
         'Loop thru column fields in spreadsheet
         StaAttCnt = 0
@@ -993,7 +995,7 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
             stationValues(2, 1, 1) = value
             stationID = value
           ElseIf ImportCol(fldCnt) > 0 And Len(value) > 0 Then
-            If ImportCol(fldCnt) <= 14 Or ImportCol(fldCnt) = 24 Or ImportCol(fldCnt) = 2318 Or ImportCol(fldCnt) = 2319 Then 'station data
+            If ImportCol(fldCnt) <= 14 Or ImportCol(fldCnt) = 24 Or ImportCol(fldCnt) = 173 Or ImportCol(fldCnt) = 175 Then 'station data
               StaAttCnt = StaAttCnt + 1
               Select Case ImportCol(fldCnt)
                 Case 24  'map DistrictCode to 15th element in array
@@ -1010,9 +1012,9 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
                   stationValues(2, 1, 14) = value
                 Case 1 'ID
                   stationValues(2, 1, ImportCol(fldCnt)) = value
-                Case 2318 'Agency_cd
+                Case 173 'Agency_cd
                   stationValues(2, 1, 2) = value
-                Case 2319 'HCDN
+                Case 175 'HCDN
                   stationValues(2, 1, 16) = value
                 Case Is < 6 '1st 5 StatLabelIDs match field numbers 3 - 5 in old system, now needs to add 1
                   stationValues(2, 1, ImportCol(fldCnt) + 1) = value
