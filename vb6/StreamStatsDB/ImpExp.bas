@@ -873,9 +873,9 @@ Sub XLSImport(ImpFileName As String, DataSource As String, SourceURL As String)
   
   On Error GoTo errTrapXLS
   
-  lOverWriteAllResponse = myMsgBox.Show("Data in import file, " & ImpFileName & ", are: ", _
-                                        "Excel Import - Preferrance", _
-                                        "&Preferred", "&Not Preferred", "-Not &Sure")
+  lOverWriteAllResponse = myMsgBox.Show("Importing data from file, " & ImpFileName & ", to: ", _
+                                        "Excel Import - Action", _
+                                        "&Replace All", "&Append", "-Not &Sure")
   
   IPC.SendMonitorMessage "(OPEN StreamStatsDB)"
   IPC.SendMonitorMessage "(BUTTOFF DETAILS)"
