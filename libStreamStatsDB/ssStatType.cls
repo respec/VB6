@@ -84,7 +84,9 @@ Private Sub PopulateStatLabels()
         .Definition = statRec.Fields("Definition")
         .Alias = statRec.Fields("Alias")
       End With
-      pStatLabels.Add newStatLabel, newStatLabel.code
+      If Not pStatLabels.KeyExists(newStatLabel.code) Then
+        pStatLabels.Add newStatLabel, newStatLabel.code
+      End If
       Set newStatLabel = Nothing
       statRec.MoveNext
     Wend
